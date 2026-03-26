@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+{% block title %}{{ lead.full_name }} — Lead — OSSERVA{% endblock %}
+{% set active_nav = "leads" %}
+
+{% block content %}
+<div class="w-full max-w-4xl space-y-5">
+
+  <!-- Breadcrumb + header -->
+  <div>
+    <div class="flex items-center gap-2 mb-1 text-xs" style="color:hsl(var(--muted-foreground))">
+      <a href="{{ url_for('organizations.platform_dashboard') }}" class="hover:opacity-70 transition-opacity">Platform</a>
+      <i class="fa-solid fa-chevron-right text-[9px]"></i>
+      <a href="{{ url_for('organizations.leads_list') }}" class="hover:opacity-70 transition-opacity">Leads</a>
+      <i class="fa-solid fa-chevron-right text-[9px]"></i>
+      <span class="truncate" style="color:hsl(var(--foreground))">{{ lead.full_name }}</span>
+    </div>
+
+    <div class="flex flex-col xs:flex-row xs:items-center gap-3 justify-between mt-2">
+      <h1 class="text-xl font-bold" style="color:hsl(var(--foreground))">{{ lead.full_name }}</h1>
+      <div class="flex items-center gap-2 flex-shrink-0 flex-wrap">
+        {% set stage = lead.pipeline_stage or 'new' %}
+        <span class="text-xs font-semibold px-3 py-1 rounded-full
+          {% if stage == 'new' %}bg-blue-500/15 text-blue-400
+          {% elif stage == 'contacted' %}bg-amber-500/15 text-amber-400
+          {% elif stage == 'demo_scheduled' %}bg-violet-500/15 text-violet-400
+          {% elif stage == 'qualified' %}bg-emerald-500/15 text-emerald-400
+          {% elif stage == 'proposal_sent' %}bg-cyan-500/15 text-cyan-400
+          {% elif stage == 'onboarding' %}bg-teal-500/15 text-teal-400
+          {% elif stage == 'closed_won' %}bg-green-500/15 text-green-400
+          {% elif stage == 'closed_lost' %}bg-rose-500/15 text-rose-400
+          {% else %}bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]
+          {% endif %}">
+          {{ stage_labels.get(stage, stage|replace('_',' ')|title) }}
+        </span>
+        {% if next_stage %}
+        <form method="POST" action="{{ url_for('organizations.advance_lead_stage', lead_id=lead.id) }}">
+          <button type="submit"
+                  class="text-xs font-medium px-3 py-1.5 rounded-md border transition-colors hover:opacity-80"
+                  style="color:hsl(var(--primary));border-color:hsla(var(--primary),0.3);background:hsla(var(--primary),0.06)">
+            Move to {{ stage_labels.get(next_stage, next_stage|replace('_',' ')|title) }}
+          </button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Two-column layout -->
+  <div class="grid grid-cols-1 lg:grid-cols-5 gap-5">
+
+    <!-- Left: Contact info + message + notes -->
+    <div class="lg:col-span-3 space-y-4">
+
+      <!-- Contact details card -->
+      <div class="dk-card p-5">
+        <h2 class="text-sm font-semibold mb-4" style="color:hsl(var(--foreground))">Contact Information</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+          <div>
+            <div class="text-xs mb-0.5" style="color:hsl(var(--muted-foreground))">Firm / Organization</div>
+            <div class="font-medium" style="color:hsl(var(--foreground))">{{ lead.firm_name }}</div>
+          </div>
+          <div>
+            <div class="text-xs mb-0.5" style="color:hsl(var(--muted-foreground))">Email</div>
+            <a href="mailto:{{ lead.email }}"
+               class="font-medium hover:opacity-70 transition-opacity"
+               style="color:hsl(var(--primary))">{{ lead.email }}</a>
+          </div>
+          {% if lead.phone %}
+          <div>
+            <div class="text-xs mb-0.5" style="color:hsl(var(--muted-foreground))">Phone</div>
+            <div style="color:hsl(var(--foreground))">{{ lead.phone }}</div>
+          </div>
+          {% endif %}
+          {% if lead.country %}
+          <div>
+            <div class="text-xs mb-0.5" style="color:hsl(var(--muted-foreground))">Country</div>
+            <div style="color:hsl(var(--foreground))">{{ lead.country }}</div>
+          </div>
+          {% endif %}
+          <div>
+            <div class="text-xs mb-0.5" style="color:hsl(var(--muted-foreground))">Team Size</div>
+            <div style="color:hsl(var(--foreground))">{{ lead.team_size or '—' }}</div>
+          </div>
+          <div>
+            <div class="text-xs mb-0.5" style="color:hsl(var(--muted-foreground))">Interest</div>
+            <div class="font-medium" style="color:hsl(var(--foreground))">{{ lead.interest_type }}</div>
+          </div>
+          <div>
+            <div class="text-xs mb-0.5" style="color:hsl(var(--muted-foreground))">Lead Source</div>
+            <div style="color:hsl(var(--foreground))">
+              {{ source_labels.get(lead.source or 'website', (lead.source or 'website')|title) }}
+            </div>
+          </div>
+          {% if lead.assigned_to_name %}
+          <div>
+            <div class="text-xs mb-0.5" style="color:hsl(var(--muted-foreground))">Assigned To</div>
+            <div style="color:hsl(var(--foreground))">{{ lead.assigned_to_name }}</div>
+          </div>
+          {% endif %}
+          {% if lead.current_software %}
+          <div class="sm:col-span-2">
+            <div class="text-xs mb-0.5" style="color:hsl(var(--muted-foreground))">Current Workflow / Software</div>
+            <div style="color:hsl(var(--foreground))">{{ lead.current_software }}</div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Original message -->
+      {% if lead.message %}
+      <div class="dk-card p-5">
+        <h2 class="text-sm font-semibold mb-3" style="color:hsl(var(--foreground))">Original Message</h2>
+        <p class="text-sm whitespace-pre-wrap leading-relaxed" style="color:hsl(var(--foreground))">{{ lead.message }}</p>
+      </div>
+      {% endif %}
+
+      <!-- Internal notes (read-only display) -->
+      {% if lead.notes %}
+      <div class="dk-card p-5">
+        <h2 class="text-sm font-semibold mb-3" style="color:hsl(var(--foreground))">Internal Notes</h2>
+        <p class="text-sm whitespace-pre-wrap leading-relaxed" style="color:hsl(var(--foreground))">{{ lead.notes }}</p>
+      </div>
+      {% endif %}
+
+      <!-- Conversion notes (read-only display) -->
+      {% if lead.conversion_notes %}
+      <div class="dk-card p-5" style="border-left:3px solid hsl(152,55%,50%)">
+        <h2 class="text-sm font-semibold mb-3" style="color:hsl(var(--foreground))">Conversion Notes</h2>
+        <p class="text-sm whitespace-pre-wrap leading-relaxed" style="color:hsl(var(--foreground))">{{ lead.conversion_notes }}</p>
+      </div>
+      {% endif %}
+
+      <!-- Timestamps -->
+      <div class="dk-card p-4 flex flex-wrap gap-5 text-xs" style="color:hsl(var(--muted-foreground))">
+        <div>
+          <span class="font-medium">Received</span>
+          <span class="ml-2" style="color:hsl(var(--foreground))">{{ format_dt(lead.created_at) }}</span>
+        </div>
+        {% if lead.updated_at and lead.updated_at != lead.created_at %}
+        <div>
+          <span class="font-medium">Last Updated</span>
+          <span class="ml-2" style="color:hsl(var(--foreground))">{{ format_dt(lead.updated_at) }}</span>
+        </div>
+        {% endif %}
+        {% if lead.follow_up_date %}
+        <div>
+          <span class="font-medium">Follow-Up Due</span>
+          <span class="ml-2 font-semibold" style="color:hsl(var(--foreground))">{{ lead.follow_up_date }}</span>
+        </div>
+        {% endif %}
+      </div>
+
+    </div>
+
+    <!-- Right: Update form + quick actions -->
+    <div class="lg:col-span-2 space-y-4">
+
+      <!-- Update form -->
+      <div class="dk-card p-5">
+        <h2 class="text-sm font-semibold mb-4" style="color:hsl(var(--foreground))">Update Lead</h2>
+        <form method="POST" class="space-y-4">
+
+          <div>
+            <label class="block text-xs font-medium mb-1.5" style="color:hsl(var(--muted-foreground))">Pipeline Stage</label>
+            <select name="pipeline_stage" class="dk-input w-full text-sm">
+              {% for s in stages %}
+              <option value="{{ s }}" {% if (lead.pipeline_stage or 'new') == s %}selected{% endif %}>
+                {{ stage_labels.get(s, s|replace('_',' ')|title) }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium mb-1.5" style="color:hsl(var(--muted-foreground))">Assigned To</label>
+            <input type="text" name="assigned_to_name"
+                   value="{{ lead.assigned_to_name or '' }}"
+                   placeholder="e.g. Sarah"
+                   class="dk-input w-full text-sm">
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium mb-1.5" style="color:hsl(var(--muted-foreground))">Follow-Up Date</label>
+            <input type="date" name="follow_up_date"
+                   value="{{ lead.follow_up_date or '' }}"
+                   class="dk-input w-full text-sm">
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium mb-1.5" style="color:hsl(var(--muted-foreground))">Internal Notes</label>
+            <textarea name="notes" rows="4"
+                      class="dk-input w-full text-sm resize-y"
+                      placeholder="Next steps, context, call notes...">{{ lead.notes or '' }}</textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium mb-1.5" style="color:hsl(var(--muted-foreground))">Conversion Notes</label>
+            <textarea name="conversion_notes" rows="3"
+                      class="dk-input w-full text-sm resize-y"
+                      placeholder="Agreed plan, pricing discussed, onboarding scope...">{{ lead.conversion_notes or '' }}</textarea>
+          </div>
+
+          <button type="submit"
+                  class="w-full py-2.5 rounded-lg text-sm font-semibold text-white transition-opacity hover:opacity-80"
+                  style="background:hsl(var(--primary))">Save Changes</button>
+        </form>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="dk-card p-4">
+        <div class="text-[10px] font-bold uppercase tracking-widest mb-3" style="color:hsl(var(--muted-foreground))">Actions</div>
+        <div class="space-y-1">
+
+          <a href="mailto:{{ lead.email }}"
+             class="flex items-center gap-3 py-2.5 px-1 rounded-lg text-sm hover:opacity-70 transition-opacity">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                 style="background:hsla(210,70%,55%,0.12);border:1px solid hsla(210,70%,55%,0.2)">
+              <i class="fa-solid fa-envelope text-xs" style="color:hsl(210,70%,62%)"></i>
+            </div>
+            <span style="color:hsl(var(--foreground))">Send Email</span>
+          </a>
+
+          {% if is_conversion_ready %}
+          <a href="{{ url_for('organizations.new_org', name=lead.firm_name, lead_id=lead.id) }}"
+             class="flex items-center gap-3 py-2.5 px-1 rounded-lg text-sm hover:opacity-70 transition-opacity">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                 style="background:hsla(152,50%,34%,0.12);border:1px solid hsla(152,50%,34%,0.2)">
+              <i class="fa-solid fa-building-columns text-xs" style="color:hsl(152,55%,50%)"></i>
+            </div>
+            <span style="color:hsl(var(--foreground))">Create Organization from Lead</span>
+          </a>
+          {% else %}
+          <div class="flex items-center gap-3 py-2.5 px-1 rounded-lg text-sm opacity-40"
+               title="Advance to Qualified, Proposal Sent, or Onboarding to unlock">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                 style="background:hsl(var(--muted));border:1px solid hsl(var(--border))">
+              <i class="fa-solid fa-building-columns text-xs" style="color:hsl(var(--muted-foreground))"></i>
+            </div>
+            <div>
+              <div style="color:hsl(var(--muted-foreground))">Create Organization</div>
+              <div class="text-[10px]" style="color:hsl(var(--muted-foreground))">Requires Qualified or later</div>
+            </div>
+          </div>
+          {% endif %}
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,118 @@
+{% extends "base.html" %}{% set active_nav="trash" %}
+{% block title %}{{ _('Trash') }} — OSSERVA OFFICE{% endblock %}
+{% block content %}
+<div class="max-w-5xl">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+    <div>
+      <h1 class="text-2xl font-bold">{{ _('Trash') }}</h1>
+      <p class="text-sm text-[hsl(var(--muted-foreground))] mt-0.5">{{ _('Items are auto-deleted after 30 days') }}</p>
+    </div>
+    {% if current_user.role in ('admin', 'owner', 'super_admin') and (trashed_docs or trashed_gmail) %}
+    <form method="POST" action="{{ url_for('trash.empty_all') }}" onsubmit="return confirm('Permanently delete ALL trashed items? This cannot be undone.')">
+      <button type="submit" class="inline-flex items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
+        <i class="fa-solid fa-trash-can text-xs"></i> {{ _('Empty Trash') }}
+      </button>
+    </form>
+    {% endif %}
+  </div>
+
+  <!-- Tabs -->
+  <div class="flex gap-1 mb-5 border-b border-[hsl(var(--border))]">
+    <a href="{{ url_for('trash.index', tab='documents') }}"
+       class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors
+         {% if tab == 'documents' %}border-slate-800 text-[hsl(var(--foreground))]{% else %}border-transparent text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--card-foreground))]{% endif %}">
+      {{ _('Documents') }} ({{ trashed_docs|length }})
+    </a>
+    {% if current_user.role in ('admin', 'owner', 'super_admin') %}
+    <a href="{{ url_for('trash.index', tab='gmail') }}"
+       class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors
+         {% if tab == 'gmail' %}border-slate-800 text-[hsl(var(--foreground))]{% else %}border-transparent text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--card-foreground))]{% endif %}">
+      {{ _('Emails') }} ({{ trashed_gmail|length }})
+    </a>
+    {% endif %}
+  </div>
+
+  {% if tab == 'documents' %}
+  <!-- Documents tab -->
+  <div class="space-y-2">
+    {% for doc in trashed_docs %}
+    <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-4 flex items-center gap-4 opacity-80">
+      <div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0">
+        <i class="fa-solid fa-file text-[hsl(var(--muted-foreground))]"></i>
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="font-medium text-sm truncate text-[hsl(var(--muted-foreground))] line-through">{{ doc.original_filename }}</div>
+        <div class="text-xs text-[hsl(var(--muted-foreground))]">
+          {{ format_size(doc.file_size) }} · {{ doc.uploader_name or _('Unknown') }}
+        </div>
+        <div class="text-xs text-rose-400 mt-0.5">
+          <i class="fa-solid fa-trash text-[9px] mr-0.5"></i>
+          {{ _('Trashed') }} {{ format_dt(doc.trashed_at, '%b %d, %Y %H:%M') }}
+          {% if doc.trashed_by_name %} {{ _('by') }} {{ doc.trashed_by_name }}{% endif %}
+        </div>
+      </div>
+      <div class="flex items-center gap-2 flex-shrink-0">
+        <!-- Restore -->
+        <form method="POST" action="{{ url_for('trash.restore_doc', doc_id=doc.id) }}">
+          <button type="submit" class="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 px-3 py-2 rounded-lg transition-colors">
+            <i class="fa-solid fa-rotate-left text-[10px]"></i> {{ _('Restore') }}
+          </button>
+        </form>
+        {% if current_user.role in ('admin', 'owner', 'super_admin') %}
+        <!-- Purge -->
+        <form method="POST" action="{{ url_for('trash.purge_doc', doc_id=doc.id) }}" onsubmit="return confirm('Permanently delete? Cannot be undone.')">
+          <button type="submit" class="inline-flex items-center gap-1.5 text-xs font-medium text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-3 py-2 rounded-lg transition-colors">
+            <i class="fa-solid fa-fire text-[10px]"></i> {{ _('Delete') }}
+          </button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+    {% else %}
+    <div class="dk-card rounded-xl border border-[hsl(var(--border))] p-12 text-center">
+      <i class="fa-solid fa-trash-can text-slate-200 text-3xl mb-3"></i>
+      <p class="text-sm text-[hsl(var(--muted-foreground))]">{{ _('No trashed documents') }}</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% elif tab == 'gmail' %}
+  <!-- Gmail tab -->
+  <div class="space-y-2">
+    {% for msg in trashed_gmail %}
+    <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-4 flex items-center gap-4 opacity-80">
+      <div class="w-9 h-9 bg-slate-200 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold text-[hsl(var(--muted-foreground))]">
+        {% if msg.from_name %}{{ msg.from_name[:1].upper() }}{% else %}<i class="fa-solid fa-envelope text-xs"></i>{% endif %}
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="font-medium text-sm truncate text-[hsl(var(--muted-foreground))] line-through">{{ msg.subject or _('(No subject)') }}</div>
+        <div class="text-xs text-[hsl(var(--muted-foreground))]">{{ msg.from_name or msg.from_email or _('Unknown') }} · {{ format_dt(msg.received_at, '%b %d, %Y') }}</div>
+        <div class="text-xs text-rose-400 mt-0.5">
+          <i class="fa-solid fa-trash text-[9px] mr-0.5"></i>
+          {{ _('Trashed') }} {{ format_dt(msg.trashed_at, '%b %d, %Y %H:%M') }}
+          {% if msg.trashed_by_name %} {{ _('by') }} {{ msg.trashed_by_name }}{% endif %}
+        </div>
+      </div>
+      <div class="flex items-center gap-2 flex-shrink-0">
+        <form method="POST" action="{{ url_for('trash.restore_gmail', local_id=msg.id) }}">
+          <button type="submit" class="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 px-3 py-2 rounded-lg transition-colors">
+            <i class="fa-solid fa-rotate-left text-[10px]"></i> {{ _('Restore') }}
+          </button>
+        </form>
+        <form method="POST" action="{{ url_for('trash.purge_gmail', local_id=msg.id) }}" onsubmit="return confirm('Permanently delete? Cannot be undone.')">
+          <button type="submit" class="inline-flex items-center gap-1.5 text-xs font-medium text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-3 py-2 rounded-lg transition-colors">
+            <i class="fa-solid fa-fire text-[10px]"></i> {{ _('Delete') }}
+          </button>
+        </form>
+      </div>
+    </div>
+    {% else %}
+    <div class="dk-card rounded-xl border border-[hsl(var(--border))] p-12 text-center">
+      <i class="fa-solid fa-envelope-open text-slate-200 text-3xl mb-3"></i>
+      <p class="text-sm text-[hsl(var(--muted-foreground))]">{{ _('No trashed emails') }}</p>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

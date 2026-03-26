@@ -1,0 +1,326 @@
+{% extends "public/_base_public.html" %}
+{% set active_pub = "contact" %}
+{% block title %}Request Demo — OSSERVA OFFICE{% endblock %}
+
+{% block content %}
+
+{% if submitted %}
+<!-- ── Confirmation state ─────────────────────────────────────────────── -->
+<div class="max-w-xl mx-auto text-center py-16 sm:py-24">
+  <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-6"
+       style="background:hsla(152,55%,38%,0.15);border:1px solid hsla(152,55%,38%,0.25)">
+    <i class="fa-solid fa-circle-check text-xl" style="color:hsl(152,55%,50%)"></i>
+  </div>
+  <h1 class="font-display font-bold text-2xl sm:text-3xl mb-3"
+      style="color:hsl(var(--foreground))">You are on the list</h1>
+  <p class="text-base leading-relaxed mb-2" style="color:hsl(var(--muted-foreground))">
+    Your request has been received. A member of our team will review your
+    submission and reach out within two business days.
+  </p>
+  <p class="text-sm leading-relaxed mb-8" style="color:hsl(var(--muted-foreground))">
+    If your inquiry is time-sensitive, you can reply directly to our confirmation
+    email or use the contact details we send you.
+  </p>
+  <div class="flex flex-col xs:flex-row gap-3 justify-center">
+    <a href="{{ url_for('auth.login') }}"
+       class="inline-flex items-center justify-center gap-2 text-sm font-semibold px-5 py-3 rounded-lg transition-opacity hover:opacity-90"
+       style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))">
+      Sign In to OSSERVA
+    </a>
+    <a href="{{ url_for('public.about') }}"
+       class="inline-flex items-center justify-center gap-2 text-sm font-medium px-5 py-3 rounded-lg border transition-colors hover:opacity-80"
+       style="border-color:hsl(var(--border));color:hsl(var(--muted-foreground))">
+      Learn more about the platform
+    </a>
+  </div>
+</div>
+
+{% else %}
+<!-- ── Normal page state ──────────────────────────────────────────────── -->
+
+<!-- Page header -->
+<div class="mb-10 sm:mb-12">
+  <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-semibold tracking-widest uppercase mb-4"
+       style="background:hsl(var(--muted));border-color:hsl(var(--border));color:hsl(var(--muted-foreground))">
+    Implementation and Advisory
+  </div>
+  <h1 class="font-display font-bold leading-tight mb-3"
+      style="font-size:clamp(1.75rem,3.5vw,2.5rem);color:hsl(var(--foreground))">
+    Request a Demo or<br class="hidden sm:inline"> Contact Sales
+  </h1>
+  <p class="text-base leading-relaxed max-w-2xl" style="color:hsl(var(--muted-foreground))">
+    OSSERVA OFFICE is not limited to a standard setup. We work with firms to configure
+    workflows, guide onboarding, and support the transition from existing processes
+    or platforms.
+  </p>
+</div>
+
+<!-- Two-column layout: positioning left, form right -->
+<div class="grid grid-cols-1 lg:grid-cols-[1fr_540px] gap-8 xl:gap-12 items-start">
+
+  <!-- Left column: service positioning -->
+  <div class="space-y-6">
+
+    <!-- Advisory services overview -->
+    <div class="dk-card rounded-xl p-6 sm:p-7">
+      <h2 class="font-display font-bold text-base mb-4" style="color:hsl(var(--foreground))">
+        Implementation and advisory services
+      </h2>
+      <p class="text-sm leading-relaxed mb-4" style="color:hsl(var(--muted-foreground))">
+        Whether a firm is migrating from manual processes, spreadsheets, email-based
+        workflows, or another platform, we can help evaluate the transition and define
+        a practical onboarding path.
+      </p>
+      <p class="text-sm leading-relaxed" style="color:hsl(var(--muted-foreground))">
+        Our team works directly with legal operations contacts to understand firm
+        structure, case volume, and team composition before recommending a configuration.
+      </p>
+    </div>
+
+    <!-- Service tiles -->
+    {% set services = [
+      (
+        'fa-sliders',
+        'Workflow Configuration',
+        'We configure case stages, assignment logic, calendar rules, and document
+         categorisation to match how your firm actually operates — not a generic template.'
+      ),
+      (
+        'fa-arrow-right-arrow-left',
+        'Data Transfer Consultation',
+        'Moving from another system, spreadsheets, or paper records? We provide
+         structured consultation to map, clean, and import your existing data
+         into OSSERVA OFFICE without disrupting active work.'
+      ),
+      (
+        'fa-route',
+        'Onboarding and Implementation Guidance',
+        'We walk through the platform with your team lead or administrator, define
+         user roles, configure access levels, and establish the initial operational
+         baseline for your firm.'
+      ),
+      (
+        'fa-wrench',
+        'Customization Services',
+        'For firms with specific workflow requirements, terminology preferences,
+         or operational structures that go beyond standard configuration, we offer
+         tailored adaptation services.'
+      ),
+      (
+        'fa-cloud-arrow-up',
+        'Deployment Support',
+        'We assist with cloud deployment, environment setup, domain configuration,
+         and production readiness for firms deploying a dedicated instance of the platform.'
+      ),
+    ] %}
+    {% for icon, title, desc in services %}
+    <div class="dk-card rounded-xl p-5">
+      <div class="flex items-start gap-4">
+        <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+             style="background:hsl(var(--muted))">
+          <i class="fa-solid {{ icon }} text-xs" style="color:hsl(var(--primary))"></i>
+        </div>
+        <div>
+          <p class="font-semibold text-sm mb-1.5" style="color:hsl(var(--foreground))">{{ title }}</p>
+          <p class="text-sm leading-relaxed" style="color:hsl(var(--muted-foreground))">{{ desc }}</p>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+
+    <!-- Trust note -->
+    <div class="rounded-xl border p-5"
+         style="background:hsl(var(--muted));border-color:hsl(var(--border))">
+      <p class="text-xs font-bold uppercase tracking-widest mb-2"
+         style="color:hsl(var(--muted-foreground))">Response time</p>
+      <p class="text-sm leading-relaxed" style="color:hsl(var(--muted-foreground))">
+        All enquiries are reviewed by a human. We respond to demo requests and
+        implementation enquiries within two business days.
+      </p>
+    </div>
+
+  </div>
+
+  <!-- Right column: form -->
+  <div class="lg:sticky lg:top-20">
+    <div class="dk-card rounded-xl p-6 sm:p-8">
+
+      <h2 class="font-display font-bold text-lg mb-1" style="color:hsl(var(--foreground))">
+        Get in touch
+      </h2>
+      <p class="text-sm mb-6" style="color:hsl(var(--muted-foreground))">
+        Tell us about your firm and what you are looking for. Fields marked
+        <span style="color:hsl(var(--primary))">*</span> are required.
+      </p>
+
+      <!-- Error alert -->
+      {% if form_error %}
+      <div class="flex items-start gap-2.5 px-4 py-3 rounded-lg border text-sm mb-5"
+           style="background:hsla(0,72%,51%,0.1);border-color:hsla(0,72%,51%,0.25);color:hsl(0,72%,58%)">
+        <i class="fa-solid fa-circle-exclamation flex-shrink-0 text-xs mt-0.5"></i>
+        <span>{{ form_error }}</span>
+      </div>
+      {% endif %}
+
+      <form method="POST" action="{{ url_for('public.contact') }}" class="space-y-4"
+            novalidate>
+        {# Source attribution — pre-filled from ?src= query param #}
+        <input type="hidden" name="source" value="{{ source_hint }}">
+
+        <!-- Full Name -->
+        <div>
+          <label class="block text-xs font-medium mb-1.5"
+                 style="color:hsl(var(--muted-foreground))">
+            Full Name <span style="color:hsl(var(--primary))">*</span>
+          </label>
+          <input type="text" name="full_name" required
+                 placeholder="Your full name"
+                 value="{{ request.form.get('full_name', '') }}"
+                 class="w-full px-3 py-3 text-sm focus:outline-none dk-input">
+        </div>
+
+        <!-- Firm / Organization -->
+        <div>
+          <label class="block text-xs font-medium mb-1.5"
+                 style="color:hsl(var(--muted-foreground))">
+            Law Firm / Organization <span style="color:hsl(var(--primary))">*</span>
+          </label>
+          <input type="text" name="firm_name" required
+                 placeholder="Your firm or organization name"
+                 value="{{ request.form.get('firm_name', '') }}"
+                 class="w-full px-3 py-3 text-sm focus:outline-none dk-input">
+        </div>
+
+        <!-- Email + Phone -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium mb-1.5"
+                   style="color:hsl(var(--muted-foreground))">
+              Email <span style="color:hsl(var(--primary))">*</span>
+            </label>
+            <input type="email" name="email" required
+                   placeholder="you@firm.com"
+                   value="{{ request.form.get('email', '') }}"
+                   class="w-full px-3 py-3 text-sm focus:outline-none dk-input">
+          </div>
+          <div>
+            <label class="block text-xs font-medium mb-1.5"
+                   style="color:hsl(var(--muted-foreground))">Phone</label>
+            <input type="tel" name="phone"
+                   placeholder="+1 000 000 0000"
+                   value="{{ request.form.get('phone', '') }}"
+                   class="w-full px-3 py-3 text-sm focus:outline-none dk-input">
+          </div>
+        </div>
+
+        <!-- Country + Team Size -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium mb-1.5"
+                   style="color:hsl(var(--muted-foreground))">Country</label>
+            <input type="text" name="country"
+                   placeholder="Country"
+                   value="{{ request.form.get('country', '') }}"
+                   class="w-full px-3 py-3 text-sm focus:outline-none dk-input">
+          </div>
+          <div>
+            <label class="block text-xs font-medium mb-1.5"
+                   style="color:hsl(var(--muted-foreground))">Team Size</label>
+            <select name="team_size" class="w-full px-3 py-3 text-sm focus:outline-none dk-input">
+              <option value="">Select size...</option>
+              {% for size in team_sizes %}
+              <option value="{{ size }}"
+                      {% if request.form.get('team_size') == size %}selected{% endif %}>
+                {{ size }} people
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <!-- Interest Type -->
+        <div>
+          <label class="block text-xs font-medium mb-2"
+                 style="color:hsl(var(--muted-foreground))">
+            I am interested in <span style="color:hsl(var(--primary))">*</span>
+          </label>
+          <div class="grid grid-cols-1 xs:grid-cols-2 gap-2">
+            {% set interest_labels = {
+              'Request Demo':              ('fa-display',         'Request Demo'),
+              'Pricing':                   ('fa-tag',             'Pricing'),
+              'Customization':             ('fa-sliders',         'Customization'),
+              'Data Transfer Consultation':('fa-arrow-right-arrow-left', 'Data Transfer'),
+              'Deployment Support':        ('fa-cloud-arrow-up',  'Deployment Support'),
+            } %}
+            {% for value, (icon, label) in interest_labels.items() %}
+            {% set checked = (request.form.get('interest_type') == value) %}
+            <label class="relative cursor-pointer">
+              <input type="radio" name="interest_type" value="{{ value }}"
+                     {% if checked %}checked{% endif %}
+                     required class="peer sr-only">
+              <div class="flex items-center gap-2.5 px-3 py-3 rounded-lg border text-sm
+                          transition-all cursor-pointer
+                          peer-checked:border-blue-500
+                          peer-checked:bg-blue-500/[0.08]"
+                   style="border-color:hsl(var(--border));color:hsl(var(--muted-foreground))">
+                <i class="fa-solid {{ icon }} text-xs flex-shrink-0"
+                   style="width:14px;text-align:center"></i>
+                <span class="font-medium text-xs">{{ label }}</span>
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Current software / workflow -->
+        <div>
+          <label class="block text-xs font-medium mb-1.5"
+                 style="color:hsl(var(--muted-foreground))">
+            Current workflow or software used
+          </label>
+          <input type="text" name="current_software"
+                 placeholder="e.g. spreadsheets, email, Clio, manual records"
+                 value="{{ request.form.get('current_software', '') }}"
+                 class="w-full px-3 py-3 text-sm focus:outline-none dk-input">
+        </div>
+
+        <!-- Message -->
+        <div>
+          <label class="block text-xs font-medium mb-1.5"
+                 style="color:hsl(var(--muted-foreground))">Message</label>
+          <textarea name="message" rows="4"
+                    placeholder="Describe your firm's situation, specific needs, or questions."
+                    class="w-full px-3 py-3 text-sm focus:outline-none dk-input resize-none">{{ request.form.get('message', '') }}</textarea>
+        </div>
+
+        <!-- Submit -->
+        <div class="flex flex-col-reverse xs:flex-row xs:justify-end gap-3 pt-1">
+          <a href="{{ url_for('auth.login') }}"
+             class="inline-flex items-center justify-center text-sm font-medium px-5 py-3 rounded-lg border transition-colors hover:opacity-80"
+             style="border-color:hsl(var(--border));color:hsl(var(--muted-foreground))">
+            Back to Sign In
+          </a>
+          <button type="submit"
+                  class="inline-flex items-center justify-center gap-2 text-sm font-semibold px-6 py-3 rounded-lg transition-opacity hover:opacity-90"
+                  style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))">
+            <i class="fa-solid fa-arrow-right text-xs"></i>
+            Request a Demo
+          </button>
+        </div>
+
+        <p class="text-[11px] text-center pt-1" style="color:hsl(var(--muted-foreground));opacity:0.7">
+          By submitting this form you agree to our
+          <a href="{{ url_for('public.privacy') }}"
+             class="underline underline-offset-2 hover:opacity-80"
+             style="color:hsl(var(--muted-foreground))">Privacy Policy</a>.
+          We will never share your information.
+        </p>
+
+      </form>
+    </div>
+  </div>
+
+</div>
+{% endif %}
+
+{% endblock %}

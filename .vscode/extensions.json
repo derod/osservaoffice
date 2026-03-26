@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "wholroyd.jinja",
+    "alexcvzz.vscode-sqlite",
+    "eamodio.gitlens",
+    "esbenp.prettier-vscode"
+  ]
+}

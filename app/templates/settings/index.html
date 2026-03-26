@@ -1,0 +1,308 @@
+{% extends "base.html" %}{% set active_nav="settings" %}
+{% block title %}Settings — OSSERVA OFFICE{% endblock %}
+{% block content %}
+<div class="w-full max-w-4xl">
+  <h1 class="text-xl sm:text-2xl font-bold mb-5 sm:mb-6" style="color:hsl(var(--foreground))">{{ _('Settings') }}</h1>
+  <div class="space-y-6">
+
+    <!-- Your Profile -->
+    <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-6">
+      <h3 class="font-semibold mb-4">{{ _('Your Profile') }}</h3>
+      <form method="POST" action="{{ url_for('settings.edit_profile') }}" class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">{{ _('Full Name') }}</label>
+          <input name="full_name" value="{{ current_user.full_name }}" required
+            class="w-full dk-input rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-2">
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+          <div>
+            <label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">{{ _('Job Title') }}</label>
+            <input name="job_title" value="{{ current_user.job_title or '' }}"
+              class="w-full dk-input rounded-lg px-3 py-2.5 text-sm focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">{{ _('Phone') }}</label>
+            <input name="phone" value="{{ current_user.phone or '' }}"
+              class="w-full dk-input rounded-lg px-3 py-2.5 text-sm focus:outline-none">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">{{ _('New Password') }} <span class="text-[hsl(var(--muted-foreground))]">({{ _('leave blank to keep current') }})</span></label>
+          <input type="password" name="new_password"
+            class="w-full dk-input rounded-lg px-3 py-2 text-sm focus:outline-none">
+        </div>
+
+        <!-- Language -->
+        <div>
+          <label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-2">{{ _('Interface Language') }}</label>
+          <div class="flex flex-wrap gap-2">
+            {% set current_lang = current_user.language or 'en' %}
+            {% set languages = [
+              ('en',  'English',   '🇬🇧'),
+              ('es',  'Spanish',   '🇪🇸'),
+              ('it',  'Italian',   '🇮🇹'),
+              ('ja',  'Japanese',  '🇯🇵'),
+              ('pt',  'Português', '🇧🇷'),
+            ] %}
+            {% for code, label, flag in languages %}
+            <label class="relative cursor-pointer">
+              <input type="radio" name="language" value="{{ code }}"
+                {% if current_lang == code %}checked{% endif %}
+                class="peer sr-only">
+              <div class="flex flex-col items-center gap-1.5 px-3 py-3 rounded-xl border-2 transition-all peer-checked:border-blue-500 border-[hsl(var(--border))] dk-card-hover">
+                <span class="text-2xl leading-none">{{ flag }}</span>
+                <span class="text-xs font-medium text-[hsl(var(--card-foreground))]">{{ label }}</span>
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <button type="submit"
+          class="inline-flex items-center gap-2 style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))" text-sm font-medium px-4 py-2 rounded-lg">
+          {{ _('Save Profile') }}
+        </button>
+      </form>
+    </div>
+
+    <!-- AI Integrations (admin/owner only) -->
+    {% if current_user.role in ('admin', 'owner', 'super_admin') %}
+    <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-6">
+      <h3 class="font-semibold mb-1 flex items-center gap-2">
+        <i class="fa-solid fa-robot text-indigo-500"></i> {{ _('AI Integrations') }}
+      </h3>
+      <p class="text-xs text-[hsl(var(--muted-foreground))] mb-4">{{ _('Used for Legal Consultant AI features') }}</p>
+      <form method="POST" action="{{ url_for('settings.save_ai_settings') }}" class="space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">OpenAI API Key</label>
+          {% if openai_key_set %}
+          <div class="flex items-center gap-3 mb-2">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium badge-success">
+              <i class="fa-solid fa-check-circle"></i> Key saved
+            </span>
+            <span class="text-xs text-[hsl(var(--muted-foreground))] font-mono">{{ openai_key_masked }}</span>
+          </div>
+          <input type="password" name="openai_api_key" placeholder="Paste new key to replace..."
+            class="w-full dk-input rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-2 font-mono">
+          {% else %}
+          <input type="password" name="openai_api_key" placeholder="sk-..."
+            class="w-full dk-input rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-2 font-mono" required>
+          <p class="text-xs text-[hsl(var(--muted-foreground))] mt-1">The key is stored encrypted in the database and never exposed in the UI.</p>
+          {% endif %}
+        </div>
+        <button type="submit"
+          class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
+          <i class="fa-solid fa-save"></i> Save API Key
+        </button>
+      </form>
+    </div>
+    {% endif %}
+
+    <!-- Gmail Integration (admin/owner only) -->
+    {% if current_user.role in ('admin', 'owner', 'super_admin') %}
+    <div id="gmail-section" class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-6">
+      <h3 class="font-semibold mb-1 flex items-center gap-2">
+        <i class="fa-brands fa-google text-red-500"></i> {{ _('Gmail Integration') }}
+      </h3>
+      <p class="text-xs text-[hsl(var(--muted-foreground))] mb-4">{{ _('Connect a Gmail inbox to automatically import incoming emails and PDF attachments.') }}</p>
+
+      <!-- Status -->
+      <div class="flex items-center gap-3 mb-4">
+        {% if gmail_configured and gmail_has_token %}
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium badge-success">
+          <i class="fa-solid fa-check-circle"></i> {{ _('Configured') }}
+        </span>
+        {% elif gmail_configured %}
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium badge-warning">
+          <i class="fa-solid fa-triangle-exclamation"></i> {{ _('Token missing') }}
+        </span>
+        {% else %}
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-[hsl(var(--muted-foreground))]">
+          <i class="fa-solid fa-circle-xmark"></i> {{ _('Not configured') }}
+        </span>
+        {% endif %}
+        {% if gmail_enabled %}
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium badge-info">
+          <i class="fa-solid fa-toggle-on"></i> {{ _('Enabled') }}
+        </span>
+        {% endif %}
+      </div>
+
+      <!-- Credential file info -->
+      <div class="text-xs text-[hsl(var(--muted-foreground))] mb-4 space-y-1">
+        <div class="flex items-center gap-2">
+          <span class="font-medium w-28">{{ _('Credentials') }}:</span>
+          <code class="text-[11px] style="background:hsl(var(--muted))" px-1.5 py-0.5 rounded font-mono">{{ gmail_creds_path }}</code>
+          {% if gmail_configured %}
+          <i class="fa-solid fa-check text-emerald-500 text-[10px]"></i>
+          {% else %}
+          <i class="fa-solid fa-xmark text-rose-400 text-[10px]"></i>
+          {% endif %}
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="font-medium w-28">{{ _('Token') }}:</span>
+          <code class="text-[11px] style="background:hsl(var(--muted))" px-1.5 py-0.5 rounded font-mono">{{ gmail_token_path }}</code>
+          {% if gmail_has_token %}
+          <i class="fa-solid fa-check text-emerald-500 text-[10px]"></i>
+          {% else %}
+          <i class="fa-solid fa-xmark text-rose-400 text-[10px]"></i>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Upload credentials -->
+      <form method="POST" action="{{ url_for('settings.upload_gmail_credentials') }}" enctype="multipart/form-data" class="space-y-3 mb-4 border-t border-[hsl(var(--border))] pt-4">
+        <div>
+          <label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">{{ _('Upload credentials.json') }}</label>
+          <input type="file" name="credentials_file" accept=".json"
+            class="w-full text-sm text-[hsl(var(--muted-foreground))] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-slate-100 file:text-[hsl(var(--card-foreground))] hover:file:bg-slate-200">
+          <p class="text-[11px] text-[hsl(var(--muted-foreground))] mt-1">{{ _('Google Cloud OAuth client credentials JSON file.') }}</p>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">{{ _('Upload token.json') }} <span class="text-[hsl(var(--muted-foreground))]">({{ _('optional') }})</span></label>
+          <input type="file" name="token_file" accept=".json"
+            class="w-full text-sm text-[hsl(var(--muted-foreground))] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-slate-100 file:text-[hsl(var(--card-foreground))] hover:file:bg-slate-200">
+        </div>
+        <button type="submit"
+          class="inline-flex items-center gap-2 style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))" text-sm font-medium px-4 py-2 rounded-lg">
+          <i class="fa-solid fa-upload text-xs"></i> {{ _('Upload Files') }}
+        </button>
+      </form>
+
+      <!-- Toggles -->
+      <form method="POST" action="{{ url_for('settings.save_gmail_settings') }}" class="space-y-3 border-t border-[hsl(var(--border))] pt-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <label class="text-sm font-medium text-[hsl(var(--card-foreground))]">{{ _('Enable Gmail Integration') }}</label>
+            <p class="text-[11px] text-[hsl(var(--muted-foreground))]">{{ _('Allow syncing emails from Gmail.') }}</p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" name="gmail_enabled" value="1" {% if gmail_enabled %}checked{% endif %} class="sr-only peer">
+            <div class="w-10 h-5 bg-slate-200 peer-checked:bg-emerald-500 rounded-full peer-focus:ring-2 peer-focus:ring-slate-300 transition-colors after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:dk-card after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5"></div>
+          </label>
+        </div>
+        <div class="flex items-center justify-between">
+          <div>
+            <label class="text-sm font-medium text-[hsl(var(--card-foreground))]">{{ _('Auto-create clients') }}</label>
+            <p class="text-[11px] text-[hsl(var(--muted-foreground))]">{{ _('Automatically create client records from unmatched senders.') }}</p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" name="gmail_auto_create_clients" value="1" {% if gmail_auto_create %}checked{% endif %} class="sr-only peer">
+            <div class="w-10 h-5 bg-slate-200 peer-checked:bg-emerald-500 rounded-full peer-focus:ring-2 peer-focus:ring-slate-300 transition-colors after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:dk-card after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-5"></div>
+          </label>
+        </div>
+        <button type="submit"
+          class="inline-flex items-center gap-2 style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))" text-sm font-medium px-4 py-2 rounded-lg">
+          <i class="fa-solid fa-save text-xs"></i> {{ _('Save Gmail Settings') }}
+        </button>
+      </form>
+
+      <!-- Test & Sync buttons -->
+      {% if gmail_configured %}
+      <div class="flex flex-col xs:flex-row items-stretch xs:items-center gap-3 border-t border-[hsl(var(--border))] pt-4 mt-4">
+        <form method="POST" action="{{ url_for('settings.test_gmail_connection') }}">
+          <button type="submit"
+            class="inline-flex items-center gap-2 border border-slate-300 text-[hsl(var(--muted-foreground))] dk-card-hover text-sm font-medium px-4 py-2 rounded-lg">
+            <i class="fa-solid fa-plug text-xs"></i> {{ _('Test Connection') }}
+          </button>
+        </form>
+        {% if gmail_enabled %}
+        <form method="POST" action="{{ url_for('gmail_inbox.sync') }}">
+          <button type="submit"
+            class="inline-flex items-center gap-2 border border-blue-300 text-blue-600 hover:bg-blue-50 text-sm font-medium px-4 py-2 rounded-lg">
+            <i class="fa-solid fa-rotate text-xs"></i> {{ _('Sync Recent Emails') }}
+          </button>
+        </form>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- User Management (admin only) -->
+    {% if current_user.role in ('admin', 'owner', 'super_admin') %}
+    <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-4 sm:p-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <h3 class="font-semibold" style="color:hsl(var(--foreground))">{{ _('User Management') }}</h3>
+        <a href="{{ url_for('settings.new_user') }}"
+          class="inline-flex items-center justify-center gap-2 text-xs font-medium px-3 py-2.5 rounded-lg w-full sm:w-auto" style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))">
+          <i class="fa-solid fa-plus"></i> {{ _('New User') }}
+        </a>
+      </div>
+      {% set lang_labels = {'en': '🇬🇧 English', 'es': '🇪🇸 Spanish', 'it': '🇮🇹 Italian', 'ja': '🇯🇵 Japanese', 'pt': '🇧🇷 Português'} %}
+      <!-- Desktop table -->
+      <div class="hidden sm:block overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="border-b border-[hsl(var(--border))]">
+            <tr class="text-left text-xs" style="color:hsl(var(--muted-foreground))">
+              <th class="py-2 px-3">{{ _('Name') }}</th>
+              <th class="py-2 px-3">{{ _('Email') }}</th>
+              <th class="py-2 px-3">{{ _('Role') }}</th>
+              <th class="py-2 px-3">{{ _('Language') }}</th>
+              <th class="py-2 px-3">{{ _('Status') }}</th>
+              <th class="py-2 px-3"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in users %}
+            <tr class="border-b dk-card-hover" style="border-color:hsl(var(--border))">
+              <td class="py-3 px-3">
+                <div class="flex items-center gap-2">
+                  <div class="avatar-initials w-6 h-6 text-xs" style="background-color:{{ u.avatar_color }}">{{ get_initials(u.full_name) }}</div>
+                  <span class="font-medium" style="color:hsl(var(--foreground))">{{ u.full_name }}</span>
+                </div>
+              </td>
+              <td class="py-3 px-3" style="color:hsl(var(--muted-foreground))">{{ u.email }}</td>
+              <td class="py-3 px-3">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
+                  {% if u.role=='super_admin' %}badge-danger{% elif u.role in ('owner','admin') %}badge-info{% else %}bg-slate-100 text-[hsl(var(--muted-foreground))]{% endif %}">
+                  {% if u.role == 'super_admin' %}Super Admin{% else %}{{ u.role.title() }}{% endif %}
+                </span>
+              </td>
+              <td class="py-3 px-3 text-xs" style="color:hsl(var(--muted-foreground))">{{ lang_labels.get(u.language or 'en', '🇬🇧 English') }}</td>
+              <td class="py-3 px-3">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs {% if u.is_active %}badge-success{% else %}bg-slate-100 text-[hsl(var(--muted-foreground))]{% endif %}">
+                  {% if u.is_active %}{{ _('Active') }}{% else %}{{ _('Inactive') }}{% endif %}
+                </span>
+              </td>
+              <td class="py-3 px-3">
+                <a href="{{ url_for('settings.edit_user', user_id=u.id) }}" class="p-1.5 rounded hover:opacity-70" style="color:hsl(var(--muted-foreground))">
+                  <i class="fa-solid fa-pen-to-square text-xs"></i>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <!-- Mobile cards -->
+      <div class="sm:hidden space-y-3">
+        {% for u in users %}
+        <div class="flex items-start justify-between p-3 rounded-lg" style="background:hsl(var(--muted));border:1px solid hsl(var(--border))">
+          <div class="flex items-center gap-3 min-w-0 flex-1">
+            <div class="avatar-initials w-9 h-9 text-xs flex-shrink-0" style="background-color:{{ u.avatar_color }}">{{ get_initials(u.full_name) }}</div>
+            <div class="min-w-0">
+              <div class="font-medium text-sm truncate" style="color:hsl(var(--foreground))">{{ u.full_name }}</div>
+              <div class="text-xs truncate" style="color:hsl(var(--muted-foreground))">{{ u.email }}</div>
+              <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium {% if u.role=='super_admin' %}badge-danger{% elif u.role in ('owner','admin') %}badge-info{% else %}bg-slate-100 text-[hsl(var(--muted-foreground))]{% endif %}">
+                  {% if u.role == 'super_admin' %}Super Admin{% else %}{{ u.role.title() }}{% endif %}
+                </span>
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] {% if u.is_active %}badge-success{% else %}bg-slate-100 text-[hsl(var(--muted-foreground))]{% endif %}">
+                  {% if u.is_active %}{{ _('Active') }}{% else %}{{ _('Inactive') }}{% endif %}
+                </span>
+              </div>
+            </div>
+          </div>
+          <a href="{{ url_for('settings.edit_user', user_id=u.id) }}" class="p-2 rounded-lg flex-shrink-0 min-w-[36px] min-h-[36px] flex items-center justify-center hover:opacity-70" style="color:hsl(var(--muted-foreground))">
+            <i class="fa-solid fa-pen-to-square text-sm"></i>
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

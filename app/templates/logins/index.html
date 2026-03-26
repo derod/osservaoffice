@@ -1,0 +1,295 @@
+{% extends "base.html" %}{% set active_nav="logins" %}
+{% block title %}Log In Dashboard — OSSERVA OFFICE{% endblock %}
+
+{% macro status_badge(s) %}
+  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
+    {% if s == 'on_time' %}badge-success
+    {% elif s == 'late' %}badge-warning
+    {% elif s == 'exception' %}badge-danger
+    {% else %}bg-slate-100 text-[hsl(var(--muted-foreground))]{% endif %}">
+    {% if s == 'on_time' %}On Time
+    {% elif s == 'late' %}Late
+    {% elif s == 'exception' %}Exception
+    {% else %}—{% endif %}
+  </span>
+{% endmacro %}
+
+{% block content %}
+<div class="max-w-7xl space-y-6">
+
+  <!-- ── Header ── -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+    <div>
+      <h1 class="text-2xl font-bold tracking-tight">Log In Dashboard</h1>
+      <p class="text-sm text-[hsl(var(--muted-foreground))] mt-0.5">
+        Week of {{ week_start.strftime('%b %d, %Y') }} &nbsp;·&nbsp; {{ employee_data|length }} employees
+      </p>
+    </div>
+    <span class="text-xs text-[hsl(var(--muted-foreground))]">Check-in data blends real entries with illustrative mock data.</span>
+  </div>
+
+  <!-- ── Employee Summary Cards ── -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+    {% for emp in employee_data %}
+    {% set u = emp.user %}
+    <div class="dk-card rounded-xl border {% if emp.at_risk %}border-rose-200{% else %}border-[hsl(var(--border))]{% endif %} shadow-sm p-5 relative">
+      {% if emp.at_risk %}
+      <span class="absolute top-3 right-3 inline-flex items-center gap-1 text-xs font-medium text-rose-600">
+        <i class="fa-solid fa-triangle-exclamation text-[10px]"></i> At Risk
+      </span>
+      {% endif %}
+
+      <!-- Employee header -->
+      <div class="flex items-center gap-3 mb-4">
+        <div class="avatar-initials w-10 h-10 text-sm flex-shrink-0" style="background-color:{{ u.avatar_color }}">
+          {{ get_initials(u.full_name) }}
+        </div>
+        <div class="min-w-0">
+          <div class="font-semibold text-sm truncate">{{ u.full_name }}</div>
+          <div class="text-xs text-[hsl(var(--muted-foreground))]">{{ u.job_title or u.role }}</div>
+        </div>
+      </div>
+
+      <!-- KPI row -->
+      <div class="grid grid-cols-3 gap-2 mb-4">
+        <div class="text-center">
+          <div class="text-lg font-bold text-[hsl(var(--foreground))]">{{ emp.week_hours }}h</div>
+          <div class="text-[10px] text-[hsl(var(--muted-foreground))] uppercase tracking-wide">This Week</div>
+        </div>
+        <div class="text-center border-x border-[hsl(var(--border))]">
+          <div class="text-lg font-bold text-[hsl(var(--foreground))]">{{ emp.on_time }}/{{ emp.total_checkins }}</div>
+          <div class="text-[10px] text-[hsl(var(--muted-foreground))] uppercase tracking-wide">On-Time</div>
+        </div>
+        <div class="text-center">
+          <div class="text-lg font-bold {% if emp.late >= 2 %}text-amber-600{% else %}text-[hsl(var(--foreground))]{% endif %}">{{ emp.late }}</div>
+          <div class="text-[10px] text-[hsl(var(--muted-foreground))] uppercase tracking-wide">Late</div>
+        </div>
+      </div>
+
+      <!-- Hours bar -->
+      {% set max_h = max_hours if max_hours > 0 else 1 %}
+      {% set bar_pct = (emp.week_hours / max_h * 100) | round | int %}
+      <div class="mb-3">
+        <div class="flex justify-between text-[10px] text-[hsl(var(--muted-foreground))] mb-1">
+          <span>Hours</span><span>{{ emp.week_hours }}h / {{ max_h }}h max</span>
+        </div>
+        <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
+          <div class="h-full rounded-full transition-all
+            {% if emp.week_hours > 44 %}bg-rose-500
+            {% elif emp.week_hours > 38 %}bg-amber-400
+            {% else %}bg-indigo-500{% endif %}"
+            style="width:{{ bar_pct }}%"></div>
+        </div>
+      </div>
+
+      <!-- Last check-in -->
+      <div class="flex items-center justify-between text-xs text-[hsl(var(--muted-foreground))] mb-3">
+        <span>Last check-in</span>
+        <span class="font-medium">
+          {% if emp.last_checkin %}
+            {{ format_dt(emp.last_checkin) }} {{ format_time(emp.last_checkin) }}
+          {% else %}—{% endif %}
+        </span>
+      </div>
+      {% if emp.last_checkin_status %}
+      <div class="mb-3">{{ status_badge(emp.last_checkin_status) }}</div>
+      {% endif %}
+
+      <!-- Cost row -->
+      {% if emp.hourly_rate and emp.hourly_rate > 0 %}
+      <div class="text-xs text-[hsl(var(--muted-foreground))] style="background:hsl(var(--muted))" rounded-lg px-3 py-2 flex justify-between mb-3">
+        <span>${{ "%.0f"|format(emp.hourly_rate) }}/h &times; {{ emp.week_hours }}h</span>
+        <span class="font-semibold text-[hsl(var(--card-foreground))]">${{ "{:,.0f}".format(emp.week_cost) }} / wk</span>
+      </div>
+      {% else %}
+      <!-- Set rate inline -->
+      <form method="POST" action="{{ url_for('logins.set_rate', user_id=u.id) }}"
+            class="flex gap-2 items-center mb-3">
+        <input type="number" name="hourly_rate" min="0" step="1" placeholder="Rate $/h"
+          class="flex-1 text-xs border border-[hsl(var(--border))] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-200">
+        <button type="submit"
+          class="text-xs bg-slate-700 hover:bg-slate-800 text-white px-2 py-1.5 rounded-lg transition-colors">
+          Set
+        </button>
+      </form>
+      {% endif %}
+
+      <!-- Cases focus -->
+      <div class="text-xs text-[hsl(var(--muted-foreground))] truncate mb-3">
+        <i class="fa-solid fa-briefcase text-indigo-400 mr-1"></i>{{ emp.cases_focus }}
+      </div>
+
+      <!-- Admin: Add / Erase check-in -->
+      <div class="border-t border-[hsl(var(--border))] pt-3">
+        <button type="button" onclick="this.nextElementSibling.classList.toggle('hidden')"
+          class="text-[10px] font-medium text-indigo-500 hover:text-indigo-700 flex items-center gap-1">
+          <i class="fa-solid fa-plus text-[8px]"></i> Add Check-In Entry
+        </button>
+        <form method="POST" action="{{ url_for('logins.add_checkin', user_id=u.id) }}"
+              class="hidden mt-2 space-y-2">
+          <div class="flex gap-2">
+            <select name="status" class="text-[11px] border border-[hsl(var(--border))] rounded px-2 py-1 dk-card flex-1">
+              <option value="on_time">On Time</option>
+              <option value="late">Late</option>
+              <option value="exception">Exception</option>
+            </select>
+            <input type="datetime-local" name="checked_in_at"
+              class="text-[11px] border border-[hsl(var(--border))] rounded px-2 py-1 flex-1">
+          </div>
+          <input type="text" name="notes" placeholder="Note (optional)"
+            class="w-full text-[11px] border border-[hsl(var(--border))] rounded px-2 py-1">
+          <button type="submit"
+            class="w-full text-[11px] bg-indigo-600 hover:bg-indigo-700 text-white rounded px-2 py-1.5 font-medium transition-colors">
+            <i class="fa-solid fa-plus text-[9px] mr-1"></i> Record Entry
+          </button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- ── Hours Comparison Chart ── -->
+  <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-5">
+    <h3 class="font-semibold text-sm mb-4 flex items-center gap-2">
+      <i class="fa-solid fa-chart-bar text-indigo-500"></i> Hours Comparison — This Week
+    </h3>
+    <div class="flex items-end gap-2 sm:gap-3 h-40 px-1 sm:px-2 overflow-x-auto">
+      {% for emp in employee_data %}
+      {% set pct = (emp.week_hours / max_hours * 100) | round | int if max_hours > 0 else 0 %}
+      <div class="flex-1 min-w-[40px] flex flex-col items-center gap-1.5">
+        <!-- Bar -->
+        <div class="w-full flex flex-col justify-end rounded-t-sm relative"
+             style="height:{{ pct }}%; min-height: {% if emp.week_hours > 0 %}8px{% else %}0{% endif %};
+                    background: {% if emp.week_hours > 44 %}#f87171{% elif emp.week_hours > 38 %}#fbbf24{% else %}#818cf8{% endif %};"
+             title="{{ emp.user.full_name }}: {{ emp.week_hours }}h">
+        </div>
+        <!-- Hours label -->
+        <div class="text-[10px] font-semibold text-[hsl(var(--muted-foreground))]">{{ emp.week_hours }}h</div>
+        <!-- Avatar -->
+        <div class="avatar-initials w-7 h-7 text-[9px]" style="background-color:{{ emp.user.avatar_color }}">
+          {{ get_initials(emp.user.full_name) }}
+        </div>
+        <!-- Name (truncated) -->
+        <div class="text-[9px] text-[hsl(var(--muted-foreground))] text-center leading-tight max-w-[60px] truncate hidden xs:block">
+          {{ emp.user.full_name.split()[0] }}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <!-- Legend -->
+    <div class="flex flex-wrap gap-3 sm:gap-4 mt-4 text-[10px] text-[hsl(var(--muted-foreground))]">
+      <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-rose-400 inline-block"></span>Overloaded (&gt;44h)</span>
+      <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-amber-400 inline-block"></span>Heavy (38-44h)</span>
+      <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-indigo-400 inline-block"></span>Normal</span>
+    </div>
+  </div>
+
+  <!-- ── Check-In Timeline (per employee) ── -->
+  <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-5">
+    <h3 class="font-semibold text-sm mb-5 flex items-center gap-2">
+      <i class="fa-solid fa-timeline text-teal-500"></i> Recent Check-In Timeline
+    </h3>
+    <div class="space-y-6">
+      {% for emp in employee_data %}
+      <div>
+        <div class="flex items-center gap-2 mb-2">
+          <div class="avatar-initials w-6 h-6 text-[9px]" style="background-color:{{ emp.user.avatar_color }}">
+            {{ get_initials(emp.user.full_name) }}
+          </div>
+          <span class="text-xs font-semibold text-[hsl(var(--card-foreground))]">{{ emp.user.full_name }}</span>
+          {% if emp.at_risk %}
+          <span class="text-[10px] text-rose-500 font-medium"><i class="fa-solid fa-triangle-exclamation text-[8px]"></i> At Risk</span>
+          {% endif %}
+        </div>
+        <div class="flex gap-1 flex-wrap">
+          {% for ci in emp.timeline_cis %}
+          <div class="flex flex-col items-center gap-0.5 group relative"
+               title="{{ ci.checked_in_at[:16] }}{% if ci.notes %} — {{ ci.notes }}{% endif %}{% if ci.get('source') == 'admin' %} [Admin]{% endif %}">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-semibold cursor-default
+              {% if ci.status == 'on_time' %}badge-success
+              {% elif ci.status == 'late' %}badge-warning
+              {% else %}badge-danger{% endif %}">
+              {{ ci.checked_in_at[8:10] }}/{{ ci.checked_in_at[5:7] }}
+            </div>
+            <div class="text-[8px] text-[hsl(var(--muted-foreground))]">{{ ci.checked_in_at[11:16] }}</div>
+            {% if ci.get('id') %}
+            <form method="POST" action="{{ url_for('logins.delete_checkin', checkin_id=ci.id) }}"
+                  class="absolute -top-1 -right-1 hidden group-hover:block"
+                  onsubmit="return confirm('Delete this check-in?')">
+              <button type="submit" class="w-4 h-4 rounded-full bg-rose-500 text-white flex items-center justify-center shadow-sm" title="Delete">
+                <i class="fa-solid fa-xmark text-[7px]"></i>
+              </button>
+            </form>
+            {% endif %}
+            {% if ci.get('source') == 'admin' %}
+            <div class="absolute -top-0.5 -left-0.5 w-2.5 h-2.5 rounded-full bg-indigo-400 border border-white" title="Admin entry"></div>
+            {% endif %}
+          </div>
+          {% else %}
+          <span class="text-xs text-[hsl(var(--muted-foreground))]">No entries yet</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ── Cost Per Employee (if rates set) ── -->
+  {% set rated_emps = employee_data | selectattr('hourly_rate') | list %}
+  {% if rated_emps %}
+  <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-5">
+    <h3 class="font-semibold text-sm mb-4 flex items-center gap-2">
+      <i class="fa-solid fa-dollar-sign text-emerald-500"></i> Weekly Cost by Employee
+    </h3>
+    <div class="space-y-3">
+      {% set max_cost = (rated_emps | map(attribute='week_cost') | max) or 1 %}
+      {% for emp in rated_emps %}
+      {% set cpct = (emp.week_cost / max_cost * 100) | round | int if max_cost > 0 else 0 %}
+      <div class="flex items-center gap-3">
+        <div class="w-28 text-xs text-[hsl(var(--muted-foreground))] truncate flex-shrink-0">{{ emp.user.full_name.split()[0] }}</div>
+        <div class="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+          <div class="h-full bg-emerald-500 rounded-full" style="width:{{ cpct }}%"></div>
+        </div>
+        <div class="w-20 text-right text-xs font-medium text-[hsl(var(--card-foreground))] flex-shrink-0">
+          ${{ "{:,.0f}".format(emp.week_cost) }}/wk
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ── AI Summary ── -->
+  <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-5">
+    <h3 class="font-semibold text-sm mb-1 flex items-center gap-2">
+      <i class="fa-solid fa-robot text-indigo-500"></i> AI Office Rhythm Summary
+    </h3>
+    <p class="text-xs text-[hsl(var(--muted-foreground))] mb-4">
+      Generated from check-in patterns, hours, and caseload using your stored OpenAI API key.
+    </p>
+
+    {% if ai_summary %}
+    <div class="prose prose-sm max-w-none text-[hsl(var(--card-foreground))] leading-relaxed space-y-3">
+      {% for para in ai_summary.split('\n\n') %}
+      {% set stripped = para.strip() %}
+      {% if stripped %}
+      <p class="text-sm">{{ stripped }}</p>
+      {% endif %}
+      {% endfor %}
+    </div>
+    {% elif ai_error %}
+    <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
+      <i class="fa-solid fa-circle-exclamation text-amber-500 mt-0.5 flex-shrink-0"></i>
+      <div class="text-xs text-amber-800">
+        <span class="font-semibold">AI summary unavailable.</span>
+        {{ ai_error }}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <p class="text-xs text-slate-300 text-center pb-2">
+    Login Dashboard — check-in data blends real DB records with illustrative mock data.
+  </p>
+</div>
+{% endblock %}

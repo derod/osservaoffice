@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if org else 'New' }} Organization — OSSERVA{% endblock %}
+{% set active_nav = "platform" %}
+
+{% block content %}
+<div class="page-container mx-auto px-4 sm:px-6 py-6 max-w-xl">
+
+  <div class="mb-6">
+    <a href="{{ url_for('organizations.list_orgs') }}" class="text-sm flex items-center gap-1.5 hover:opacity-70"
+       style="color:hsl(var(--muted-foreground))">
+      <i class="fa-solid fa-arrow-left text-xs"></i> Back to Organizations
+    </a>
+    <h1 class="text-xl font-bold font-display mt-3" style="color:hsl(var(--foreground))">
+      {{ 'Edit Organization' if org else 'New Organization' }}
+    </h1>
+  </div>
+
+  {% if error %}
+  <div class="mb-4 px-4 py-3 rounded-lg text-sm" style="background:hsl(var(--destructive)/0.1);color:hsl(var(--destructive))">
+    {{ error }}
+  </div>
+  {% endif %}
+
+  {% if prefill and prefill.get('lead_id') %}
+  <div class="mb-4 px-4 py-3 rounded-lg text-sm border"
+       style="background:hsla(152,50%,34%,0.08);border-color:hsla(152,50%,34%,0.2);color:hsl(152,55%,50%)">
+    Converting lead to organization. The lead will be marked as Closed Won on save.
+  </div>
+  {% endif %}
+
+  <form method="POST" class="dk-card p-5 space-y-4">
+    {# Lead conversion: carry lead_id so the route can advance the stage #}
+    {% if prefill and prefill.get('lead_id') %}
+    <input type="hidden" name="lead_id" value="{{ prefill.get('lead_id') }}">
+    {% endif %}
+    <div>
+      <label class="block text-sm font-medium mb-1.5" style="color:hsl(var(--foreground))">Organization Name</label>
+      <input type="text" name="name" required
+             value="{{ org.name if org else prefill.get('name', '') }}"
+             class="dk-input w-full" placeholder="e.g. Smith &amp; Partners LLP">
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1.5" style="color:hsl(var(--foreground))">Slug <span class="text-xs font-normal" style="color:hsl(var(--muted-foreground))">(unique identifier, lowercase)</span></label>
+      <input type="text" name="slug"
+             value="{{ org.slug if org else '' }}"
+             class="dk-input w-full" placeholder="e.g. smith-partners">
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium mb-1.5" style="color:hsl(var(--foreground))">Plan</label>
+        <select name="plan" class="dk-input w-full">
+          {% for p in ['trial','starter','professional','enterprise'] %}
+          <option value="{{ p }}" {% if org and org.plan == p %}selected{% endif %}>{{ p|title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1.5" style="color:hsl(var(--foreground))">Status</label>
+        <select name="status" class="dk-input w-full">
+          {% for s in ['active','suspended','cancelled'] %}
+          <option value="{{ s }}" {% if org and org.status == s %}selected{% endif %}>{{ s|title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <input type="checkbox" name="is_active" id="is_active" value="on"
+             {% if not org or org.is_active %}checked{% endif %}
+             class="w-4 h-4 rounded">
+      <label for="is_active" class="text-sm" style="color:hsl(var(--foreground))">Active (users can log in)</label>
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1.5" style="color:hsl(var(--foreground))">Trial Ends At <span class="text-xs font-normal" style="color:hsl(var(--muted-foreground))">(optional)</span></label>
+      <input type="date" name="trial_ends_at"
+             value="{{ (org.trial_ends_at or '')[:10] if org else '' }}"
+             class="dk-input w-full">
+    </div>
+    <div class="flex justify-end gap-3 pt-2">
+      <a href="{{ url_for('organizations.list_orgs') }}"
+         class="px-4 py-2.5 rounded-lg text-sm font-medium border transition-colors hover:opacity-70"
+         style="color:hsl(var(--foreground));border-color:hsl(var(--border))">Cancel</a>
+      <button type="submit"
+              class="px-5 py-2.5 rounded-lg text-sm font-semibold text-white transition-opacity hover:opacity-80"
+              style="background:hsl(var(--primary))">
+        {{ 'Save Changes' if org else 'Create Organization' }}
+      </button>
+    </div>
+  </form>
+
+</div>
+{% endblock %}

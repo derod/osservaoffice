@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>{% block title %}OSSERVA OFFICE{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pulse-grid.css') }}">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          screens: { 'xs': '480px' }
+        }
+      }
+    }
+  </script>
+  <script>
+    (function(){
+      try {
+        const t = localStorage.getItem('theme');
+        if (t === 'dark') document.documentElement.classList.add('dark');
+      } catch(e){}
+    })();
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .font-display { font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif; }
+
+    /* Public page prose */
+    .prose-pub h2 {
+      font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+      font-size: 1.125rem;
+      font-weight: 700;
+      color: hsl(var(--foreground));
+      margin-top: 2rem;
+      margin-bottom: 0.625rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid hsl(var(--border));
+    }
+    .prose-pub h3 {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: hsl(var(--foreground));
+      margin-top: 1.25rem;
+      margin-bottom: 0.375rem;
+    }
+    .prose-pub p {
+      font-size: 0.9375rem;
+      line-height: 1.75;
+      color: hsl(var(--muted-foreground));
+      margin-bottom: 0.875rem;
+    }
+    .prose-pub ul {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 0.875rem;
+    }
+    .prose-pub ul li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.625rem;
+      font-size: 0.9375rem;
+      line-height: 1.7;
+      color: hsl(var(--muted-foreground));
+      margin-bottom: 0.375rem;
+    }
+    .prose-pub ul li::before {
+      content: '';
+      display: inline-block;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: hsl(var(--primary));
+      flex-shrink: 0;
+      margin-top: 0.55rem;
+    }
+    .prose-pub a {
+      color: hsl(var(--primary));
+      text-decoration: none;
+    }
+    .prose-pub a:hover { text-decoration: underline; }
+
+    .pub-footer-link {
+      color: hsl(var(--muted-foreground));
+      font-size: 0.75rem;
+      transition: color 150ms;
+      text-decoration: none;
+    }
+    .pub-footer-link:hover { color: hsl(var(--foreground)); }
+
+    html { scroll-behavior: smooth; }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body class="min-h-screen bg-app transition-colors duration-200" style="color:hsl(var(--foreground))">
+
+<!-- Navbar -->
+<header class="sticky top-0 z-50 w-full border-b"
+        style="background:hsla(var(--card),0.92);border-color:hsl(var(--border));backdrop-filter:blur(12px)">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+    <a href="{{ url_for('auth.login') }}" class="flex items-center gap-2.5 flex-shrink-0">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+           style="background:hsl(var(--sidebar-primary))">
+        <i class="fa-solid fa-building text-white text-xs"></i>
+      </div>
+      <span class="font-display font-bold text-sm tracking-wide" style="color:hsl(var(--foreground))">OSSERVA</span>
+      <span class="hidden xs:inline text-xs font-medium tracking-widest uppercase"
+            style="color:hsl(var(--muted-foreground))">Office</span>
+    </a>
+
+    <nav class="hidden md:flex items-center gap-5">
+      <a href="{{ url_for('public.about') }}"
+         class="text-sm font-medium transition-colors hover:opacity-80 {% if active_pub == 'about' %}underline underline-offset-4{% endif %}"
+         style="color:hsl(var(--muted-foreground))">About</a>
+      <a href="{{ url_for('public.contact') }}"
+         class="text-sm font-medium transition-colors hover:opacity-80 {% if active_pub == 'contact' %}underline underline-offset-4{% endif %}"
+         style="color:hsl(var(--muted-foreground))">Contact</a>
+      <a href="{{ url_for('public.terms') }}"
+         class="text-sm font-medium transition-colors hover:opacity-80 {% if active_pub == 'terms' %}underline underline-offset-4{% endif %}"
+         style="color:hsl(var(--muted-foreground))">Terms</a>
+      <a href="{{ url_for('public.privacy') }}"
+         class="text-sm font-medium transition-colors hover:opacity-80 {% if active_pub == 'privacy' %}underline underline-offset-4{% endif %}"
+         style="color:hsl(var(--muted-foreground))">Privacy</a>
+    </nav>
+
+    <div class="flex items-center gap-2">
+      <button onclick="toggleTheme()" id="theme-btn"
+              class="p-2 rounded-lg transition-colors hover:opacity-70"
+              style="color:hsl(var(--muted-foreground))" title="Toggle theme">
+        <i id="theme-icon" class="fa-solid fa-moon text-sm"></i>
+      </button>
+      <a href="{{ url_for('auth.login') }}"
+         class="inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-lg transition-opacity hover:opacity-90"
+         style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))">
+        Sign In
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- Page content -->
+<main class="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+  {% block content %}{% endblock %}
+</main>
+
+<!-- Footer -->
+<footer class="border-t mt-16" style="border-color:hsl(var(--border))">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div class="flex items-center gap-2.5">
+        <div class="w-7 h-7 rounded-lg flex items-center justify-center"
+             style="background:hsl(var(--sidebar-primary))">
+          <i class="fa-solid fa-building text-white text-[10px]"></i>
+        </div>
+        <span class="font-display font-bold text-xs tracking-wide" style="color:hsl(var(--muted-foreground))">OSSERVA OFFICE</span>
+      </div>
+
+      <nav class="flex flex-wrap items-center gap-x-5 gap-y-2">
+        <a href="{{ url_for('auth.login') }}"    class="pub-footer-link">Sign In</a>
+        <a href="{{ url_for('public.about') }}"  class="pub-footer-link">About Us</a>
+        <a href="{{ url_for('public.contact') }}" class="pub-footer-link">Contact Sales</a>
+        <a href="{{ url_for('public.terms') }}"  class="pub-footer-link">Terms</a>
+        <a href="{{ url_for('public.privacy') }}" class="pub-footer-link">Privacy</a>
+      </nav>
+
+      <p class="text-[11px]" style="color:hsl(var(--muted-foreground));opacity:0.55">
+        &copy; {{ now().year }} OSSERVA OFFICE. All rights reserved.
+      </p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  function _updateThemeIcon() {
+    const icon = document.getElementById('theme-icon');
+    if (!icon) return;
+    icon.className = document.documentElement.classList.contains('dark')
+      ? 'fa-solid fa-sun text-sm'
+      : 'fa-solid fa-moon text-sm';
+  }
+  function toggleTheme() {
+    const isDark = document.documentElement.classList.toggle('dark');
+    try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch(e){}
+    _updateThemeIcon();
+  }
+  document.addEventListener('DOMContentLoaded', _updateThemeIcon);
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,93 @@
+╔══════════════════════════════════════════════════════════════╗
+║         OSERVA OFFICE - Windows Installation Guide          ║
+╔══════════════════════════════════════════════════════════════╗
+
+🚀 QUICK START (3 Steps):
+
+1. Double-click: setup.bat
+   (Installs Flask and creates database)
+
+2. Double-click: start_server.bat
+   (Starts the web server)
+
+3. Open browser: http://localhost:5000/auth/login
+
+
+🔑 LOGIN CREDENTIALS:
+
+   Admin:  elena@oserva.com / password123
+   Owner:  marco@oserva.com / password123
+   Staff:  luca@oserva.com / password123
+
+
+👥 CREATE NEW USERS:
+
+Method 1 - Via Web Interface (Recommended):
+   1. Login as Admin (elena@oserva.com)
+   2. Click "Settings" in left sidebar
+   3. Click "New User" button
+   4. Fill form and submit
+
+Method 2 - Via Script:
+   Double-click: create_user.bat
+   (Follow prompts to create user)
+
+
+📁 FILES INCLUDED:
+
+   setup.bat          - One-time setup (run first!)
+   start_server.bat   - Start the web server
+   create_user.bat    - Create users via command line
+   seed.py            - Database seeding script
+   run.py             - Main application
+   app/               - Application code
+
+
+⚠️ TROUBLESHOOTING:
+
+Problem: "Python is not recognized"
+Solution: Install Python from python.org
+         Check "Add Python to PATH" during install
+
+Problem: "pip is not recognized"  
+Solution: Reinstall Python with PATH enabled
+
+Problem: Port 5000 already in use
+Solution: Edit run.py, change port 5000 to 5001
+
+Problem: Can't create users via web interface
+Solution: Make sure you're logged in as Admin
+         (elena@oserva.com / password123)
+
+
+✅ FEATURES:
+
+• Dashboard with team overview
+• Case management (Kanban board)
+• Calendar (Day/Week/List views)
+• Employee directory
+• Availability timeline
+• Schedule requests
+• Document upload/download
+• Client management
+• User management (Admin only)
+• Role-based permissions
+
+
+🔐 ROLES:
+
+Owner - View all, approve requests (read-only on cases)
+Admin - Full access, can create users
+Staff - Limited access to assigned cases only
+
+
+📞 SUPPORT:
+
+All code is self-contained in the app/ folder.
+Database: oserva.db (SQLite, auto-created)
+No internet required after setup!
+
+
+═══════════════════════════════════════════════════════════════
+        Built with Flask • 100% Working • No Configuration
+═══════════════════════════════════════════════════════════════

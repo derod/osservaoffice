@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /c/Users/rodss/Desktop/OSERVA_OFFICE_MERGED -not -path */venv/* -not -path */__pycache__/* -type d)",
+      "Bash(python3 -c \":*)",
+      "Bash(venv/Scripts/pip install:*)",
+      "Bash(taskkill /F /IM python.exe)",
+      "Bash(taskkill /F /IM python3.exe)"
+    ]
+  }
+}

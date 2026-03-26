@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Organizations — OSSERVA{% endblock %}
+{% set active_nav = "platform" %}
+
+{% block content %}
+<div class="page-container mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+  <!-- Header -->
+  <div class="flex flex-col xs:flex-row xs:items-center gap-3 justify-between">
+    <div>
+      <div class="flex items-center gap-3 mb-1">
+        <a href="{{ url_for('organizations.platform_dashboard') }}"
+           class="text-sm hover:opacity-70 transition-opacity" style="color:hsl(var(--muted-foreground))">Platform</a>
+        <i class="fa-solid fa-chevron-right text-[10px]" style="color:hsl(var(--muted-foreground))"></i>
+        <span class="text-sm font-medium" style="color:hsl(var(--foreground))">Organizations</span>
+      </div>
+      <h1 class="text-xl font-bold font-display" style="color:hsl(var(--foreground))">Organizations</h1>
+      <p class="text-sm mt-0.5" style="color:hsl(var(--muted-foreground))">All tenant organizations on this platform.</p>
+    </div>
+    <a href="{{ url_for('organizations.new_org') }}"
+       class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white flex-shrink-0"
+       style="background:hsl(var(--primary))">
+      <i class="fa-solid fa-plus"></i> New Organization
+    </a>
+  </div>
+
+  <!-- Table -->
+  <div class="dk-card overflow-hidden">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b" style="border-color:hsl(var(--border))">
+          <th class="text-left px-4 py-3 font-semibold" style="color:hsl(var(--muted-foreground))">Name</th>
+          <th class="text-left px-4 py-3 font-semibold hidden sm:table-cell" style="color:hsl(var(--muted-foreground))">Plan</th>
+          <th class="text-left px-4 py-3 font-semibold hidden md:table-cell" style="color:hsl(var(--muted-foreground))">Users</th>
+          <th class="text-left px-4 py-3 font-semibold hidden md:table-cell" style="color:hsl(var(--muted-foreground))">Cases</th>
+          <th class="text-left px-4 py-3 font-semibold hidden lg:table-cell" style="color:hsl(var(--muted-foreground))">Created</th>
+          <th class="text-left px-4 py-3 font-semibold" style="color:hsl(var(--muted-foreground))">Status</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y" style="divide-color:hsl(var(--border))">
+        {% for org in organizations %}
+        <tr class="hover:bg-[hsl(var(--muted))/0.4] transition-colors">
+          <td class="px-4 py-3">
+            <div class="font-medium" style="color:hsl(var(--foreground))">{{ org.name }}</div>
+            {% if org.slug %}<div class="text-xs mt-0.5" style="color:hsl(var(--muted-foreground))">{{ org.slug }}</div>{% endif %}
+          </td>
+          <td class="px-4 py-3 hidden sm:table-cell">
+            <span class="badge badge-blue text-xs">{{ org.plan }}</span>
+          </td>
+          <td class="px-4 py-3 hidden md:table-cell" style="color:hsl(var(--foreground))">{{ org.user_count }}</td>
+          <td class="px-4 py-3 hidden md:table-cell" style="color:hsl(var(--foreground))">{{ org.case_count }}</td>
+          <td class="px-4 py-3 hidden lg:table-cell text-xs" style="color:hsl(var(--muted-foreground))">{{ format_dt(org.created_at) }}</td>
+          <td class="px-4 py-3">
+            {% if org.is_active %}
+            <span class="badge badge-green text-xs">Active</span>
+            {% else %}
+            <span class="badge text-xs" style="background:hsl(var(--muted));color:hsl(var(--muted-foreground))">Suspended</span>
+            {% endif %}
+          </td>
+          <td class="px-4 py-3">
+            <div class="flex items-center justify-end gap-2">
+              <a href="{{ url_for('organizations.edit_org', org_id=org.id) }}"
+                 class="text-xs font-medium px-3 py-1.5 rounded-md border transition-colors hover:opacity-70"
+                 style="color:hsl(var(--foreground));border-color:hsl(var(--border))">Edit</a>
+              <form method="POST" action="{{ url_for('organizations.toggle_org', org_id=org.id) }}">
+                <button type="submit"
+                  class="text-xs font-medium px-3 py-1.5 rounded-md border transition-colors hover:opacity-70"
+                  style="{% if org.is_active %}color:hsl(0,72%,55%);border-color:hsla(0,72%,55%,0.3);background:hsla(0,72%,51%,0.08){% else %}color:hsl(152,55%,52%);border-color:hsla(152,50%,34%,0.3);background:hsla(152,50%,34%,0.08){% endif %}"
+                  onclick="return confirm('{% if org.is_active %}Suspend this organization?{% else %}Activate this organization?{% endif %}')">
+                  {% if org.is_active %}Suspend{% else %}Activate{% endif %}
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="7" class="px-4 py-10 text-center text-sm" style="color:hsl(var(--muted-foreground))">No organizations found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% endblock %}

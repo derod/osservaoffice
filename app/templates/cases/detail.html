@@ -1,0 +1,548 @@
+{% extends "base.html" %}{% set active_nav="cases" %}
+{% block title %}{{ case.title }} — OSSERVA OFFICE{% endblock %}
+{% block content %}
+<div class="w-full max-w-5xl">
+  <div class="mb-5"><a href="{{ url_for('cases.board') }}" class="text-sm text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]">← Cases</a></div>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+    <div class="lg:col-span-2 space-y-4 sm:space-y-5">
+      <!-- Summary -->
+      <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-4 sm:p-6">
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
+          <div class="flex-1 min-w-0">
+            <h1 class="text-lg sm:text-xl font-bold">{{ case.title }}</h1>
+            <div class="flex flex-wrap gap-2 mt-2">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                {% if case.status=='open' %}badge-info{% elif case.status=='litigation' %}badge-warning{% elif case.status=='closed' %}bg-slate-100 text-[hsl(var(--muted-foreground))]{% else %}bg-slate-100 text-[hsl(var(--muted-foreground))]{% endif %}">
+                {{ {'open':'Open','litigation':'Litigation','closed':'Closed'}.get(case.status, case.status.replace('_',' ').title()) }}
+              </span>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                {% if case.priority=='low' %}badge-success{% elif case.priority=='medium' %}badge-warning{% elif case.priority=='high' %}badge-danger{% else %}badge badge-info{% endif %}">
+                {{ case.priority.title() }}
+              </span>
+              {% if case.client_name %}<span class="text-sm text-[hsl(var(--muted-foreground))]">{{ case.client_name }}</span>{% endif %}
+            </div>
+          </div>
+          {% if can_edit %}
+          <button onclick="document.getElementById('editModal').classList.remove('hidden')"
+            class="inline-flex items-center gap-2 dk-card dk-card-hover text-[hsl(var(--card-foreground))] text-xs font-medium px-3 py-2 rounded-lg border border-[hsl(var(--border))] self-start flex-shrink-0">
+            <i class="fa-solid fa-pen-to-square"></i> Edit
+          </button>
+          {% endif %}
+        </div>
+        {% if case.description %}<p class="text-sm text-[hsl(var(--muted-foreground))]">{{ case.description }}</p>{% endif %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 pt-4 border-t border-[hsl(var(--border))]">
+          <div><div class="text-xs text-[hsl(var(--muted-foreground))] mb-1">Created</div><div class="text-sm">{{ format_dt(case.created_at) }}</div></div>
+          <div><div class="text-xs text-[hsl(var(--muted-foreground))] mb-1">Due Date</div>
+            <div class="text-sm {% if case.due_date and is_overdue(case.due_date) and case.status != 'closed' %}text-rose-600 font-medium{% endif %}">
+              {{ format_dt(case.due_date) if case.due_date else '—' }}</div>
+          </div>
+          {% if case.court_name or case.case_number %}
+          <div><div class="text-xs text-[hsl(var(--muted-foreground))] mb-1">Court</div><div class="text-sm">{{ case.court_name or '—' }}</div></div>
+          <div><div class="text-xs text-[hsl(var(--muted-foreground))] mb-1">Case #</div><div class="text-sm font-mono">{{ case.case_number or '—' }}</div></div>
+          {% endif %}
+        </div>
+        <div class="mt-4 pt-4 border-t border-[hsl(var(--border))]">
+          <div class="text-xs text-[hsl(var(--muted-foreground))] mb-2">Assigned Staff</div>
+          <div class="flex flex-wrap gap-2">
+            {% for a in case.assignees %}
+            <div class="flex items-center gap-2 style="background:hsl(var(--muted))" rounded-lg px-3 py-1.5">
+              <div class="avatar-initials w-6 h-6 text-xs" style="background-color:{{ a.avatar_color }}">{{ get_initials(a.full_name) }}</div>
+              <span class="text-xs font-medium">{{ a.full_name }}</span>
+            </div>
+            {% else %}<span class="text-sm text-[hsl(var(--muted-foreground))]">No staff assigned</span>{% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Explanation Box -->
+      <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-4 sm:p-5">
+        <h3 class="text-sm font-semibold mb-4 flex items-center gap-2"><i class="fa-solid fa-lightbulb text-amber-400"></i> Case Overview</h3>
+        <div class="space-y-3">
+          {% for field, label in [('overview','Overview'),('current_step','Current Step'),('next_action','Next Action'),('blockers','Blockers')] %}
+          <div>
+            <div class="text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">{{ label }}</div>
+            <div class="text-sm text-[hsl(var(--card-foreground))] style="background:hsl(var(--muted))" rounded-lg p-3 min-h-[36px] break-words">{{ case[field] or '—' }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Tasks -->
+      <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-4 sm:p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-sm font-semibold flex items-center gap-2"><i class="fa-solid fa-list-check text-indigo-400"></i> Tasks</h3>
+          {% if can_edit %}
+          <button onclick="document.getElementById('taskModal').classList.remove('hidden')"
+            class="text-xs inline-flex items-center gap-1 dk-card dk-card-hover text-[hsl(var(--card-foreground))] font-medium px-3 py-1.5 rounded-lg border border-[hsl(var(--border))]">
+            <i class="fa-solid fa-plus"></i> Add
+          </button>
+          {% endif %}
+        </div>
+        <div class="space-y-2">
+          {% for task in tasks %}
+          <div class="flex items-center gap-3 p-3 rounded-lg {% if task.is_completed %}style="background:hsl(var(--muted))" opacity-60{% else %}dk-card-hover{% endif %}">
+            <form method="POST" action="{{ url_for('cases.toggle_task', case_id=case.id, task_id=task.id) }}">
+              <button type="submit" class="w-6 h-6 rounded border-2 flex items-center justify-center flex-shrink-0
+                {% if task.is_completed %}bg-emerald-500 border-emerald-500 text-white{% else %}border-slate-300 hover:border-emerald-400{% endif %}">
+                {% if task.is_completed %}<i class="fa-solid fa-check text-xs"></i>{% endif %}
+              </button>
+            </form>
+            <div class="flex-1 min-w-0">
+              <div class="text-sm truncate {% if task.is_completed %}line-through text-[hsl(var(--muted-foreground))]{% else %}text-[hsl(var(--card-foreground))]{% endif %}">{{ task.title }}</div>
+              {% if task.assignee_name %}<div class="text-xs text-[hsl(var(--muted-foreground))] truncate">{{ task.assignee_name }}</div>{% endif %}
+            </div>
+            <div class="text-xs text-[hsl(var(--muted-foreground))] flex-shrink-0">{% if task.due_date %}{{ format_dt(task.due_date, '%b %d') }}{% endif %}</div>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs flex-shrink-0
+              {% if task.priority=='high' %}badge-danger{% elif task.priority=='medium' %}badge-warning{% else %}badge-success{% endif %}">{{ task.priority.title() }}</span>
+          </div>
+          {% else %}<p class="text-sm text-[hsl(var(--muted-foreground))] text-center py-4">No tasks yet</p>{% endfor %}
+        </div>
+      </div>
+
+      <!-- Key Dates -->
+      <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-4 sm:p-5">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-sm font-semibold flex items-center gap-2"><i class="fa-solid fa-gavel text-rose-400"></i> Key Dates</h3>
+          {% if can_edit %}
+          <button onclick="document.getElementById('keyDateModal').classList.remove('hidden')"
+            class="text-xs inline-flex items-center gap-1 dk-card dk-card-hover text-[hsl(var(--card-foreground))] font-medium px-3 py-1.5 rounded-lg border border-[hsl(var(--border))]">
+            <i class="fa-solid fa-plus"></i> Add
+          </button>
+          {% endif %}
+        </div>
+        {% if key_dates %}
+        <!-- Desktop table -->
+        <div class="hidden sm:block overflow-x-auto">
+          <table class="w-full text-xs">
+            <thead>
+              <tr class="border-b border-[hsl(var(--border))]">
+                <th class="text-left font-medium text-[hsl(var(--muted-foreground))] pb-2 pr-3">Title</th>
+                <th class="text-left font-medium text-[hsl(var(--muted-foreground))] pb-2 pr-3">Type</th>
+                <th class="text-left font-medium text-[hsl(var(--muted-foreground))] pb-2 pr-3">Date</th>
+                <th class="text-left font-medium text-[hsl(var(--muted-foreground))] pb-2 pr-3">Time</th>
+                <th class="text-left font-medium text-[hsl(var(--muted-foreground))] pb-2 pr-3">Location</th>
+                {% if can_edit %}<th class="pb-2"></th>{% endif %}
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+              {% for kd in key_dates %}
+              {% set kd_type_labels = {'hearing':'Hearing','deadline':'Deadline','meeting':'Meeting'} %}
+              <tr class="dk-card-hover">
+                <td class="py-2.5 pr-3 font-medium text-[hsl(var(--card-foreground))]">{{ kd.title }}</td>
+                <td class="py-2.5 pr-3">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full font-medium
+                    {% if kd.description=='hearing' %}badge-danger{% elif kd.description=='deadline' %}badge-warning{% else %}badge-info{% endif %}">
+                    {{ kd_type_labels.get(kd.description, kd.description or '—') }}
+                  </span>
+                </td>
+                <td class="py-2.5 pr-3 text-[hsl(var(--muted-foreground))]">{{ format_dt(kd.start_datetime, '%d %b %Y') if kd.start_datetime else '—' }}</td>
+                <td class="py-2.5 pr-3 text-[hsl(var(--muted-foreground))]">
+                  {% if kd.start_datetime %}{{ format_dt(kd.start_datetime, '%H:%M') }}{% if kd.end_datetime %} – {{ format_dt(kd.end_datetime, '%H:%M') }}{% endif %}{% else %}—{% endif %}
+                </td>
+                <td class="py-2.5 pr-3 text-[hsl(var(--muted-foreground))]">{{ kd.location or '—' }}</td>
+                {% if can_edit %}
+                <td class="py-2.5 text-right">
+                  <form method="POST" action="{{ url_for('cases.delete_key_date', case_id=case.id, appt_id=kd.id) }}" onsubmit="return confirm('Delete this key date?')">
+                    <button type="submit" class="text-slate-300 hover:text-rose-500 transition-colors p-1 min-w-[32px] min-h-[32px]"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                  </form>
+                </td>
+                {% endif %}
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <!-- Mobile key date cards -->
+        <div class="sm:hidden space-y-2">
+          {% for kd in key_dates %}
+          {% set kd_type_labels = {'hearing':'Hearing','deadline':'Deadline','meeting':'Meeting'} %}
+          <div class="flex items-start justify-between gap-2 p-3 rounded-lg" style="background:hsl(var(--muted));border:1px solid hsl(var(--border))">
+            <div class="min-w-0 flex-1">
+              <div class="font-medium text-xs" style="color:hsl(var(--card-foreground))">{{ kd.title }}</div>
+              <div class="flex items-center gap-2 mt-1 flex-wrap">
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium {% if kd.description=='hearing' %}badge-danger{% elif kd.description=='deadline' %}badge-warning{% else %}badge-info{% endif %}">{{ kd_type_labels.get(kd.description, kd.description or '—') }}</span>
+                <span class="text-[10px]" style="color:hsl(var(--muted-foreground))">{{ format_dt(kd.start_datetime, '%d %b %Y') if kd.start_datetime else '—' }}</span>
+                {% if kd.location %}<span class="text-[10px]" style="color:hsl(var(--muted-foreground))">{{ kd.location }}</span>{% endif %}
+              </div>
+            </div>
+            {% if can_edit %}
+            <form method="POST" action="{{ url_for('cases.delete_key_date', case_id=case.id, appt_id=kd.id) }}" onsubmit="return confirm('Delete this key date?')">
+              <button type="submit" class="p-2 text-slate-300 hover:text-rose-500 transition-colors min-w-[36px] min-h-[36px] flex items-center justify-center"><i class="fa-solid fa-trash-can text-xs"></i></button>
+            </form>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-sm text-[hsl(var(--muted-foreground))] text-center py-4">No key dates yet</p>
+        {% endif %}
+      </div>
+
+      <!-- Activity -->
+      <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-4 sm:p-5">
+        <h3 class="text-sm font-semibold mb-4 flex items-center gap-2"><i class="fa-solid fa-timeline text-[hsl(var(--muted-foreground))]"></i> Activity</h3>
+        <div class="space-y-3">
+          {% for log in activity %}
+          <div class="flex items-start gap-3">
+            <div class="avatar-initials w-7 h-7 text-xs flex-shrink-0" style="background-color:{{ log.avatar_color or '#94a3b8' }}">{{ get_initials(log.user_name or 'S') }}</div>
+            <div class="min-w-0">
+              <div class="text-sm"><span class="font-medium">{{ log.user_name or 'System' }}</span> {{ log.action }}</div>
+              {% if log.details %}<div class="text-xs text-[hsl(var(--muted-foreground))] break-words">{{ log.details }}</div>{% endif %}
+              <div class="text-xs text-[hsl(var(--muted-foreground))]">{{ format_dt(log.created_at, '%b %d, %Y %H:%M') }}</div>
+            </div>
+          </div>
+          {% else %}<p class="text-sm text-[hsl(var(--muted-foreground))] text-center py-4">No activity yet</p>{% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Right sidebar -->
+    <div>
+      <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-4 sm:p-5">
+        <h3 class="text-sm font-semibold mb-3 flex items-center gap-2"><i class="fa-solid fa-folder text-amber-400"></i> Documents</h3>
+
+        {% if can_edit %}
+        <!-- Upload form -->
+        <form id="docUploadForm" method="POST" action="{{ url_for('documents.upload') }}" enctype="multipart/form-data" class="mb-3 space-y-2">
+          <input type="hidden" name="case_id" value="{{ case.id }}">
+          <select name="description" class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2 text-xs focus:outline-none text-[hsl(var(--muted-foreground))]">
+            <option value="TYPE: exhibit">Exhibit</option>
+            <option value="TYPE: filing">Filing</option>
+            <option value="TYPE: contract">Contract</option>
+            <option value="TYPE: evidence">Evidence</option>
+            <option value="TYPE: internal_memo">Internal Memo</option>
+          </select>
+          <label class="flex items-center gap-2 p-3 border-2 border-dashed border-[hsl(var(--border))] rounded-lg cursor-pointer hover:border-slate-400 dk-card-hover transition-all">
+            <i class="fa-solid fa-cloud-arrow-up text-[hsl(var(--muted-foreground))]"></i>
+            <span class="text-xs text-[hsl(var(--muted-foreground))]" id="docFileName">Choose file to upload</span>
+            <input type="file" name="file" class="hidden" onchange="document.getElementById('docFileName').textContent=this.files[0]?.name||'Choose file to upload'">
+          </label>
+          <button type="submit" class="w-full text-xs font-medium style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))" py-2 rounded-lg transition-colors">Upload</button>
+        </form>
+        {% endif %}
+
+        <!-- Filter chips -->
+        {% if documents %}
+        {% set doc_types = ['exhibit','filing','contract','evidence','internal_memo'] %}
+        {% set type_labels = {'exhibit':'Exhibit','filing':'Filing','contract':'Contract','evidence':'Evidence','internal_memo':'Internal Memo'} %}
+        <div class="flex flex-wrap gap-1.5 mb-3" id="docFilters">
+          <button onclick="filterDocs('all')" data-filter="all"
+            class="doc-filter-btn active text-xs px-2.5 py-1 rounded-full border border-[hsl(var(--border))] bg-slate-800 text-white transition-all">All</button>
+          {% for t in doc_types %}
+          {% if documents | selectattr('description','equalto','TYPE: '~t) | list | length > 0 %}
+          <button onclick="filterDocs('{{ t }}')" data-filter="{{ t }}"
+            class="doc-filter-btn text-xs px-2.5 py-1 rounded-full border border-[hsl(var(--border))] dk-card text-[hsl(var(--muted-foreground))] dk-card-hover transition-all">{{ type_labels[t] }}</button>
+          {% endif %}
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Document list -->
+        <div class="space-y-1.5" id="docList">
+          {% set type_colors = {
+            'exhibit':      ('bg-purple-100','text-purple-700'),
+            'filing':       ('bg-blue-100',  'text-blue-700'),
+            'contract':     ('bg-emerald-100','text-emerald-700'),
+            'evidence':     ('bg-rose-100',  'text-rose-700'),
+            'internal_memo':('bg-amber-100', 'text-amber-700'),
+          } %}
+          {% set type_labels = {'exhibit':'Exhibit','filing':'Filing','contract':'Contract','evidence':'Evidence','internal_memo':'Internal Memo'} %}
+          {% for doc in documents %}
+          {% set raw = doc.description or '' %}
+          {% set doc_type = raw[6:] if raw.startswith('TYPE: ') else '' %}
+          {% set colors = type_colors.get(doc_type, ('bg-slate-100','text-[hsl(var(--muted-foreground))]')) %}
+          <div class="doc-item flex items-start gap-2.5 p-2.5 rounded-lg dk-card-hover group" data-type="{{ doc_type }}">
+            <div class="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+              <i class="fa-solid fa-file text-[hsl(var(--muted-foreground))] text-xs"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="text-xs font-medium text-[hsl(var(--card-foreground))] truncate leading-snug">{{ doc.original_filename }}</div>
+              <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+                {% if doc_type %}
+                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium {{ colors[0] }} {{ colors[1] }}">{{ type_labels.get(doc_type, doc_type) }}</span>
+                {% endif %}
+                <span class="text-[10px] text-[hsl(var(--muted-foreground))]">{{ format_size(doc.file_size) }}</span>
+                <span class="text-[10px] text-[hsl(var(--muted-foreground))]">{{ format_dt(doc.created_at, '%d %b') }}</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-1 flex-shrink-0">
+              {% if doc.original_filename.lower().endswith('.pdf') %}
+              <button onclick="openDocViewer('{{ doc.id }}', '{{ doc.original_filename | e }}')"
+                class="text-indigo-400 hover:text-indigo-600 p-1 transition-colors" title="View & Summarise">
+                <i class="fa-solid fa-eye text-xs"></i>
+              </button>
+              {% endif %}
+              <a href="{{ url_for('documents.download', doc_id=doc.id) }}" class="text-slate-300 group-hover:text-[hsl(var(--muted-foreground))] p-1 transition-colors">
+                <i class="fa-solid fa-download text-xs"></i>
+              </a>
+            </div>
+          </div>
+          {% else %}<p class="text-xs text-[hsl(var(--muted-foreground))] text-center py-3">No documents</p>{% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Document Viewer & AI Summary Modal ── -->
+<div id="docViewerModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-3">
+  <div class="dk-card rounded-2xl shadow-xl w-full max-w-4xl flex flex-col" style="max-height:92vh">
+    <!-- Header -->
+    <div class="flex items-center justify-between px-5 py-4 border-b border-[hsl(var(--border))] flex-shrink-0">
+      <div class="flex items-center gap-2 min-w-0">
+        <i class="fa-solid fa-file-pdf text-rose-500"></i>
+        <span class="text-sm font-semibold truncate" id="viewerDocName">Document</span>
+      </div>
+      <button onclick="closeDocViewer()" class="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--card-foreground))] p-1 flex-shrink-0">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+    </div>
+    <!-- Body: PDF left, summary right -->
+    <div class="flex flex-col lg:flex-row flex-1 overflow-hidden">
+      <!-- PDF iframe -->
+      <div class="flex-1 border-r border-[hsl(var(--border))] style="background:hsl(var(--muted))" flex flex-col">
+        <iframe id="pdfIframe" src="" class="flex-1 w-full" style="min-height:400px; border:none;"></iframe>
+      </div>
+      <!-- AI Summary panel -->
+      <div class="w-full lg:w-80 flex flex-col flex-shrink-0 overflow-y-auto">
+        <div class="p-4 border-b border-[hsl(var(--border))] flex items-center justify-between">
+          <span class="text-xs font-semibold text-[hsl(var(--card-foreground))] flex items-center gap-1.5">
+            <i class="fa-solid fa-robot text-indigo-500"></i> AI Summary
+          </span>
+          <button id="summariseBtn" onclick="requestSummary()"
+            class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Summarise
+          </button>
+        </div>
+        <div class="p-4 flex-1">
+          <!-- Idle state -->
+          <div id="summaryIdle" class="text-xs text-[hsl(var(--muted-foreground))] text-center py-6">
+            Click <strong>Summarise</strong> to analyse this PDF with AI.
+          </div>
+          <!-- Loading -->
+          <div id="summaryLoading" class="hidden text-center py-8">
+            <i class="fa-solid fa-circle-notch fa-spin text-indigo-500 text-xl mb-2"></i>
+            <div class="text-xs text-[hsl(var(--muted-foreground))]">Reading document…</div>
+          </div>
+          <!-- Error -->
+          <div id="summaryError" class="hidden">
+            <div class="bg-rose-50 border border-rose-200 rounded-lg p-3 text-xs text-rose-700" id="summaryErrorMsg"></div>
+          </div>
+          <!-- Result -->
+          <div id="summaryResult" class="hidden space-y-4">
+            <div>
+              <div class="text-[10px] font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wide mb-1">Summary</div>
+              <p class="text-xs text-[hsl(var(--card-foreground))] leading-relaxed" id="summaryText"></p>
+            </div>
+            <div>
+              <div class="text-[10px] font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wide mb-1">Key Points</div>
+              <ul class="space-y-1" id="summaryPoints"></ul>
+            </div>
+            <div>
+              <div class="text-[10px] font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wide mb-1">Suggested Next Steps</div>
+              <ul class="space-y-1" id="summarySteps"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+var _currentDocId = null;
+function openDocViewer(docId, docName) {
+  _currentDocId = docId;
+  document.getElementById('viewerDocName').textContent = docName;
+  document.getElementById('pdfIframe').src = '/documents/' + docId + '/view';
+  // Reset summary panel
+  ['summaryIdle','summaryLoading','summaryError','summaryResult'].forEach(function(id){
+    document.getElementById(id).classList.add('hidden');
+  });
+  document.getElementById('summaryIdle').classList.remove('hidden');
+  document.getElementById('summariseBtn').disabled = false;
+  document.getElementById('docViewerModal').classList.remove('hidden');
+}
+function closeDocViewer() {
+  document.getElementById('docViewerModal').classList.add('hidden');
+  document.getElementById('pdfIframe').src = '';
+  _currentDocId = null;
+}
+function requestSummary() {
+  if (!_currentDocId) return;
+  var btn = document.getElementById('summariseBtn');
+  btn.disabled = true;
+  ['summaryIdle','summaryError','summaryResult'].forEach(function(id){
+    document.getElementById(id).classList.add('hidden');
+  });
+  document.getElementById('summaryLoading').classList.remove('hidden');
+
+  fetch('/documents/' + _currentDocId + '/summary', {method:'POST'})
+    .then(function(r){ return r.json().then(function(d){ return {ok:r.ok, data:d}; }); })
+    .then(function(res) {
+      document.getElementById('summaryLoading').classList.add('hidden');
+      if (!res.ok || res.data.error) {
+        document.getElementById('summaryErrorMsg').textContent = res.data.error || 'Unexpected error.';
+        document.getElementById('summaryError').classList.remove('hidden');
+        btn.disabled = false;
+        return;
+      }
+      document.getElementById('summaryText').textContent = res.data.summary || '';
+      var pts = document.getElementById('summaryPoints');
+      pts.innerHTML = '';
+      (res.data.key_points || []).forEach(function(p){
+        var li = document.createElement('li');
+        li.className = 'flex items-start gap-1.5 text-xs text-[hsl(var(--muted-foreground))]';
+        li.innerHTML = '<i class="fa-solid fa-circle text-indigo-400 mt-1.5" style="font-size:4px;flex-shrink:0"></i><span>' + p + '</span>';
+        pts.appendChild(li);
+      });
+      var steps = document.getElementById('summarySteps');
+      steps.innerHTML = '';
+      (res.data.next_steps || []).forEach(function(s){
+        var li = document.createElement('li');
+        li.className = 'flex items-start gap-1.5 text-xs text-[hsl(var(--muted-foreground))]';
+        li.innerHTML = '<i class="fa-solid fa-arrow-right text-emerald-500 mt-0.5" style="font-size:9px;flex-shrink:0"></i><span>' + s + '</span>';
+        steps.appendChild(li);
+      });
+      document.getElementById('summaryResult').classList.remove('hidden');
+    })
+    .catch(function(e){
+      document.getElementById('summaryLoading').classList.add('hidden');
+      document.getElementById('summaryErrorMsg').textContent = 'Network error: ' + e.message;
+      document.getElementById('summaryError').classList.remove('hidden');
+      btn.disabled = false;
+    });
+}
+</script>
+
+{% if can_edit %}
+<!-- Edit Modal (scrollable on mobile) -->
+<div id="editModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-start sm:items-center justify-center p-2 sm:p-4 overflow-y-auto">
+  <div class="dk-card rounded-2xl shadow-xl w-full max-w-2xl my-4 modal-scroll">
+    <div class="p-4 sm:p-5 border-b border-[hsl(var(--border))] flex items-center justify-between sticky top-0 dk-card rounded-t-2xl z-10">
+      <h2 class="font-semibold">Edit Case</h2>
+      <button onclick="document.getElementById('editModal').classList.add('hidden')" class="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--muted-foreground))] p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+    </div>
+    <form method="POST" action="{{ url_for('cases.edit_case', case_id=case.id) }}" class="p-4 sm:p-6 space-y-4">
+      <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Title</label>
+        <input name="title" value="{{ case.title }}" required class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-800"></div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Status</label>
+          <select name="status" class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm focus:outline-none">
+            {% for s,l in [('open','Open'),('litigation','Litigation'),('closed','Closed')] %}
+            <option value="{{ s }}" {% if case.status==s %}selected{% endif %}>{{ l }}</option>{% endfor %}
+          </select></div>
+        <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Priority</label>
+          <select name="priority" class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm focus:outline-none">
+            {% for p in ['low','medium','high','urgent'] %}
+            <option value="{{ p }}" {% if case.priority==p %}selected{% endif %}>{{ p.title() }}</option>{% endfor %}
+          </select></div>
+      </div>
+      <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Due Date</label>
+        <input type="date" name="due_date" value="{{ dt_date(case.due_date) }}" class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm focus:outline-none"></div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Court Name</label>
+          <input name="court_name" value="{{ case.court_name or '' }}" class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm focus:outline-none" placeholder="e.g. Tribunale di Roma"></div>
+        <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Case Number</label>
+          <input name="case_number" value="{{ case.case_number or '' }}" class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm focus:outline-none" placeholder="e.g. 1234/2025"></div>
+      </div>
+      {% if current_user.role=='admin' %}
+      <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Assigned Staff (Ctrl/Cmd+click for multiple)</label>
+        <select name="assigned_users" multiple class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2 text-sm focus:outline-none h-28">
+          {% set assigned_ids = case.assignees | map(attribute='id') | list %}
+          {% for u in all_users %}
+          <option value="{{ u.id }}" {% if u.id in assigned_ids %}selected{% endif %}>{{ u.full_name }}</option>{% endfor %}
+        </select></div>
+      {% endif %}
+      {% for field, label in [('overview','Overview'),('current_step','Current Step'),('next_action','Next Action'),('blockers','Blockers'),('description','Description')] %}
+      <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">{{ label }}</label>
+        <textarea name="{{ field }}" rows="2" class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2 text-sm focus:outline-none">{{ case[field] or '' }}</textarea></div>
+      {% endfor %}
+      <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2">
+        <button type="button" onclick="document.getElementById('editModal').classList.add('hidden')" class="inline-flex items-center justify-center gap-2 dk-card dk-card-hover text-[hsl(var(--card-foreground))] text-sm font-medium px-4 py-2.5 rounded-lg border border-[hsl(var(--border))]">Cancel</button>
+        <button type="submit" class="inline-flex items-center justify-center gap-2 style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))" text-sm font-medium px-4 py-2.5 rounded-lg">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Task Modal -->
+<div id="taskModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-start sm:items-center justify-center p-2 sm:p-4 overflow-y-auto">
+  <div class="dk-card rounded-2xl shadow-xl w-full max-w-md my-4 modal-scroll">
+    <div class="p-4 sm:p-5 border-b border-[hsl(var(--border))] flex items-center justify-between">
+      <h2 class="font-semibold">Add Task</h2>
+      <button onclick="document.getElementById('taskModal').classList.add('hidden')" class="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--muted-foreground))] p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+    </div>
+    <form method="POST" action="{{ url_for('cases.add_task', case_id=case.id) }}" class="p-4 sm:p-5 space-y-4">
+      <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Task Title *</label>
+        <input name="title" required class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm focus:outline-none" placeholder="Enter task..."></div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Assigned To</label>
+          <select name="assigned_to" class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm focus:outline-none">
+            <option value="">Unassigned</option>
+            {% for u in all_users %}<option value="{{ u.id }}">{{ u.full_name }}</option>{% endfor %}
+          </select></div>
+        <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Priority</label>
+          <select name="priority" class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm focus:outline-none">
+            <option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option>
+          </select></div>
+      </div>
+      <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Due Date</label>
+        <input type="date" name="due_date" class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm focus:outline-none"></div>
+      <div class="flex flex-col-reverse sm:flex-row justify-end gap-3">
+        <button type="button" onclick="document.getElementById('taskModal').classList.add('hidden')" class="inline-flex items-center justify-center gap-2 dk-card dk-card-hover text-[hsl(var(--card-foreground))] text-sm font-medium px-4 py-2.5 rounded-lg border border-[hsl(var(--border))]">Cancel</button>
+        <button type="submit" class="inline-flex items-center justify-center gap-2 style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))" text-sm font-medium px-4 py-2.5 rounded-lg">Add Task</button>
+      </div>
+    </form>
+  </div>
+</div>
+<!-- Key Date Modal -->
+<div id="keyDateModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-start sm:items-center justify-center p-2 sm:p-4 overflow-y-auto">
+  <div class="dk-card rounded-2xl shadow-xl w-full max-w-md my-4 modal-scroll">
+    <div class="p-4 sm:p-5 border-b border-[hsl(var(--border))] flex items-center justify-between">
+      <h2 class="font-semibold">Add Key Date</h2>
+      <button onclick="document.getElementById('keyDateModal').classList.add('hidden')" class="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--muted-foreground))] p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+    </div>
+    <form method="POST" action="{{ url_for('cases.add_key_date', case_id=case.id) }}" class="p-4 sm:p-5 space-y-4">
+      <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Title *</label>
+        <input name="title" required class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm focus:outline-none" placeholder="e.g. Preliminary Hearing"></div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Type</label>
+          <select name="kd_type" class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm focus:outline-none">
+            <option value="hearing">Hearing</option>
+            <option value="deadline">Deadline</option>
+            <option value="meeting">Meeting</option>
+          </select></div>
+        <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Date *</label>
+          <input type="date" name="date" required class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm focus:outline-none"></div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Start Time</label>
+          <input type="time" name="start_time" class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm focus:outline-none"></div>
+        <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">End Time</label>
+          <input type="time" name="end_time" class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm focus:outline-none"></div>
+      </div>
+      <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Location</label>
+        <input name="location" class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm focus:outline-none" placeholder="e.g. Aula 3, Tribunale di Roma"></div>
+      <div class="flex flex-col-reverse sm:flex-row justify-end gap-3">
+        <button type="button" onclick="document.getElementById('keyDateModal').classList.add('hidden')" class="inline-flex items-center justify-center gap-2 dk-card dk-card-hover text-[hsl(var(--card-foreground))] text-sm font-medium px-4 py-2.5 rounded-lg border border-[hsl(var(--border))]">Cancel</button>
+        <button type="submit" class="inline-flex items-center justify-center gap-2 style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))" text-sm font-medium px-4 py-2.5 rounded-lg">Save Key Date</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+<script>
+function filterDocs(type) {
+  document.querySelectorAll('.doc-item').forEach(el => {
+    el.style.display = (type === 'all' || el.dataset.type === type) ? '' : 'none';
+  });
+  document.querySelectorAll('.doc-filter-btn').forEach(btn => {
+    const active = btn.dataset.filter === type;
+    btn.classList.toggle('bg-slate-800', active);
+    btn.classList.toggle('text-white', active);
+    btn.classList.toggle('dk-card', !active);
+    btn.classList.toggle('text-[hsl(var(--muted-foreground))]', !active);
+  });
+}
+</script>
+{% endblock %}

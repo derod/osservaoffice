@@ -1,0 +1,38 @@
+{% extends "base.html" %}{% set active_nav="clients" %}
+{% block title %}Clients — OSSERVA OFFICE{% endblock %}
+{% block content %}
+<div class="w-full max-w-6xl">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5 sm:mb-6">
+    <h1 class="text-xl sm:text-2xl font-bold" style="color:hsl(var(--foreground))">Clients</h1>
+    {% if current_user.role=='admin' %}
+    <a href="{{ url_for('clients.new_client') }}" class="inline-flex items-center justify-center gap-2 text-sm font-medium px-4 py-2.5 rounded-xl w-full sm:w-auto" style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))">
+      <i class="fa-solid fa-plus text-xs"></i> New Client
+    </a>
+    {% endif %}
+  </div>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+    {% for item in client_data %}
+    {% set c = item.client %}
+    <a href="{{ url_for('clients.detail', client_id=c.id) }}" class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-4 sm:p-5 hover:shadow-md transition-shadow block">
+      <div class="flex items-start gap-3 mb-3">
+        <div class="avatar-initials w-10 h-10 text-sm bg-indigo-500 flex-shrink-0">{{ get_initials(c.full_name) }}</div>
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold text-sm truncate" style="color:hsl(var(--foreground))">{{ c.full_name }}</div>
+          {% if c.company_name %}<div class="text-xs truncate" style="color:hsl(var(--muted-foreground))">{{ c.company_name }}</div>{% endif %}
+        </div>
+      </div>
+      {% if c.email or c.phone %}
+      <div class="text-xs space-y-1 mb-3" style="color:hsl(var(--muted-foreground))">
+        {% if c.email %}<div class="truncate"><i class="fa-solid fa-envelope w-4"></i> {{ c.email }}</div>{% endif %}
+        {% if c.phone %}<div><i class="fa-solid fa-phone w-4"></i> {{ c.phone }}</div>{% endif %}
+      </div>
+      {% endif %}
+      <div class="flex items-center gap-3 text-xs">
+        <span class="inline-flex items-center px-2 py-1 rounded-full badge-info font-medium">{{ item.active_cases }} active</span>
+        <span style="color:hsl(var(--muted-foreground))">{{ item.total_cases }} total cases</span>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

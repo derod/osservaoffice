@@ -1,0 +1,141 @@
+{% extends "base.html" %}{% set active_nav="dashboard" %}
+{% block title %}Dashboard — OSSERVA OFFICE{% endblock %}
+{% block content %}
+<div class="page-container">
+  <!-- Stats grid -->
+  <div class="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+    {% set stats = [
+      ('fa-briefcase', 'text-blue-400', active_cases, 'Active Cases'),
+      ('fa-triangle-exclamation', 'text-amber-400', due_7_days, 'Due in 7 Days'),
+      ('fa-arrow-trend-up', 'text-teal-400', due_30_days, 'Due in 30 Days'),
+      ('fa-check-square', 'text-emerald-400', tasks_today, 'Tasks Today'),
+      ('fa-calendar-check', 'text-indigo-400', appointments_today, 'Appointments Today'),
+      ('fa-clock', 'text-amber-400', pending_requests, 'Pending Requests'),
+      ('fa-users', 'text-teal-400', none, 'Team Available'),
+      ('fa-file-lines', 'text-slate-400', recent_docs_count, 'Documents'),
+    ] %}
+    {% for icon, color, val, label in stats %}
+    <div class="dk-card shadow-soft p-4 sm:p-5 transition-colors duration-150 dk-card-hover">
+      <div class="{{ color }} mb-2 sm:mb-3"><i class="fa-solid {{ icon }} text-lg sm:text-xl"></i></div>
+      <div class="text-2xl sm:text-3xl font-bold mb-1" style="color:hsl(var(--foreground))">
+        {% if label == 'Team Available' %}{{ team_available }}<span class="text-lg" style="color:hsl(var(--muted-foreground))">/{{ team_total }}</span>
+        {% else %}{{ val }}{% endif %}
+      </div>
+      <div class="text-xs sm:text-sm" style="color:hsl(var(--muted-foreground))">{{ _(label) }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+    <!-- Team Overview -->
+    <div class="lg:col-span-2">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base font-semibold" style="color:hsl(var(--foreground))">{{ _('Team Overview') }}</h2>
+        <a href="{{ url_for('employees.list_employees') }}" class="text-sm transition-colors hover:opacity-80" style="color:hsl(var(--muted-foreground))">{{ _('View all →') }}</a>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        {% for item in employee_cards %}
+        {% set emp = item.user %}{% set status = item.status %}{% set next_a = item.next_appointment %}
+        <div class="dk-card shadow-soft p-4 dk-card-hover transition-colors duration-150">
+          <div class="flex items-start justify-between mb-3">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="relative flex-shrink-0">
+                <div class="avatar-initials w-10 h-10 text-sm" style="background-color:{{ emp.avatar_color }}">{{ get_initials(emp.full_name) }}</div>
+                <span class="presence-dot absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-[hsl(var(--card))]"
+                      data-presence-uid="{{ emp.id }}"
+                      style="background:#6b7280"
+                      title="Offline"></span>
+              </div>
+              <div class="min-w-0">
+                <div class="font-medium text-sm truncate" style="color:hsl(var(--foreground))">{{ emp.full_name }}</div>
+                <div class="text-xs truncate" style="color:hsl(var(--muted-foreground))">{{ emp.job_title or emp.role.title() }}</div>
+              </div>
+            </div>
+            <span class="badge flex-shrink-0
+              {% if status=='free' %}badge-success{% elif status=='busy' %}badge-warning{% elif status=='in_meeting' %}badge-danger{% else %}badge-neutral{% endif %}">
+              <span class="w-1.5 h-1.5 rounded-full inline-block
+                {% if status=='free' %}status-dot-free{% elif status=='busy' %}status-dot-busy{% elif status=='in_meeting' %}status-dot-meeting{% else %}status-dot-offline{% endif %}"></span>
+              {{ status.replace('_',' ').title() }}
+            </span>
+          </div>
+          <div class="rounded-lg p-3 mb-3" style="background:hsl(var(--muted));border:1px solid hsl(var(--border))">
+            {% if next_a %}
+            <div class="text-xs font-medium mb-1" style="color:hsl(var(--muted-foreground))">{{ _('Next up') }}</div>
+            <div class="text-sm font-medium truncate" style="color:hsl(var(--foreground))">{{ next_a.title }}</div>
+            <div class="text-xs" style="color:hsl(var(--muted-foreground))">{{ format_time(next_a.start_datetime) }}</div>
+            {% else %}
+            <div class="text-xs" style="color:hsl(var(--muted-foreground))">{{ _('No upcoming appointments today') }}</div>
+            {% endif %}
+          </div>
+          <div class="flex items-center gap-3 text-xs flex-wrap">
+            <a href="{{ url_for('employees.agenda', user_id=emp.id) }}" class="font-medium hover:opacity-80 transition-opacity" style="color:hsl(var(--muted-foreground))">{{ _('View agenda') }}</a>
+            {% if current_user.role in ('owner','admin','super_admin') %}
+            <a href="{{ url_for('schedule_requests.new_request', employee_id=emp.id) }}" class="font-medium hover:opacity-80 transition-opacity" style="color:hsl(var(--muted-foreground))">{{ _('Request change') }}</a>
+            {% endif %}
+          </div>
+        </div>
+        {% else %}
+        <div class="dk-card p-8 text-center col-span-full" style="color:hsl(var(--muted-foreground))">{{ _('No team members') }}</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Right column -->
+    <div>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-base font-semibold" style="color:hsl(var(--foreground))">{{ _('Pending Requests') }}</h2>
+        <a href="{{ url_for('schedule_requests.list_requests') }}" class="text-sm hover:opacity-80 transition-opacity" style="color:hsl(var(--muted-foreground))">{{ _('View all →') }}</a>
+      </div>
+      <div class="space-y-3">
+        {% for req in pending_req_list %}
+        <div class="dk-card shadow-soft p-4">
+          <div class="flex items-start justify-between mb-2">
+            <div class="min-w-0 flex-1 mr-2">
+              <div class="text-sm font-medium truncate" style="color:hsl(var(--foreground))">{{ req.emp_name or '—' }}</div>
+              <div class="text-xs" style="color:hsl(var(--muted-foreground))">{{ req.request_type.replace('_',' ').title() }}</div>
+            </div>
+            <span class="badge badge-warning flex-shrink-0">{{ _('Pending') }}</span>
+          </div>
+          <div class="text-xs mb-3" style="color:hsl(var(--muted-foreground))">{{ format_dt(req.requested_start_datetime, '%b %d') }} {{ format_time(req.requested_start_datetime) }}</div>
+          {% if current_user.role in ('owner','admin','super_admin') %}
+          <div class="flex gap-2">
+            <form method="POST" action="{{ url_for('schedule_requests.approve', req_id=req.id) }}" class="flex-1">
+              <button class="w-full text-xs font-medium py-2 rounded-lg transition-colors" style="background:hsla(152,50%,34%,0.18);color:hsl(152,55%,52%);border:1px solid hsla(152,50%,34%,0.25)">{{ _('Approve') }}</button>
+            </form>
+            <form method="POST" action="{{ url_for('schedule_requests.deny', req_id=req.id) }}" class="flex-1">
+              <button class="w-full text-xs font-medium py-2 rounded-lg transition-colors" style="background:hsl(var(--muted));color:hsl(var(--muted-foreground));border:1px solid hsl(var(--border))">{{ _('Deny') }}</button>
+            </form>
+          </div>
+          {% endif %}
+        </div>
+        {% else %}
+        <div class="dk-card p-6 text-center">
+          <i class="fa-solid fa-check-circle text-2xl mb-2" style="color:hsl(152,50%,44%)"></i>
+          <p class="text-sm" style="color:hsl(var(--muted-foreground))">{{ _('No pending requests') }}</p>
+        </div>
+        {% endfor %}
+      </div>
+
+      {% if current_user.role in ('admin','owner','super_admin') %}
+      <div class="mt-6">
+        <h2 class="text-base font-semibold mb-4" style="color:hsl(var(--foreground))">{{ _('Quick Actions') }}</h2>
+        <div class="space-y-2">
+          <a href="{{ url_for('cases.new_case') }}" class="dk-card dk-card-hover p-3 flex items-center gap-3 cursor-pointer transition-colors duration-150">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:hsla(210,70%,55%,0.12);border:1px solid hsla(210,70%,55%,0.18)"><i class="fa-solid fa-plus text-sm" style="color:hsl(210,70%,62%)"></i></div>
+            <span class="text-sm font-medium" style="color:hsl(var(--foreground))">{{ _('New Case') }}</span>
+          </a>
+          <a href="{{ url_for('calendar.new_appointment') }}" class="dk-card dk-card-hover p-3 flex items-center gap-3 cursor-pointer transition-colors duration-150">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:hsla(245,65%,60%,0.12);border:1px solid hsla(245,65%,60%,0.18)"><i class="fa-solid fa-calendar-plus text-sm" style="color:hsl(245,65%,68%)"></i></div>
+            <span class="text-sm font-medium" style="color:hsl(var(--foreground))">{{ _('New Appointment') }}</span>
+          </a>
+          <a href="{{ url_for('clients.new_client') }}" class="dk-card dk-card-hover p-3 flex items-center gap-3 cursor-pointer transition-colors duration-150">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:hsla(152,50%,34%,0.12);border:1px solid hsla(152,50%,34%,0.18)"><i class="fa-solid fa-user-plus text-sm" style="color:hsl(152,55%,50%)"></i></div>
+            <span class="text-sm font-medium" style="color:hsl(var(--foreground))">{{ _('New Client') }}</span>
+          </a>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

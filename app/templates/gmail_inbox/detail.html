@@ -1,0 +1,253 @@
+{% extends "base.html" %}{% set active_nav="correos_nuevos" %}
+{% block title %}{{ msg.subject or _('Email Detail') }} — OSSERVA OFFICE{% endblock %}
+{% block content %}
+<div class="w-full max-w-4xl">
+  <!-- Back -->
+  <a href="{{ url_for('gmail_inbox.index') }}" class="text-sm text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] mb-4 inline-flex items-center gap-1">
+    <i class="fa-solid fa-arrow-left text-xs"></i> {{ _('Back to Correos Nuevos') }}
+  </a>
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-2 mb-6">
+    <div class="min-w-0">
+      <h1 class="text-xl font-bold truncate">{{ msg.subject or _('(No subject)') }}</h1>
+      <div class="flex items-center gap-2 mt-1 flex-wrap">
+        <!-- Status badge -->
+        {% if msg.processed_status == 'new' %}
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold badge-info">Nuevo</span>
+        {% elif msg.processed_status == 'matched_existing_client' %}
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold badge-success">Cliente existente</span>
+        {% elif msg.processed_status == 'created_new_client' %}
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 text-teal-700">Cliente nuevo creado</span>
+        {% elif msg.processed_status == 'attached_to_case' %}
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700">Vinculado a caso</span>
+        {% elif msg.processed_status == 'error' %}
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold badge-danger">Error</span>
+        {% elif msg.processed_status == 'ignored' %}
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-[hsl(var(--muted-foreground))]">Ignorado</span>
+        {% endif %}
+        <span class="text-xs text-[hsl(var(--muted-foreground))]">{{ format_dt(msg.received_at, '%b %d, %Y') }} {{ format_time(msg.received_at) }}</span>
+      </div>
+    </div>
+    {% if current_user.role in ('admin', 'owner', 'super_admin') %}
+    <div class="flex items-center gap-2 flex-wrap">
+      <form method="POST" action="{{ url_for('gmail_inbox.reprocess', local_id=msg.id) }}">
+        <button type="submit" class="inline-flex items-center gap-1.5 text-sm text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--card-foreground))] hover:bg-slate-100 px-3 py-1.5 rounded-lg">
+          <i class="fa-solid fa-rotate text-xs"></i> {{ _('Reprocess') }}
+        </button>
+      </form>
+      {% if msg.processed_status != 'ignored' %}
+      <form method="POST" action="{{ url_for('gmail_inbox.ignore', local_id=msg.id) }}">
+        <button type="submit" class="inline-flex items-center gap-1.5 text-sm text-[hsl(var(--muted-foreground))] hover:text-rose-500 hover:bg-rose-50 px-3 py-1.5 rounded-lg">
+          <i class="fa-solid fa-eye-slash text-xs"></i> {{ _('Ignore') }}
+        </button>
+      </form>
+      {% endif %}
+      <form method="POST" action="{{ url_for('trash.trash_gmail', local_id=msg.id) }}" onsubmit="return confirm('Move to trash?')">
+        <button type="submit" class="inline-flex items-center gap-1.5 text-sm text-rose-400 hover:text-rose-600 hover:bg-rose-50 px-3 py-1.5 rounded-lg">
+          <i class="fa-solid fa-trash text-xs"></i> {{ _('Trash') }}
+        </button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Error message -->
+  {% if msg.error_message %}
+  <div class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm bg-rose-50 text-rose-700 border border-rose-200 mb-4">
+    <i class="fa-solid fa-circle-exclamation text-xs flex-shrink-0"></i>
+    <span>{{ msg.error_message }}</span>
+  </div>
+  {% endif %}
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+    <!-- Left column: email content -->
+    <div class="lg:col-span-2 space-y-4">
+      <!-- Email metadata -->
+      <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-5">
+        <div class="space-y-2 text-sm">
+          <div class="flex gap-2">
+            <span class="text-[hsl(var(--muted-foreground))] font-medium w-12 flex-shrink-0">{{ _('From') }}:</span>
+            <span class="text-[hsl(var(--foreground))]">
+              {{ msg.from_name }}{% if msg.from_email %} <span class="text-[hsl(var(--muted-foreground))]">&lt;{{ msg.from_email }}&gt;</span>{% endif %}
+            </span>
+          </div>
+          {% if msg.to_emails %}
+          <div class="flex gap-2">
+            <span class="text-[hsl(var(--muted-foreground))] font-medium w-12 flex-shrink-0">{{ _('To') }}:</span>
+            <span class="text-[hsl(var(--muted-foreground))] break-all">{{ msg.to_emails }}</span>
+          </div>
+          {% endif %}
+          {% if msg.cc_emails %}
+          <div class="flex gap-2">
+            <span class="text-[hsl(var(--muted-foreground))] font-medium w-12 flex-shrink-0">CC:</span>
+            <span class="text-[hsl(var(--muted-foreground))] break-all">{{ msg.cc_emails }}</span>
+          </div>
+          {% endif %}
+          <div class="flex gap-2">
+            <span class="text-[hsl(var(--muted-foreground))] font-medium w-12 flex-shrink-0">{{ _('Date') }}:</span>
+            <span class="text-[hsl(var(--muted-foreground))]">{{ format_dt(msg.received_at, '%B %d, %Y') }} {{ format_time(msg.received_at) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Email body -->
+      <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-5">
+        <h3 class="text-xs font-medium text-[hsl(var(--muted-foreground))] uppercase tracking-wide mb-3">{{ _('Message Body') }}</h3>
+        {% if msg.body_text %}
+        <div class="text-sm text-[hsl(var(--card-foreground))] whitespace-pre-wrap leading-relaxed max-h-[600px] overflow-y-auto">{{ msg.body_text }}</div>
+        {% else %}
+        <p class="text-sm text-[hsl(var(--muted-foreground))] italic">{{ _('No plain text body available.') }}</p>
+        {% endif %}
+      </div>
+
+      <!-- Attachments -->
+      {% if attachments %}
+      <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-5">
+        <h3 class="text-xs font-medium text-[hsl(var(--muted-foreground))] uppercase tracking-wide mb-3">
+          <i class="fa-solid fa-paperclip mr-1"></i> {{ _('Attachments') }} ({{ attachments|length }})
+        </h3>
+        <div class="space-y-2">
+          {% for att in attachments %}
+          <div class="flex items-center justify-between gap-3 px-3 py-2 rounded-lg style="background:hsl(var(--muted))" border border-[hsl(var(--border))]">
+            <div class="flex items-center gap-2 min-w-0">
+              <i class="fa-solid fa-file-pdf text-rose-500 text-sm flex-shrink-0"></i>
+              <div class="min-w-0">
+                <span class="text-sm font-medium text-[hsl(var(--card-foreground))] truncate block">{{ att.filename }}</span>
+                <span class="text-[11px] text-[hsl(var(--muted-foreground))]">{{ format_size(att.file_size) }}</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              {% if att.document_id %}
+              <a href="{{ url_for('documents.view_doc', doc_id=att.document_id) }}" target="_blank"
+                class="text-xs text-blue-600 hover:text-blue-800 font-medium px-2 py-1 rounded hover:bg-blue-50">
+                <i class="fa-solid fa-eye text-[10px]"></i> {{ _('View') }}
+              </a>
+              <a href="{{ url_for('documents.download', doc_id=att.document_id) }}"
+                class="text-xs text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--card-foreground))] font-medium px-2 py-1 rounded hover:bg-slate-100">
+                <i class="fa-solid fa-download text-[10px]"></i>
+              </a>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Right column: actions & linked data -->
+    <div class="space-y-4">
+      <!-- Matched client -->
+      <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-5">
+        <h3 class="text-xs font-medium text-[hsl(var(--muted-foreground))] uppercase tracking-wide mb-3">
+          <i class="fa-solid fa-user mr-1"></i> {{ _('Client') }}
+        </h3>
+        {% if client %}
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 text-sm font-bold">
+            {{ client.full_name[:1].upper() }}
+          </div>
+          <div>
+            <a href="{{ url_for('clients.detail', client_id=client.id) }}" class="text-sm font-medium text-[hsl(var(--foreground))] hover:text-blue-600">
+              {{ client.full_name }}
+            </a>
+            {% if client.email %}
+            <div class="text-xs text-[hsl(var(--muted-foreground))]">{{ client.email }}</div>
+            {% endif %}
+          </div>
+        </div>
+        {% else %}
+        <p class="text-sm text-[hsl(var(--muted-foreground))] mb-3">{{ _('No client matched.') }}</p>
+        {% endif %}
+
+        {% if current_user.role in ('admin', 'owner', 'super_admin') %}
+        <!-- Match to existing client -->
+        <form method="POST" action="{{ url_for('gmail_inbox.match_client', local_id=msg.id) }}" class="space-y-2 mb-3">
+          <select name="client_id" required
+            class="w-full text-sm border border-[hsl(var(--border))] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-800">
+            <option value="">{{ _('Select existing client...') }}</option>
+            {% for c in clients %}
+            <option value="{{ c.id }}" {% if client and c.id == client.id %}selected{% endif %}>
+              {{ c.full_name }}{% if c.email %} ({{ c.email }}){% endif %}
+            </option>
+            {% endfor %}
+          </select>
+          <button type="submit"
+            class="w-full inline-flex items-center justify-center gap-2 style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))" text-sm font-medium px-4 py-2 rounded-lg">
+            <i class="fa-solid fa-link text-xs"></i> {{ _('Link to Client') }}
+          </button>
+        </form>
+        <!-- Create new client -->
+        {% if msg.from_email and not client %}
+        <form method="POST" action="{{ url_for('gmail_inbox.create_client', local_id=msg.id) }}">
+          <button type="submit"
+            class="w-full inline-flex items-center justify-center gap-2 border border-emerald-300 text-emerald-700 hover:bg-emerald-50 text-sm font-medium px-4 py-2 rounded-lg">
+            <i class="fa-solid fa-user-plus text-xs"></i> {{ _('Create Client from Sender') }}
+          </button>
+        </form>
+        <p class="text-[11px] text-[hsl(var(--muted-foreground))] mt-1.5">
+          {{ _('Will create') }}: {{ msg.from_name or msg.from_email }} ({{ msg.from_email }})
+        </p>
+        {% endif %}
+        {% endif %}
+      </div>
+
+      <!-- Link to case -->
+      <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-5">
+        <h3 class="text-xs font-medium text-[hsl(var(--muted-foreground))] uppercase tracking-wide mb-3">
+          <i class="fa-solid fa-briefcase mr-1"></i> {{ _('Case') }}
+        </h3>
+        {% if case %}
+        <a href="{{ url_for('cases.detail', case_id=case.id) }}" class="text-sm font-medium text-[hsl(var(--foreground))] hover:text-blue-600">
+          {{ case.title }}
+        </a>
+        {% else %}
+        <p class="text-sm text-[hsl(var(--muted-foreground))] mb-3">{{ _('No case linked.') }}</p>
+        {% endif %}
+
+        {% if current_user.role in ('admin', 'owner', 'super_admin') %}
+        <form method="POST" action="{{ url_for('gmail_inbox.attach_case', local_id=msg.id) }}" class="space-y-2 mt-3">
+          <select name="case_id" required
+            class="w-full text-sm border border-[hsl(var(--border))] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-800">
+            <option value="">{{ _('Select case...') }}</option>
+            {% for c in cases %}
+            <option value="{{ c.id }}" {% if case and c.id == case.id %}selected{% endif %}>{{ c.title }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit"
+            class="w-full inline-flex items-center justify-center gap-2 style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))" text-sm font-medium px-4 py-2 rounded-lg">
+            <i class="fa-solid fa-link text-xs"></i> {{ _('Attach to Case') }}
+          </button>
+        </form>
+        {% endif %}
+      </div>
+
+      <!-- Import metadata -->
+      <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-5">
+        <h3 class="text-xs font-medium text-[hsl(var(--muted-foreground))] uppercase tracking-wide mb-3">
+          <i class="fa-solid fa-circle-info mr-1"></i> {{ _('Metadata') }}
+        </h3>
+        <div class="space-y-1.5 text-xs text-[hsl(var(--muted-foreground))]">
+          <div class="flex justify-between">
+            <span>Gmail ID</span>
+            <span class="text-[hsl(var(--muted-foreground))] font-mono text-[10px] truncate ml-2 max-w-[140px]">{{ msg.gmail_message_id }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span>{{ _('Imported') }}</span>
+            <span>{{ format_dt(msg.imported_at, '%b %d, %Y') }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span>{{ _('Last synced') }}</span>
+            <span>{{ format_dt(msg.last_synced_at, '%b %d, %Y') }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span>{{ _('Has PDF') }}</span>
+            <span>{% if msg.has_pdf %}<i class="fa-solid fa-check text-emerald-500"></i>{% else %}<i class="fa-solid fa-minus text-slate-300"></i>{% endif %}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends "base.html" %}{% set active_nav="inbox" %}
+{% block title %}{{ root.subject }} — OSSERVA OFFICE{% endblock %}
+{% block content %}
+<div class="max-w-3xl">
+  <!-- Back link -->
+  <a href="{{ url_for('inbox.index') }}" class="text-sm text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] mb-4 inline-flex items-center gap-1">
+    <i class="fa-solid fa-arrow-left text-xs"></i> {{ _('Back to Inbox') }}
+  </a>
+
+  <!-- Subject header -->
+  <div class="flex items-center justify-between gap-3 mb-6 mt-2">
+    <div class="flex items-center gap-3 min-w-0">
+      <h1 class="text-xl font-bold truncate">{{ root.subject }}</h1>
+      <span class="text-xs text-[hsl(var(--muted-foreground))] flex-shrink-0">
+        {{ sender.full_name }} → {{ recipient.full_name }}
+      </span>
+    </div>
+    {% if is_trashed %}
+    <form method="POST" action="{{ url_for('inbox.restore', msg_id=root.id) }}">
+      <button type="submit"
+        class="inline-flex items-center gap-1.5 text-sm text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 px-3 py-1.5 rounded-lg transition-colors">
+        <i class="fa-solid fa-arrow-rotate-left text-xs"></i> {{ _('Restore') }}
+      </button>
+    </form>
+    {% else %}
+    <button type="button" onclick="document.getElementById('thread-delete-modal').classList.remove('hidden')"
+      class="inline-flex items-center gap-1.5 text-sm text-[hsl(var(--muted-foreground))] hover:text-rose-500 hover:bg-rose-50 px-3 py-1.5 rounded-lg transition-colors">
+      <i class="fa-solid fa-trash-can text-xs"></i> {{ _('Delete') }}
+    </button>
+    {% endif %}
+  </div>
+
+  {% if is_trashed %}
+  <div class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm bg-amber-50 text-amber-700 border border-amber-200 mb-4">
+    <i class="fa-solid fa-triangle-exclamation text-xs flex-shrink-0"></i>
+    <span>{{ _('This conversation is in trash and will be permanently deleted after 30 days.') }}</span>
+  </div>
+  {% endif %}
+
+  <!-- Messages thread -->
+  <div class="space-y-4 mb-6">
+    <!-- Root message -->
+    <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-5">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="avatar-initials w-8 h-8 text-xs" style="background-color:{{ sender.avatar_color }}">
+          {{ get_initials(sender.full_name) }}
+        </div>
+        <div>
+          <span class="font-medium text-sm">{{ sender.full_name }}</span>
+          <span class="text-xs text-[hsl(var(--muted-foreground))] ml-2">{{ format_dt(root.created_at, '%b %d, %Y') }} {{ format_time(root.created_at) }}</span>
+        </div>
+      </div>
+      <div class="text-sm text-[hsl(var(--card-foreground))] whitespace-pre-wrap leading-relaxed">{{ root.body }}</div>
+    </div>
+
+    <!-- Replies -->
+    {% for reply in replies %}
+    <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-5 ml-6">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="avatar-initials w-8 h-8 text-xs" style="background-color:{{ reply.sender_color }}">
+          {{ get_initials(reply.sender_name) }}
+        </div>
+        <div>
+          <span class="font-medium text-sm">{{ reply.sender_name }}</span>
+          <span class="text-xs text-[hsl(var(--muted-foreground))] ml-2">{{ format_dt(reply.created_at, '%b %d, %Y') }} {{ format_time(reply.created_at) }}</span>
+        </div>
+      </div>
+      <div class="text-sm text-[hsl(var(--card-foreground))] whitespace-pre-wrap leading-relaxed">{{ reply.body }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Reply form -->
+  {% if not is_trashed %}
+  <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-5">
+    <form method="POST" action="{{ url_for('inbox.reply', msg_id=root.id) }}" class="space-y-3">
+      <label class="block text-xs font-medium text-[hsl(var(--muted-foreground))]">{{ _('Reply') }}</label>
+      <textarea name="body" rows="4" required placeholder="{{ _('Write your reply...') }}"
+        class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-800 resize-none"></textarea>
+      <div class="flex justify-end">
+        <button type="submit"
+          class="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
+          <i class="fa-solid fa-reply text-xs"></i> {{ _('Send Reply') }}
+        </button>
+      </div>
+    </form>
+  </div>
+  {% endif %}
+</div>
+
+<!-- Delete Confirmation Modal (thread view) -->
+<div id="thread-delete-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+  <div class="dk-card rounded-xl shadow-xl w-full max-w-sm mx-4 overflow-hidden">
+    <div class="px-5 py-4 border-b border-[hsl(var(--border))]">
+      <h3 class="font-semibold text-[hsl(var(--foreground))]">{{ _('Delete conversation?') }}</h3>
+    </div>
+    <div class="px-5 py-4">
+      <p class="text-sm text-[hsl(var(--muted-foreground))]">
+        {{ _('This will move the conversation to trash. It can be restored within 30 days.') }}
+      </p>
+    </div>
+    <div class="flex justify-end gap-2 px-5 py-3 style="background:hsl(var(--muted))" border-t border-[hsl(var(--border))]">
+      <button type="button" onclick="document.getElementById('thread-delete-modal').classList.add('hidden')"
+        class="px-4 py-2 text-sm text-[hsl(var(--muted-foreground))] hover:bg-slate-100 rounded-lg">{{ _('Cancel') }}</button>
+      <form method="POST" action="{{ url_for('inbox.delete', msg_id=root.id) }}">
+        <button type="submit"
+          class="inline-flex items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white text-sm font-medium px-4 py-2 rounded-lg">
+          <i class="fa-solid fa-trash-can text-xs"></i> {{ _('Delete') }}
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('thread-delete-modal').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.add('hidden');
+});
+</script>
+{% endblock %}

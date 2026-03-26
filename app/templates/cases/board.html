@@ -1,0 +1,77 @@
+{% extends "base.html" %}{% set active_nav="cases" %}
+{% block title %}Cases Board — OSSERVA OFFICE{% endblock %}
+{% block content %}
+<div class="page-container">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+    <div>
+      <h1 class="text-xl sm:text-2xl font-bold" style="color:hsl(var(--foreground))">Cases Board</h1>
+      <p class="text-sm mt-0.5" style="color:hsl(var(--muted-foreground))">Kanban overview of all office cases</p>
+    </div>
+    {% if current_user.role in ('admin','owner','super_admin') %}
+    <a href="{{ url_for('cases.new_case') }}" class="inline-flex items-center justify-center gap-2 text-sm font-medium px-4 py-2.5 rounded-xl transition-colors self-start sm:self-auto"
+       style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))">
+      <i class="fa-solid fa-plus text-xs"></i> New Case
+    </a>
+    {% endif %}
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+    {% for status_val, label in [('open','Open'),('litigation','Litigation'),('closed','Closed')] %}
+    {% set col = cases_by_status.get(status_val, []) %}
+    <div>
+      <div class="flex items-center justify-between mb-3 px-1">
+        <h3 class="font-semibold text-sm
+          {% if status_val=='open' %}kanban-col-open
+          {% elif status_val=='litigation' %}kanban-col-lit
+          {% else %}kanban-col-closed{% endif %}" style="color:hsl(var(--foreground))">{{ label }}</h3>
+        <span class="badge
+          {% if status_val=='open' %}badge-info{% elif status_val=='litigation' %}badge-warning{% else %}badge-neutral{% endif %}">{{ col|length }}</span>
+      </div>
+      <div class="space-y-3">
+        {% for case in col %}
+        <a href="{{ url_for('cases.detail', case_id=case.id) }}"
+           class="block dk-card shadow-soft p-4 transition-all duration-150 dk-card-hover cursor-pointer hover:-translate-y-0.5">
+          <div class="flex items-start justify-between mb-2">
+            <h4 class="text-sm font-semibold leading-tight flex-1 mr-2" style="color:hsl(var(--foreground))">{{ case.title }}</h4>
+            <span class="badge flex-shrink-0
+              {% if case.priority=='low' %}prio-low
+              {% elif case.priority=='medium' %}prio-medium
+              {% elif case.priority=='high' %}prio-high
+              {% else %}badge-neutral{% endif %}">{{ case.priority.title() }}</span>
+          </div>
+          <div class="flex items-center justify-between mb-2">
+            <div class="text-xs" style="color:hsl(var(--muted-foreground))">{{ case.client_name or '—' }}</div>
+            {% if case.case_number %}<div class="text-xs font-mono" style="color:hsl(var(--muted-foreground))">#{{ case.case_number }}</div>{% endif %}
+          </div>
+          {% if case.description %}
+          <p class="text-xs mb-2 line-clamp-2" style="color:hsl(var(--muted-foreground))">{{ case.description[:100] }}{% if case.description|length > 100 %}…{% endif %}</p>
+          {% endif %}
+          {% if case.next_action %}
+          <div class="text-xs mb-3" style="color:hsl(var(--muted-foreground))"><span class="font-medium" style="color:hsl(var(--foreground))">Next:</span> {{ case.next_action[:60] }}{% if case.next_action|length > 60 %}…{% endif %}</div>
+          {% endif %}
+          <div class="flex items-center justify-between pt-2" style="border-top:1px solid hsl(var(--border))">
+            <div class="flex items-center gap-1">
+              {% for a in case.assignees[:3] %}
+              <div class="avatar-initials w-6 h-6 text-xs" style="background-color:{{ a.avatar_color }}" title="{{ a.full_name }}">{{ get_initials(a.full_name) }}</div>
+              {% endfor %}
+              {% if case.assignees|length > 3 %}
+              <div class="avatar-initials w-6 h-6 text-xs" style="background:hsl(var(--muted));color:hsl(var(--muted-foreground))">+{{ case.assignees|length - 3 }}</div>
+              {% endif %}
+            </div>
+            <div class="text-xs {% if case.due_date and is_overdue(case.due_date) and case.status != 'closed' %}font-medium{% endif %}"
+                 style="color:{% if case.due_date and is_overdue(case.due_date) and case.status != 'closed' %}hsl(0,60%,58%){% else %}hsl(var(--muted-foreground)){% endif %}">
+              {% if case.due_date %}Due {{ format_dt(case.due_date, '%Y-%m-%d') }}{% endif %}
+            </div>
+          </div>
+        </a>
+        {% else %}
+        <div class="rounded-xl p-6 text-center text-sm" style="border:1.5px dashed hsl(var(--border));color:hsl(var(--muted-foreground))">
+          No cases
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

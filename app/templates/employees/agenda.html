@@ -1,0 +1,589 @@
+{% extends "base.html" %}{% set active_nav="clockin" if (current_user and current_user.id == employee.id) else "employees" %}
+{% block title %}{{ employee.full_name }} Agenda — OSSERVA OFFICE{% endblock %}
+{% block content %}
+<div class="w-full max-w-4xl">
+  <div class="mb-5"><a href="{{ url_for('employees.list_employees') }}" class="text-sm text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]">← {{ _('Employees') }}</a></div>
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+    <div class="flex items-center gap-3">
+      <div class="relative flex-shrink-0">
+        <div class="avatar-initials w-12 h-12" style="background-color:{{ employee.avatar_color }}">{{ get_initials(employee.full_name) }}</div>
+        <span class="presence-dot absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-[hsl(var(--background))]"
+              data-presence-uid="{{ employee.id }}"
+              style="background:#6b7280"
+              title="Offline"></span>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold flex items-center gap-2">
+          {{ employee.full_name }}
+        </h1>
+        <p class="text-sm text-[hsl(var(--muted-foreground))]">{{ employee.job_title or employee.role }}</p>
+        <p class="presence-last-seen hidden text-xs mt-0.5" data-presence-lastseen="{{ employee.id }}"
+           style="color:hsl(var(--muted-foreground))"></p>
+      </div>
+    </div>
+    <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium self-start sm:self-auto
+      {% if emp_status=='free' %}badge-success{% elif emp_status=='busy' %}badge-warning{% else %}badge-danger{% endif %}">
+      {{ emp_status.replace('_',' ').title() }}
+    </span>
+  </div>
+
+  <!-- Today's Schedule -->
+  <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-6 mb-6">
+    <h3 class="font-semibold mb-4">{{ _("Today's Schedule") }}</h3>
+    <div class="space-y-3">
+      {% for appt in appointments %}
+      <div class="flex items-center gap-3 p-3 rounded-lg dk-card-hover">
+        <div class="text-sm font-medium w-16 sm:w-24 flex-shrink-0" style="color:hsl(var(--card-foreground))">{{ format_time(appt.start_datetime) }}</div>
+        <div class="flex-1"><div class="text-sm font-medium">{{ appt.title }}</div>
+          <div class="text-xs text-[hsl(var(--muted-foreground))]">{{ duration_mins(appt.start_datetime, appt.end_datetime) }} min</div>
+        </div>
+      </div>
+      {% else %}<p class="text-sm text-[hsl(var(--muted-foreground))] text-center py-6">{{ _('No appointments today') }}</p>{% endfor %}
+    </div>
+  </div>
+
+  <!-- Priority Cases -->
+  <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-6 mb-6">
+    <h3 class="font-semibold mb-4 flex items-center gap-2">
+      <i class="fa-solid fa-briefcase text-indigo-500"></i> {{ _('Priority Cases') }}
+    </h3>
+    <div class="space-y-3">
+      {% for case in priority_cases %}
+      <a href="{{ url_for('cases.detail', case_id=case.id) }}"
+         class="block p-4 rounded-lg border border-[hsl(var(--border))] dk-card-hover hover:border-[hsl(var(--border))] transition-colors">
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium truncate">{{ case.title }}</div>
+            {% if case.next_action %}
+            <div class="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">
+              <span class="font-medium text-[hsl(var(--muted-foreground))]">{{ _('Next:') }}</span> {{ case.next_action }}
+            </div>
+            {% endif %}
+            {% if case.due_date %}
+            {% set due_str = case.due_date ~ ' 23:59:59' %}
+            <div class="text-xs mt-1 {% if is_overdue(due_str) %}text-rose-600 font-medium{% else %}text-[hsl(var(--muted-foreground))]{% endif %}">
+              <i class="fa-regular fa-calendar text-[10px]"></i>
+              Due {{ format_dt(case.due_date, '%b %d, %Y') }}{% if is_overdue(due_str) %} {{ _('— Overdue') }}{% endif %}
+            </div>
+            {% endif %}
+          </div>
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
+              {% if case.priority=='high' %}badge-danger
+              {% elif case.priority=='medium' %}badge-warning
+              {% else %}bg-slate-100 text-[hsl(var(--muted-foreground))]{% endif %}">
+              {{ case.priority.title() }}
+            </span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-slate-100 text-[hsl(var(--muted-foreground))]">
+              {{ case.status.replace('_',' ').title() }}
+            </span>
+          </div>
+        </div>
+      </a>
+      {% else %}
+      <p class="text-sm text-[hsl(var(--muted-foreground))] text-center py-6">{{ _('No active cases assigned') }}</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Case Health -->
+  <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-6 mb-6">
+    <h3 class="font-semibold mb-4 flex items-center gap-2">
+      <i class="fa-solid fa-heart-pulse text-rose-500"></i> {{ _('Case Health') }}
+    </h3>
+
+    {# Summary bar #}
+    {% if case_health %}
+    <div class="flex flex-wrap gap-3 mb-4">
+      <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium
+        {% if health_summary.total_overdue_tasks > 0 %}bg-rose-50 text-rose-700 border border-rose-100
+        {% elif health_summary.total_urgent_tasks > 0 %}bg-amber-50 text-amber-700 border border-amber-100
+        {% else %}badge-success border border-emerald-100{% endif %}">
+        <i class="fa-solid fa-list-check text-[10px]"></i>
+        {{ health_summary.total_open_tasks }} {{ _('open tasks') if health_summary.total_open_tasks != 1 else _('open task') }}
+        {% if health_summary.total_overdue_tasks > 0 %}
+        <span class="text-rose-600 font-semibold">· {{ health_summary.total_overdue_tasks }} {{ _('overdue') }}</span>
+        {% endif %}
+        {% if health_summary.total_urgent_tasks > 0 %}
+        <span class="text-amber-600 font-semibold">· {{ health_summary.total_urgent_tasks }} {{ _('due within 48h') }}</span>
+        {% endif %}
+      </div>
+      {% if health_summary.next_case_deadline %}
+      <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium
+        {% if is_overdue(health_summary.next_case_deadline ~ ' 23:59:59') %}bg-rose-50 text-rose-700 border border-rose-100
+        {% else %}style="background:hsl(var(--muted))" text-[hsl(var(--muted-foreground))] border border-[hsl(var(--border))]{% endif %}">
+        <i class="fa-regular fa-calendar text-[10px]"></i>
+        {{ _('Next deadline:') }} {{ format_dt(health_summary.next_case_deadline, '%b %d, %Y') }}
+      </div>
+      {% endif %}
+      {% if health_summary.next_task_deadline %}
+      <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium style="background:hsl(var(--muted))" text-[hsl(var(--muted-foreground))] border border-[hsl(var(--border))]">
+        <i class="fa-solid fa-bullseye text-[10px]"></i>
+        {{ _('Next task due:') }} {{ format_dt(health_summary.next_task_deadline, '%b %d, %Y') }}
+      </div>
+      {% endif %}
+    </div>
+
+    {# Per-case rows #}
+    <div class="space-y-2">
+      {% for ch in case_health %}
+      {% set has_overdue = ch.overdue_tasks > 0 %}
+      {% set has_urgent = ch.urgent_tasks > 0 %}
+      {% set case_overdue = ch.due_date and is_overdue(ch.due_date ~ ' 23:59:59') %}
+      <a href="{{ url_for('cases.detail', case_id=ch.id) }}"
+         class="block p-3 rounded-lg border transition-colors
+           {% if has_overdue or case_overdue %}border-rose-200 bg-rose-50/50 hover:bg-rose-50
+           {% elif has_urgent %}border-amber-200 bg-amber-50/50 hover:bg-amber-50
+           {% else %}border-[hsl(var(--border))] dk-card-hover{% endif %}">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <div class="w-2 h-2 rounded-full flex-shrink-0
+                {% if has_overdue or case_overdue %}bg-rose-400
+                {% elif has_urgent %}bg-amber-400
+                {% else %}bg-emerald-400{% endif %}"></div>
+              <span class="text-sm font-medium truncate">{{ ch.title }}</span>
+            </div>
+            {% if ch.next_action %}
+            <div class="text-xs text-[hsl(var(--muted-foreground))] mt-0.5 ml-4 truncate">
+              <span class="font-medium text-[hsl(var(--muted-foreground))]">{{ _('Next:') }}</span> {{ ch.next_action }}
+            </div>
+            {% endif %}
+          </div>
+          <div class="flex flex-wrap items-center gap-1.5 ml-4 sm:ml-0 flex-shrink-0">
+            {# Priority badge #}
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium
+              {% if ch.priority == 'high' %}badge-danger
+              {% elif ch.priority == 'medium' %}badge-warning
+              {% else %}bg-slate-100 text-[hsl(var(--muted-foreground))]{% endif %}">
+              {{ ch.priority.title() }}
+            </span>
+            {# Status badge #}
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-slate-100 text-[hsl(var(--muted-foreground))]">
+              {{ ch.status.replace('_',' ').title() }}
+            </span>
+            {# Open tasks count #}
+            {% if ch.open_tasks > 0 %}
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium
+              {% if has_overdue %}badge-danger
+              {% elif has_urgent %}badge-warning
+              {% else %}bg-slate-100 text-[hsl(var(--muted-foreground))]{% endif %}">
+              <i class="fa-solid fa-list-check text-[8px] mr-0.5"></i>
+              {{ ch.open_tasks }}{% if has_overdue %} · {{ ch.overdue_tasks }} {{ _('overdue') }}{% endif %}
+            </span>
+            {% endif %}
+            {# Due date #}
+            {% if ch.due_date %}
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium
+              {% if case_overdue %}badge-danger
+              {% else %}bg-slate-100 text-[hsl(var(--muted-foreground))]{% endif %}">
+              <i class="fa-regular fa-calendar text-[8px] mr-0.5"></i>
+              {{ format_dt(ch.due_date, '%b %d') }}{% if case_overdue %} {{ _('— Overdue') }}{% endif %}
+            </span>
+            {% endif %}
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-sm text-[hsl(var(--muted-foreground))] text-center py-6">{{ _('No active cases assigned') }}</p>
+    {% endif %}
+  </div>
+
+  <!-- Upcoming Agenda (next 7 days) -->
+  <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-6 mb-6">
+    <h3 class="font-semibold mb-4 flex items-center gap-2">
+      <i class="fa-solid fa-calendar-days text-emerald-500"></i> {{ _('Upcoming Agenda') }}
+      <span class="text-xs font-normal text-[hsl(var(--muted-foreground))]">{{ _('— next 7 days') }}</span>
+    </h3>
+    <div class="space-y-2">
+      {% for appt in upcoming_appts %}
+      <div class="flex items-start gap-3 p-3 rounded-lg dk-card-hover">
+        <div class="w-24 sm:w-32 flex-shrink-0">
+          <div class="text-xs font-medium" style="color:hsl(var(--card-foreground))">{{ format_dt(appt.start_datetime) }}</div>
+          <div class="text-xs" style="color:hsl(var(--muted-foreground))">{{ format_time(appt.start_datetime) }} – {{ format_time(appt.end_datetime) }}</div>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-medium truncate" style="color:hsl(var(--foreground))">{{ appt.title }}</div>
+          <div class="text-xs" style="color:hsl(var(--muted-foreground))">{{ duration_mins(appt.start_datetime, appt.end_datetime) }} min</div>
+        </div>
+      </div>
+      {% else %}
+      <p class="text-sm text-[hsl(var(--muted-foreground))] text-center py-6">{{ _('No appointments in the next 7 days') }}</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Office Check-In -->
+  <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-6 mb-6">
+    <h3 class="font-semibold mb-4 flex items-center gap-2">
+      <i class="fa-solid fa-door-open text-teal-500"></i> {{ _('Office Check-In') }}
+    </h3>
+    {% if todays_checkin %}
+    <div class="p-3 rounded-lg bg-emerald-50 border border-emerald-100 mb-4">
+      <div class="flex items-center gap-3">
+        <i class="fa-solid fa-right-to-bracket text-emerald-500"></i>
+        <div class="flex-1">
+          <div class="text-sm font-medium text-emerald-800">
+            {{ _('Clocked in at') }} {{ format_time(todays_checkin.checked_in_at) }}
+            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
+              {% if todays_checkin.status == 'on_time' %}badge-success
+              {% elif todays_checkin.status == 'late' %}badge-warning
+              {% else %}badge-danger{% endif %}">
+              {{ todays_checkin.status.replace('_',' ').title() }}
+            </span>
+          </div>
+          {% if todays_checkin.notes %}
+          <div class="text-xs text-emerald-600 mt-0.5">{{ todays_checkin.notes }}</div>
+          {% endif %}
+          {% if todays_checkin.case_title %}
+          <div class="text-xs text-indigo-600 mt-0.5"><i class="fa-solid fa-briefcase text-[9px]"></i> {{ todays_checkin.case_title }}</div>
+          {% endif %}
+        </div>
+      </div>
+      {% if todays_checkin.checked_out_at %}
+      <div class="flex items-center gap-3 mt-2 pt-2 border-t border-emerald-100">
+        <i class="fa-solid fa-right-from-bracket text-[hsl(var(--muted-foreground))]"></i>
+        <div class="flex-1">
+          <div class="text-sm font-medium text-[hsl(var(--card-foreground))]">
+            {{ _('Clocked out at') }} {{ format_time(todays_checkin.checked_out_at) }}
+            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
+              {% if todays_checkin.checkout_status == 'finished' %}badge-success
+              {% elif todays_checkin.checkout_status == 'early' %}badge-warning
+              {% else %}badge-danger{% endif %}">
+              {{ todays_checkin.checkout_status.replace('_',' ').title() }}
+            </span>
+            {% set in_dt = todays_checkin.checked_in_at %}
+            {% set out_dt = todays_checkin.checked_out_at %}
+            <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-[hsl(var(--muted-foreground))]">
+              <i class="fa-regular fa-clock text-[9px] mr-1"></i>
+              {{ duration_mins(in_dt, out_dt) }} min
+            </span>
+          </div>
+          {% if todays_checkin.checkout_notes %}
+          <div class="text-xs text-[hsl(var(--muted-foreground))] mt-0.5">{{ todays_checkin.checkout_notes }}</div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {# Staff see the form only on their own agenda; admins/owners see it on any agenda #}
+    {% set is_own_agenda = (current_user.id == employee.id) %}
+    {% set is_admin = current_user.role in ('admin','owner') %}
+    {% set show_form = is_own_agenda or is_admin %}
+    {% if show_form %}
+    {% if is_admin and not is_own_agenda %}
+    <div class="flex items-center gap-2 text-xs text-indigo-600 bg-indigo-50 border border-indigo-100 rounded-lg px-3 py-2 mb-3">
+      <i class="fa-solid fa-user-shield text-[10px]"></i>
+      {{ _('Recording as admin on behalf of') }} {{ employee.full_name }}
+    </div>
+    {% endif %}
+    <form id="checkin-form" method="POST" action="{{ url_for('employees.checkin', user_id=employee.id) }}" class="space-y-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <select name="status"
+          class="text-sm border border-[hsl(var(--border))] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-300 dk-card w-full">
+          <option value="on_time">{{ _('On Time') }}</option>
+          <option value="late">{{ _('Late') }}</option>
+          <option value="exception">{{ _('Exception') }}</option>
+        </select>
+        {% if assigned_cases %}
+        <select name="case_id"
+          class="text-sm border border-[hsl(var(--border))] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-300 dk-card w-full">
+          <option value="">{{ _('No case (general check-in)') }}</option>
+          {% for case in assigned_cases %}
+          <option value="{{ case.id }}">{{ case.title }}</option>
+          {% endfor %}
+        </select>
+        {% endif %}
+      </div>
+      <input name="notes" type="text" placeholder="{{ _('Optional note (e.g. working remotely)...') }}" maxlength="200"
+        class="w-full text-sm border border-[hsl(var(--border))] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-300">
+      <button type="button" id="checkin-btn"
+        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors">
+        <i class="fa-solid fa-right-to-bracket text-xs"></i>
+        <span id="checkin-btn-label">{% if todays_checkin %}{{ _('Re-record') }}{% else %}{{ _('Clock In') }}{% endif %}</span>
+      </button>
+      <p id="checkin-hint" class="text-xs text-[hsl(var(--muted-foreground))] hidden">{{ _('Click again within 3 seconds to confirm.') }}</p>
+    </form>
+
+    {# Clock Out form — only show when there is an open check-in today (not yet clocked out) #}
+    {% if todays_checkin and not todays_checkin.checked_out_at %}
+    <div class="mt-4 pt-4 border-t border-[hsl(var(--border))]">
+      <div class="text-xs font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wide mb-3">{{ _('Clock Out') }}</div>
+      <form id="checkout-form" method="POST" action="{{ url_for('employees.checkout', user_id=employee.id) }}" class="space-y-3">
+        <select name="checkout_status"
+          class="text-sm border border-[hsl(var(--border))] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-300 dk-card w-full sm:w-auto">
+          <option value="finished">{{ _('Finished') }}</option>
+          <option value="early">{{ _('Early') }}</option>
+          <option value="exception">{{ _('Exception') }}</option>
+        </select>
+        <input name="checkout_notes" type="text" placeholder="{{ _('Optional note (e.g. heading to court)...') }}" maxlength="200"
+          class="w-full text-sm border border-[hsl(var(--border))] rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-slate-300">
+        <button type="button" id="checkout-btn"
+          class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-slate-600 hover:bg-slate-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors">
+          <i class="fa-solid fa-right-from-bracket text-xs"></i>
+          <span id="checkout-btn-label">{{ _('Clock Out') }}</span>
+        </button>
+        <p id="checkout-hint" class="text-xs text-[hsl(var(--muted-foreground))] hidden">{{ _('Click again within 3 seconds to confirm.') }}</p>
+      </form>
+    </div>
+    {% endif %}
+    {% endif %}
+
+    <!-- Recent check-ins timeline -->
+    <div class="mt-5 border-t border-[hsl(var(--border))] pt-4">
+      <div class="text-xs font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wide mb-3">{{ _('Attendance History') }}</div>
+
+      {# --- Filter pills --- #}
+      {% macro ci_url(range=ci_range, status=ci_status, case=ci_case) %}{{ url_for('employees.agenda', user_id=employee.id, ci_range=range, ci_status=status, ci_case=case) }}{% endmacro %}
+      <div class="flex flex-col gap-2 mb-4">
+        {# Time range pills #}
+        <div class="flex flex-wrap gap-1.5">
+          <span class="text-[10px] text-[hsl(var(--muted-foreground))] uppercase font-semibold self-center mr-1"><i class="fa-regular fa-calendar text-[9px]"></i></span>
+          {% for key, label in [('today', _('Today')),('week', _('This Week')),('7d', _('7 Days')),('14d', _('14 Days')),('30d', _('30 Days'))] %}
+          <a href="{{ ci_url(range=key) }}"
+             class="px-2.5 py-1 rounded-full text-xs font-medium transition-colors
+               {% if ci_range == key %}bg-teal-600 text-white{% else %}bg-slate-100 text-[hsl(var(--muted-foreground))] hover:bg-slate-200{% endif %}">
+            {{ label }}
+          </a>
+          {% endfor %}
+        </div>
+        {# Status chips #}
+        <div class="flex flex-wrap gap-1.5">
+          <span class="text-[10px] text-[hsl(var(--muted-foreground))] uppercase font-semibold self-center mr-1"><i class="fa-solid fa-tag text-[9px]"></i></span>
+          <a href="{{ ci_url(status='all') }}"
+             class="px-2.5 py-1 rounded-full text-xs font-medium transition-colors
+               {% if ci_status == 'all' %}bg-teal-600 text-white{% else %}bg-slate-100 text-[hsl(var(--muted-foreground))] hover:bg-slate-200{% endif %}">
+            {{ _('All') }}
+          </a>
+          {% for key, label, act_bg, act_text in [('on_time', _('On Time'),'bg-emerald-600','text-white'),('late', _('Late'),'bg-amber-500','text-white'),('exception', _('Exception'),'bg-rose-600','text-white')] %}
+          <a href="{{ ci_url(status=key) }}"
+             class="px-2.5 py-1 rounded-full text-xs font-medium transition-colors
+               {% if ci_status == key %}{{ act_bg }} {{ act_text }}{% else %}bg-slate-100 text-[hsl(var(--muted-foreground))] hover:bg-slate-200{% endif %}">
+            {{ label }}
+          </a>
+          {% endfor %}
+        </div>
+        {# Case dropdown #}
+        {% if assigned_cases %}
+        <div class="flex items-center gap-2">
+          <span class="text-[10px] text-[hsl(var(--muted-foreground))] uppercase font-semibold"><i class="fa-solid fa-briefcase text-[9px]"></i></span>
+          <select id="ci-case-filter" onchange="window.location.href=this.value"
+            class="text-xs border border-[hsl(var(--border))] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-teal-300 dk-card max-w-[220px]">
+            <option value="{{ ci_url(case='all') }}" {% if ci_case == 'all' %}selected{% endif %}>{{ _('All cases') }}</option>
+            {% for case in assigned_cases %}
+            <option value="{{ ci_url(case=case.id|string) }}" {% if ci_case == case.id|string %}selected{% endif %}>{{ case.title|truncate(30) }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        {% endif %}
+      </div>
+
+      {% if recent_checkins %}
+      <div class="space-y-2">
+        {% for ci in recent_checkins %}
+        <div class="flex flex-wrap items-center gap-2 sm:gap-3 text-sm py-1.5">
+          <div class="w-2 h-2 rounded-full flex-shrink-0
+            {% if ci.status == 'on_time' %}bg-emerald-400
+            {% elif ci.status == 'late' %}bg-amber-400
+            {% else %}bg-rose-400{% endif %}">
+          </div>
+          <div class="text-xs text-[hsl(var(--muted-foreground))] flex-shrink-0">
+            {{ format_dt(ci.checked_in_at) }}
+          </div>
+          {# Clock-in time #}
+          <span class="text-xs font-medium text-[hsl(var(--card-foreground))] flex-shrink-0">
+            <i class="fa-solid fa-right-to-bracket text-[9px] text-emerald-500 mr-0.5"></i>{{ format_time(ci.checked_in_at) }}
+          </span>
+          {# Clock-out time (or open indicator) #}
+          {% if ci.checked_out_at %}
+          <span class="text-xs font-medium text-[hsl(var(--card-foreground))] flex-shrink-0">
+            <i class="fa-solid fa-right-from-bracket text-[9px] text-[hsl(var(--muted-foreground))] mr-0.5"></i>{{ format_time(ci.checked_out_at) }}
+          </span>
+          <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-[hsl(var(--muted-foreground))] flex-shrink-0">
+            <i class="fa-regular fa-clock text-[8px] mr-0.5"></i>
+            {{ duration_mins(ci.checked_in_at, ci.checked_out_at) }}m
+          </span>
+          {% else %}
+          <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-teal-50 text-teal-600 flex-shrink-0">
+            <i class="fa-solid fa-circle text-[6px] mr-0.5 animate-pulse"></i> {{ _('Open') }}
+          </span>
+          {% endif %}
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0
+            {% if ci.status == 'on_time' %}badge-success
+            {% elif ci.status == 'late' %}badge-warning
+            {% else %}badge-danger{% endif %}">
+            {{ ci.status.replace('_',' ').title() }}
+          </span>
+          {% if ci.checked_out_at and ci.checkout_status and ci.checkout_status != 'finished' %}
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0
+            {% if ci.checkout_status == 'early' %}badge-warning
+            {% else %}badge-danger{% endif %}">
+            Out: {{ ci.checkout_status.title() }}
+          </span>
+          {% endif %}
+          {% if ci.source == 'admin' %}
+          <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-indigo-50 text-indigo-500 flex-shrink-0">
+            <i class="fa-solid fa-user-shield text-[8px] mr-0.5"></i> Admin
+          </span>
+          {% endif %}
+          <span class="text-xs text-[hsl(var(--muted-foreground))] truncate flex-1 min-w-0">
+            {% if ci.notes %}{{ ci.notes }}{% endif %}
+            {% if ci.checkout_notes %}<span class="text-[hsl(var(--muted-foreground))] ml-1">· {{ ci.checkout_notes }}</span>{% endif %}
+            {% if ci.case_title %}<span class="text-indigo-400 ml-1"><i class="fa-solid fa-briefcase text-[9px]"></i> {{ ci.case_title }}</span>{% endif %}
+          </span>
+          {% if current_user.role in ('admin','owner') %}
+          <form method="POST" action="{{ url_for('employees.delete_checkin', user_id=employee.id, checkin_id=ci.id) }}"
+                class="flex-shrink-0" onsubmit="return confirm('{{ _('Delete this check-in entry?') }}')">
+            <button type="submit" class="p-1 text-slate-300 hover:text-rose-500 transition-colors" title="Delete entry">
+              <i class="fa-solid fa-trash-can text-[10px]"></i>
+            </button>
+          </form>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="text-sm text-[hsl(var(--muted-foreground))] text-center py-6">{{ _('No check-in entries match the selected filters.') }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Pending Requests -->
+  <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-6">
+    <h3 class="font-semibold mb-4 flex items-center gap-2">
+      <i class="fa-solid fa-clock text-amber-500"></i> {{ _('Pending Requests') }}
+    </h3>
+    <div class="space-y-2">
+      {% for req in pending_requests %}
+      <div class="flex items-center gap-4 p-3 rounded-lg border border-[hsl(var(--border))]">
+        <div class="w-32 flex-shrink-0">
+          <div class="text-xs font-medium text-[hsl(var(--card-foreground))]">{{ format_dt(req.requested_start_datetime) }}</div>
+          <div class="text-xs text-[hsl(var(--muted-foreground))]">to {{ format_dt(req.requested_end_datetime) }}</div>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-medium">{{ req.request_type.replace('_',' ').title() }}</div>
+          {% if req.reason %}
+          <div class="text-xs text-[hsl(var(--muted-foreground))] truncate">{{ req.reason }}</div>
+          {% endif %}
+        </div>
+        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium badge-warning flex-shrink-0">
+          <i class="fa-solid fa-hourglass-half text-[9px] mr-1"></i> {{ _('Pending') }}
+        </span>
+      </div>
+      {% else %}
+      <p class="text-sm text-[hsl(var(--muted-foreground))] text-center py-6">{{ _('No pending requests') }}</p>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function(){
+  var btn = document.getElementById('checkin-btn');
+  if (!btn) return;
+  var form = document.getElementById('checkin-form');
+  var hint = document.getElementById('checkin-hint');
+  var label = document.getElementById('checkin-btn-label');
+  var primed = false;
+  var timer = null;
+  var originalText = label.textContent;
+
+  btn.addEventListener('click', function(){
+    if (primed) {
+      clearTimeout(timer);
+      primed = false;
+      btn.disabled = true;
+      label.textContent = '{{ _("Recording...") }}';
+      form.submit();
+    } else {
+      primed = true;
+      label.textContent = '{{ _("Click again to confirm") }}';
+      btn.classList.remove('bg-teal-600','hover:bg-teal-700');
+      btn.classList.add('bg-amber-500','hover:bg-amber-600');
+      hint.classList.remove('hidden');
+      timer = setTimeout(function(){
+        primed = false;
+        label.textContent = originalText;
+        btn.classList.remove('bg-amber-500','hover:bg-amber-600');
+        btn.classList.add('bg-teal-600','hover:bg-teal-700');
+        hint.classList.add('hidden');
+      }, 3000);
+    }
+  });
+})();
+
+/* Clock-Out double-click confirmation */
+(function(){
+  var btn = document.getElementById('checkout-btn');
+  if (!btn) return;
+  var form = document.getElementById('checkout-form');
+  var hint = document.getElementById('checkout-hint');
+  var label = document.getElementById('checkout-btn-label');
+  var primed = false;
+  var timer = null;
+
+  btn.addEventListener('click', function(){
+    if (primed) {
+      clearTimeout(timer);
+      primed = false;
+      btn.disabled = true;
+      label.textContent = '{{ _("Recording...") }}';
+      form.submit();
+    } else {
+      primed = true;
+      label.textContent = '{{ _("Click again to confirm") }}';
+      btn.classList.remove('bg-slate-600','hover:bg-slate-700');
+      btn.classList.add('bg-amber-500','hover:bg-amber-600');
+      hint.classList.remove('hidden');
+      timer = setTimeout(function(){
+        primed = false;
+        label.textContent = '{{ _("Clock Out") }}';
+        btn.classList.remove('bg-amber-500','hover:bg-amber-600');
+        btn.classList.add('bg-slate-600','hover:bg-slate-700');
+        hint.classList.add('hidden');
+      }, 3000);
+    }
+  });
+})();
+</script>
+<script>
+(function () {
+  function _timeAgo(isoStr) {
+    if (!isoStr) return '';
+    var d = new Date(isoStr.replace(' ', 'T') + 'Z');
+    var secs = Math.floor((Date.now() - d.getTime()) / 1000);
+    if (secs < 60) return 'just now';
+    if (secs < 3600) return Math.floor(secs / 60) + 'm ago';
+    if (secs < 86400) return Math.floor(secs / 3600) + 'h ago';
+    return Math.floor(secs / 86400) + 'd ago';
+  }
+  function _apply(entry) {
+    var lsEl = document.querySelector('[data-presence-lastseen="' + entry.user_id + '"]');
+    if (!lsEl) return;
+    if (entry.state === 'offline' && entry.last_seen_at) {
+      lsEl.textContent = 'Last seen ' + _timeAgo(entry.last_seen_at);
+      lsEl.classList.remove('hidden');
+    } else {
+      lsEl.textContent = '';
+      lsEl.classList.add('hidden');
+    }
+  }
+  function _boot() {
+    if (!window.Presence) return;
+    window.Presence.all().forEach(_apply);
+    var _prev = window.Presence.onUpdate;
+    window.Presence.onUpdate = function (e) { _apply(e); if (_prev) _prev(e); };
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(_boot, 200); });
+  } else { setTimeout(_boot, 200); }
+})();
+</script>
+{% endblock %}

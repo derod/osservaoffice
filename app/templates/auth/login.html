@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>OSSERVA OFFICE — Legal Operations Platform</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pulse-grid.css') }}">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { sidebar: '#1a1f2e' },
+          screens: { 'xs': '480px' },
+          fontFamily: {
+            display: ['Space Grotesk', 'Inter', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <script>
+    (function(){
+      try {
+        const t = localStorage.getItem('theme');
+        if (t === 'dark') document.documentElement.classList.add('dark');
+      } catch(e){}
+    })();
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .font-display { font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif; }
+
+    /* Subtle grid texture for hero panel */
+    .hero-grid {
+      background-image:
+        linear-gradient(hsl(var(--sidebar-background)) 0%, hsl(220 28% 11%) 100%),
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 39px,
+          hsla(220,30%,40%,0.07) 39px,
+          hsla(220,30%,40%,0.07) 40px
+        ),
+        repeating-linear-gradient(
+          90deg,
+          transparent,
+          transparent 39px,
+          hsla(220,30%,40%,0.07) 39px,
+          hsla(220,30%,40%,0.07) 40px
+        );
+    }
+
+    /* Accent line on benefit items */
+    .benefit-item::before {
+      content: '';
+      display: block;
+      width: 2px;
+      height: 100%;
+      position: absolute;
+      left: 0;
+      top: 0;
+      border-radius: 2px;
+      background: hsl(var(--sidebar-primary));
+      opacity: 0.7;
+    }
+
+    /* Divider with centered text */
+    .section-divider {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      color: hsl(var(--sidebar-muted));
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .section-divider::before,
+    .section-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: hsl(var(--sidebar-border));
+    }
+
+    /* Input focus ring consistent with app */
+    .pub-input {
+      background: hsla(220,25%,14%,1);
+      border: 1px solid hsl(var(--sidebar-border));
+      color: hsl(var(--sidebar-foreground));
+      border-radius: 0.625rem;
+      transition: border-color 150ms, box-shadow 150ms;
+    }
+    .pub-input::placeholder { color: hsl(var(--sidebar-muted)); }
+    .pub-input:focus {
+      outline: none;
+      border-color: hsla(220,60%,58%,0.6);
+      box-shadow: 0 0 0 3px hsla(220,60%,58%,0.15);
+    }
+
+    /* Language badge */
+    .lang-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.625rem;
+      border-radius: 9999px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      background: hsla(220,25%,22%,1);
+      border: 1px solid hsl(var(--sidebar-border));
+      color: hsl(var(--sidebar-foreground));
+    }
+
+    /* Footer link */
+    .pub-footer-link {
+      color: hsl(var(--sidebar-muted));
+      font-size: 0.75rem;
+      transition: color 150ms;
+      text-decoration: none;
+    }
+    .pub-footer-link:hover { color: hsl(var(--sidebar-foreground)); }
+
+    /* Smooth scroll */
+    html { scroll-behavior: smooth; }
+
+    @media (max-width: 1023px) {
+      .hero-grid { background: hsl(220 28% 9%); }
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-app transition-colors duration-200" style="color:hsl(var(--foreground))">
+
+<!-- =====================================================================
+     TOP NAVIGATION BAR (public, no sidebar)
+     ===================================================================== -->
+<header class="sticky top-0 z-50 w-full border-b"
+        style="background:hsla(var(--card),0.9);border-color:hsl(var(--border));backdrop-filter:blur(12px)">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+    <!-- Brand -->
+    <a href="{{ url_for('auth.login') }}" class="flex items-center gap-2.5 flex-shrink-0">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+           style="background:hsl(var(--sidebar-primary))">
+        <i class="fa-solid fa-building text-white text-xs"></i>
+      </div>
+      <span class="font-display font-bold text-sm tracking-wide" style="color:hsl(var(--foreground))">OSSERVA</span>
+      <span class="hidden xs:inline text-xs font-medium tracking-widest uppercase"
+            style="color:hsl(var(--muted-foreground))">Office</span>
+    </a>
+
+    <!-- Nav links (desktop) -->
+    <nav class="hidden md:flex items-center gap-6">
+      <a href="{{ url_for('public.about') }}" class="text-sm font-medium transition-colors hover:opacity-80"
+         style="color:hsl(var(--muted-foreground))">About</a>
+      <a href="{{ url_for('public.contact') }}" class="text-sm font-medium transition-colors hover:opacity-80"
+         style="color:hsl(var(--muted-foreground))">Contact</a>
+      <a href="{{ url_for('public.terms') }}" class="text-sm font-medium transition-colors hover:opacity-80"
+         style="color:hsl(var(--muted-foreground))">Terms</a>
+      <a href="{{ url_for('public.privacy') }}" class="text-sm font-medium transition-colors hover:opacity-80"
+         style="color:hsl(var(--muted-foreground))">Privacy</a>
+    </nav>
+
+    <!-- Right side -->
+    <div class="flex items-center gap-2">
+      <button onclick="toggleTheme()" id="theme-btn"
+              class="p-2 rounded-lg transition-colors hover:opacity-70"
+              style="color:hsl(var(--muted-foreground))" title="Toggle theme">
+        <i id="theme-icon" class="fa-solid fa-moon text-sm"></i>
+      </button>
+      <a href="#login"
+         class="inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-lg transition-opacity hover:opacity-90"
+         style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))">
+        Sign In
+      </a>
+    </div>
+  </div>
+</header>
+
+
+<!-- =====================================================================
+     HERO SPLIT — left: messaging, right: login card
+     ===================================================================== -->
+<section class="w-full min-h-[calc(100vh-3.5rem)] flex flex-col lg:flex-row">
+
+  <!-- Left panel: hero content -->
+  <div class="hero-grid flex-1 flex flex-col justify-center px-6 sm:px-10 lg:px-16 py-14 lg:py-20 order-2 lg:order-1">
+    <div class="max-w-xl">
+
+      <!-- Eyebrow -->
+      <div class="inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full border"
+           style="background:hsla(220,25%,18%,1);border-color:hsl(var(--sidebar-border))">
+        <span class="w-1.5 h-1.5 rounded-full flex-shrink-0"
+              style="background:hsl(var(--sidebar-primary))"></span>
+        <span class="text-xs font-semibold tracking-widest uppercase"
+              style="color:hsl(var(--sidebar-foreground))">Legal Operations Platform</span>
+      </div>
+
+      <!-- Headline -->
+      <h1 class="font-display font-bold leading-tight mb-4"
+          style="color:hsl(var(--sidebar-foreground));font-size:clamp(2rem,4vw,3rem)">
+        Operational control<br>for modern law firms
+      </h1>
+
+      <!-- Subheadline -->
+      <p class="text-base leading-relaxed mb-10"
+         style="color:hsl(var(--sidebar-muted));max-width:44ch">
+        Manage cases, calendars, clients, documents, internal workflows,
+        and team coordination from one secure platform designed for legal operations.
+      </p>
+
+      <!-- Benefits -->
+      <div class="mb-10">
+        <p class="text-xs font-bold uppercase tracking-widest mb-4"
+           style="color:hsl(var(--sidebar-muted))">Why firms choose OSSERVA OFFICE</p>
+        <ul class="space-y-3">
+          {% set benefits = [
+            ('fa-briefcase',        'Centralized case and client management'),
+            ('fa-calendar-days',    'Calendar, scheduling, and team visibility'),
+            ('fa-file-lines',       'Secure document organization'),
+            ('fa-arrows-spin',      'Internal workflow control'),
+            ('fa-mobile-screen',    'Mobile-first and tablet-ready interface'),
+            ('fa-cloud',            'Scalable cloud deployment'),
+            ('fa-language',         'Multilingual-ready experience'),
+          ] %}
+          {% for icon, label in benefits %}
+          <li class="relative flex items-center gap-3 pl-3 benefit-item">
+            <i class="fa-solid {{ icon }} text-xs flex-shrink-0"
+               style="color:hsl(var(--sidebar-primary));width:14px;text-align:center"></i>
+            <span class="text-sm" style="color:hsl(var(--sidebar-foreground))">{{ label }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <!-- Languages -->
+      <div>
+        <p class="text-xs font-bold uppercase tracking-widest mb-3"
+           style="color:hsl(var(--sidebar-muted))">Available Languages</p>
+        <div class="flex flex-wrap gap-2 mb-3">
+          {% for lang in ['English', 'Spanish', 'French', 'German', 'Dutch'] %}
+          <span class="lang-badge">{{ lang }}</span>
+          {% endfor %}
+        </div>
+        <div class="flex flex-wrap gap-2 mb-3">
+          {% for lang in ['Portuguese', 'Italian'] %}
+          <span class="lang-badge" style="opacity:0.55">{{ lang }} — coming soon</span>
+          {% endfor %}
+        </div>
+        <p class="text-xs leading-relaxed" style="color:hsl(var(--sidebar-muted));max-width:42ch">
+          OSSERVA OFFICE is designed to support multilingual work environments
+          and international teams.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right panel: login card -->
+  <div id="login"
+       class="w-full lg:w-[440px] xl:w-[480px] flex-shrink-0 flex items-center justify-center
+              px-5 sm:px-8 py-12 lg:py-20 order-1 lg:order-2"
+       style="background:hsl(var(--background));border-left:1px solid hsl(var(--border))">
+    <div class="w-full max-w-sm">
+
+      <!-- Logo mark (mobile / standalone) -->
+      <div class="flex items-center gap-3 mb-8">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow"
+             style="background:hsl(var(--sidebar-primary))">
+          <i class="fa-solid fa-building text-white text-sm"></i>
+        </div>
+        <div>
+          <div class="font-display font-bold text-base tracking-wide"
+               style="color:hsl(var(--foreground))">OSSERVA OFFICE</div>
+          <div class="text-[10px] font-medium tracking-widest uppercase"
+               style="color:hsl(var(--muted-foreground))">Secure Portal Access</div>
+        </div>
+      </div>
+
+      <!-- Heading -->
+      <h2 class="text-xl font-semibold mb-1" style="color:hsl(var(--foreground))">Welcome back</h2>
+      <p class="text-sm mb-7" style="color:hsl(var(--muted-foreground))">
+        Sign in to your office portal to continue.
+      </p>
+
+      <!-- Error alert -->
+      {% if error %}
+      <div class="flex items-center gap-2.5 px-4 py-3 rounded-lg border text-sm mb-5"
+           style="background:hsla(0,72%,51%,0.1);border-color:hsla(0,72%,51%,0.25);color:hsl(0,72%,58%)">
+        <i class="fa-solid fa-circle-exclamation flex-shrink-0 text-xs"></i>
+        <span>{{ error }}</span>
+      </div>
+      {% endif %}
+
+      <!-- Login form -->
+      <form method="POST" action="{{ url_for('auth.login') }}" class="space-y-4">
+
+        <div>
+          <label class="block text-xs font-medium mb-1.5"
+                 style="color:hsl(var(--muted-foreground))">Email address</label>
+          <div class="relative">
+            <i class="fa-solid fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-xs"
+               style="color:hsl(var(--muted-foreground))"></i>
+            <input type="email" name="email" required autocomplete="email"
+                   placeholder="name@firm.com"
+                   class="w-full pl-9 pr-4 py-3 text-sm focus:outline-none"
+                   style="background:hsl(var(--muted));border:1px solid hsl(var(--border));
+                          color:hsl(var(--foreground));border-radius:0.625rem;
+                          transition:border-color 150ms,box-shadow 150ms"
+                   onfocus="this.style.borderColor='hsl(220,60%,55%)';this.style.boxShadow='0 0 0 3px hsla(220,60%,55%,0.15)'"
+                   onblur="this.style.borderColor='';this.style.boxShadow=''">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium mb-1.5"
+                 style="color:hsl(var(--muted-foreground))">Password</label>
+          <div class="relative">
+            <i class="fa-solid fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-xs"
+               style="color:hsl(var(--muted-foreground))"></i>
+            <input type="password" name="password" id="password-field" required
+                   autocomplete="current-password"
+                   placeholder="••••••••"
+                   class="w-full pl-9 pr-10 py-3 text-sm focus:outline-none"
+                   style="background:hsl(var(--muted));border:1px solid hsl(var(--border));
+                          color:hsl(var(--foreground));border-radius:0.625rem;
+                          transition:border-color 150ms,box-shadow 150ms"
+                   onfocus="this.style.borderColor='hsl(220,60%,55%)';this.style.boxShadow='0 0 0 3px hsla(220,60%,55%,0.15)'"
+                   onblur="this.style.borderColor='';this.style.boxShadow=''">
+            <button type="button" onclick="togglePassword()"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 transition-opacity hover:opacity-70"
+                    style="color:hsl(var(--muted-foreground))" tabindex="-1" aria-label="Toggle password visibility">
+              <i id="pw-toggle-icon" class="fa-solid fa-eye text-xs"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit"
+                class="w-full font-semibold py-3 rounded-lg text-sm transition-opacity hover:opacity-90 mt-2"
+                style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))">
+          Sign in to OSSERVA
+        </button>
+
+      </form>
+
+      <!-- Divider -->
+      <div class="section-divider my-6">or</div>
+
+      <!-- Contact CTA -->
+      <p class="text-center text-xs" style="color:hsl(var(--muted-foreground))">
+        Need access for your firm?
+        <a href="{{ url_for('public.contact') }}"
+           class="font-semibold transition-colors hover:opacity-80"
+           style="color:hsl(var(--primary))">Request a demo</a>
+      </p>
+
+      <!-- Footer links -->
+      <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 mt-8 pt-6"
+           style="border-top:1px solid hsl(var(--border))">
+        <a href="{{ url_for('public.about') }}"   class="pub-footer-link" style="color:hsl(var(--muted-foreground))">About Us</a>
+        <span style="color:hsl(var(--border))">·</span>
+        <a href="{{ url_for('public.contact') }}" class="pub-footer-link" style="color:hsl(var(--muted-foreground))">Contact</a>
+        <span style="color:hsl(var(--border))">·</span>
+        <a href="{{ url_for('public.terms') }}"   class="pub-footer-link" style="color:hsl(var(--muted-foreground))">Terms</a>
+        <span style="color:hsl(var(--border))">·</span>
+        <a href="{{ url_for('public.privacy') }}" class="pub-footer-link" style="color:hsl(var(--muted-foreground))">Privacy</a>
+      </div>
+
+      <p class="text-center text-[10px] mt-4" style="color:hsl(var(--muted-foreground));opacity:0.6">
+        &copy; {{ now().year }} OSSERVA OFFICE. All rights reserved.
+      </p>
+
+      <p class="text-center mt-3">
+        <a href="{{ url_for('organizations.platform_dashboard') }}"
+           class="text-[10px] transition-colors hover:opacity-70"
+           style="color:hsl(var(--muted-foreground));opacity:0.4">
+          Admin Panel
+        </a>
+      </p>
+    </div>
+  </div>
+
+</section>
+
+
+<!-- =====================================================================
+     ADVISORY SECTION — implementation positioning
+     ===================================================================== -->
+<section class="w-full border-t" style="border-color:hsl(var(--border))">
+  <div class="max-w-6xl mx-auto px-5 sm:px-8 py-14 sm:py-20">
+
+    <!-- Section header -->
+    <div class="max-w-2xl mb-10 sm:mb-14">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-semibold tracking-widest uppercase mb-4"
+           style="background:hsl(var(--muted));border-color:hsl(var(--border));color:hsl(var(--muted-foreground))">
+        Implementation and Advisory
+      </div>
+      <h2 class="font-display font-bold leading-snug mb-3"
+          style="font-size:clamp(1.5rem,3vw,2.125rem);color:hsl(var(--foreground))">
+        A configured platform, not a generic tool
+      </h2>
+      <p class="text-base leading-relaxed" style="color:hsl(var(--muted-foreground))">
+        OSSERVA OFFICE is not limited to a standard setup. We offer implementation guidance,
+        workflow customization, and data transfer consultation for firms that need a more
+        tailored operational environment.
+      </p>
+    </div>
+
+    <!-- Service cards grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
+      {% set adv_services = [
+        ('fa-sliders',                'Workflow Configuration',       'Configure case stages, assignment rules, and document structure to match how your firm operates.'),
+        ('fa-arrow-right-arrow-left', 'Data Transfer Consultation',   'Moving from spreadsheets, email workflows, or another platform? We help map, clean, and import your existing records.'),
+        ('fa-route',                  'Onboarding Guidance',          'Structured onboarding for administrators, user role setup, and operational baseline configuration.'),
+        ('fa-wrench',                 'Customization Services',       'Tailored adaptation for firms with specific workflow requirements beyond standard configuration.'),
+        ('fa-cloud-arrow-up',         'Deployment Support',           'Assistance with cloud deployment, domain configuration, and production readiness for dedicated instances.'),
+        ('fa-language',               'Multilingual Environments',    'Each team member selects their own interface language. English, Spanish, French, German, and Dutch available now.'),
+      ] %}
+      {% for icon, title, desc in adv_services %}
+      <div class="dk-card rounded-xl p-5">
+        <div class="flex items-center gap-3 mb-2.5">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+               style="background:hsl(var(--muted))">
+            <i class="fa-solid {{ icon }} text-xs" style="color:hsl(var(--primary))"></i>
+          </div>
+          <span class="font-semibold text-sm" style="color:hsl(var(--foreground))">{{ title }}</span>
+        </div>
+        <p class="text-xs leading-relaxed" style="color:hsl(var(--muted-foreground))">{{ desc }}</p>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- CTA strip -->
+    <div class="rounded-xl border p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5"
+         style="background:hsl(var(--muted));border-color:hsl(var(--border))">
+      <div>
+        <p class="font-display font-bold text-base mb-1" style="color:hsl(var(--foreground))">
+          Ready to evaluate OSSERVA OFFICE for your firm?
+        </p>
+        <p class="text-sm" style="color:hsl(var(--muted-foreground))">
+          Need a tailored setup? Ask about customization and data transfer consultation.
+        </p>
+      </div>
+      <div class="flex flex-col xs:flex-row gap-3 flex-shrink-0">
+        <a href="{{ url_for('public.contact') }}?interest=Request+Demo"
+           class="inline-flex items-center justify-center gap-2 text-sm font-semibold px-5 py-3 rounded-lg transition-opacity hover:opacity-90 whitespace-nowrap"
+           style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))">
+          Request Demo
+        </a>
+        <a href="{{ url_for('public.contact') }}?interest=Pricing"
+           class="inline-flex items-center justify-center gap-2 text-sm font-medium px-5 py-3 rounded-lg border transition-colors hover:opacity-80 whitespace-nowrap"
+           style="border-color:hsl(var(--border));color:hsl(var(--muted-foreground))">
+          Contact Sales
+        </a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<script>
+  // Theme toggle
+  function _updateThemeIcon() {
+    const icon = document.getElementById('theme-icon');
+    if (!icon) return;
+    icon.className = document.documentElement.classList.contains('dark')
+      ? 'fa-solid fa-sun text-sm'
+      : 'fa-solid fa-moon text-sm';
+  }
+  function toggleTheme() {
+    const isDark = document.documentElement.classList.toggle('dark');
+    try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch(e){}
+    _updateThemeIcon();
+  }
+  document.addEventListener('DOMContentLoaded', _updateThemeIcon);
+
+  // Password visibility toggle
+  function togglePassword() {
+    const field = document.getElementById('password-field');
+    const icon  = document.getElementById('pw-toggle-icon');
+    if (field.type === 'password') {
+      field.type = 'text';
+      icon.className = 'fa-solid fa-eye-slash text-xs';
+    } else {
+      field.type = 'password';
+      icon.className = 'fa-solid fa-eye text-xs';
+    }
+  }
+</script>
+</body>
+</html>

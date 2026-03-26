@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>{% block title %}OSSERVA OFFICE{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/pulse-grid.css') }}">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { sidebar: '#1a1f2e' },
+          screens: { 'xs': '480px' }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .avatar-initials { display:flex;align-items:center;justify-content:center;border-radius:50%;font-weight:600;color:white;flex-shrink:0; }
+
+    /* Sidebar drawer for mobile */
+    #sidebar-overlay { transition: opacity 200ms; }
+    #sidebar-drawer { transition: transform 250ms ease-in-out; }
+    #sidebar-drawer.drawer-closed { transform: translateX(-100%); }
+    #sidebar-drawer.drawer-open { transform: translateX(0); }
+
+    /* Prevent horizontal overflow globally */
+    html, body { overflow-x: hidden; max-width: 100vw; }
+
+    /* Responsive containers */
+    .page-container { width: 100%; max-width: 1280px; }
+
+    /* Touch-friendly inputs on mobile */
+    @media (max-width: 767px) {
+      input, select, textarea, button[type="submit"] {
+        min-height: 44px;
+        font-size: 16px !important;
+      }
+    }
+  </style>
+  <script>
+    function _updateThemeIcon() {
+      const icon = document.getElementById('theme-icon');
+      if (!icon) return;
+      const isDark = document.documentElement.classList.contains('dark');
+      icon.className = isDark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+    }
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch(e){}
+      _updateThemeIcon();
+    }
+    (function initTheme(){
+      try {
+        const t = localStorage.getItem('theme');
+        if (t === 'dark') document.documentElement.classList.add('dark');
+      } catch(e){}
+    })();
+  </script>
+</head>
+<body class="bg-app min-h-screen transition-colors duration-200" style="color:hsl(var(--foreground))">
+
+<!-- ===== Mobile overlay ===== -->
+<div id="sidebar-overlay" class="fixed inset-0 bg-black/40 z-40 hidden lg:hidden" onclick="closeSidebar()"></div>
+
+<!-- ===== Sidebar (desktop: fixed, mobile: drawer) ===== -->
+<aside id="sidebar-drawer"
+  class="w-60 min-h-screen sidebar-gradient flex-shrink-0 flex flex-col fixed left-0 top-0 bottom-0 z-50 overflow-y-auto
+         drawer-closed lg:!translate-x-0">
+  <div class="flex items-center gap-3 px-5 py-5 border-b border-sidebar">
+    <div class="w-9 h-9 bg-[hsl(var(--sidebar-primary))] rounded-lg flex items-center justify-center">
+      <i class="fa-solid fa-building text-[hsl(var(--sidebar-primary-foreground))] text-sm"></i>
+    </div>
+    <div class="flex-1 min-w-0">
+      <div class="text-[hsl(var(--sidebar-foreground))] font-bold text-sm tracking-wide font-display">OSSERVA</div>
+      {% if current_org %}
+      <div class="text-[hsl(var(--sidebar-muted))] text-[10px] uppercase tracking-widest truncate" title="{{ current_org.name }}">{{ current_org.name }}</div>
+      {% elif current_user and current_user.role == 'super_admin' %}
+      <div class="text-[hsl(var(--sidebar-muted))] text-[10px] uppercase tracking-widest">Super Admin</div>
+      {% else %}
+      <div class="text-[hsl(var(--sidebar-muted))] text-[10px] uppercase tracking-widest">Office</div>
+      {% endif %}
+    </div>
+    <!-- Close button (mobile only) -->
+    <button onclick="closeSidebar()" class="lg:hidden text-[hsl(var(--sidebar-foreground))] p-1 hover:opacity-80">
+      <i class="fa-solid fa-xmark text-lg"></i>
+    </button>
+  </div>
+  <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+
+    {# ── TRABAJO ────────────────────────────────────────────── #}
+    <div class="px-2 pt-1 pb-1.5"><span class="text-[9px] font-bold uppercase tracking-[0.15em] text-[hsl(var(--sidebar-muted))]">{{ _('Work') }}</span></div>
+    {% set work_items = [
+      ('dashboard.index',          'fa-gauge-high',        'Dashboard',         'dashboard'),
+      ('inbox.index',              'fa-envelope',          'Inbox',             'inbox'),
+      ('cases.board',              'fa-briefcase',         'Cases',             'cases'),
+      ('clients.list_clients',     'fa-address-book',      'Clients',           'clients'),
+      ('documents.list_docs',      'fa-file-lines',        'Documents',         'documents'),
+      ('legal_consultant.index',   'fa-scale-balanced',    'Legal Consultant',  'legal_consultant'),
+      ('live_room.index',          'fa-tower-broadcast',   'Live Room',         'live_room'),
+    ] %}
+    {% for endpoint, icon, label, key in work_items %}
+    <a href="{{ url_for(endpoint) }}" onclick="closeSidebar()"
+       class="nav-item {% if active_nav == key %}nav-item-active{% endif %}">
+      <i class="fa-solid {{ icon }}" style="width:18px;text-align:center"></i>
+      <span>{{ _(label) }}</span>
+      {% if key == 'inbox' and inbox_unread %}
+      <span class="ml-auto inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold bg-rose-500 text-white rounded-full">{{ inbox_unread }}</span>
+      {% endif %}
+    </a>
+    {% endfor %}
+    {% if current_user and current_user.role in ('admin','owner','super_admin') %}
+    <a href="{{ url_for('gmail_inbox.index') }}" onclick="closeSidebar()"
+       class="nav-item {% if active_nav == 'correos_nuevos' %}nav-item-active{% endif %}">
+      <i class="fa-solid fa-envelope-open-text" style="width:18px;text-align:center"></i>
+      <span>Correos Nuevos</span>
+    </a>
+    {% endif %}
+
+    <a href="{{ url_for('trash.index') }}" onclick="closeSidebar()"
+       class="nav-item {% if active_nav == 'trash' %}nav-item-active{% endif %}">
+      <i class="fa-solid fa-trash-can" style="width:18px;text-align:center"></i>
+      <span>{{ _('Trash') }}</span>
+    </a>
+
+    {# ── AGENDA ─────────────────────────────────────────────── #}
+    <div class="px-2 pt-3 pb-1.5"><span class="text-[9px] font-bold uppercase tracking-[0.15em] text-[hsl(var(--sidebar-muted))]">{{ _('Schedule') }}</span></div>
+    {% set schedule_items = [
+      ('calendar.index',                       'fa-calendar-days',      'Calendar',          'calendar'),
+      ('availability.index',                   'fa-circle-dot',         'Availability',      'availability'),
+      ('schedule_requests.list_requests',      'fa-clock-rotate-left',  'Schedule Requests', 'schedule_requests'),
+    ] %}
+    {% for endpoint, icon, label, key in schedule_items %}
+    <a href="{{ url_for(endpoint) }}" onclick="closeSidebar()"
+       class="nav-item {% if active_nav == key %}nav-item-active{% endif %}">
+      <i class="fa-solid {{ icon }}" style="width:18px;text-align:center"></i>
+      <span>{{ _(label) }}</span>
+    </a>
+    {% endfor %}
+    {% if current_user %}
+    <a href="{{ url_for('employees.agenda', user_id=current_user.id) }}" onclick="closeSidebar()"
+       class="nav-item {% if active_nav == 'clockin' %}nav-item-active{% endif %}">
+      <i class="fa-solid fa-right-to-bracket" style="width:18px;text-align:center"></i>
+      <span>{{ _('Clock In') }}</span>
+    </a>
+    {% endif %}
+    {% if current_user and current_user.role in ('admin','owner','super_admin') %}
+    <a href="{{ url_for('logins.index') }}" onclick="closeSidebar()"
+       class="nav-item {% if active_nav == 'logins' %}nav-item-active{% endif %}">
+      <i class="fa-solid fa-user-clock" style="width:18px;text-align:center"></i>
+      <span>{{ _('Log In') }}</span>
+    </a>
+    {% endif %}
+
+    {# ── GESTIÓN ────────────────────────────────────────────── #}
+    <div class="px-2 pt-3 pb-1.5"><span class="text-[9px] font-bold uppercase tracking-[0.15em] text-[hsl(var(--sidebar-muted))]">{{ _('Management') }}</span></div>
+    <a href="{{ url_for('employees.list_employees') }}" onclick="closeSidebar()"
+       class="nav-item {% if active_nav == 'employees' %}nav-item-active{% endif %}">
+      <i class="fa-solid fa-users" style="width:18px;text-align:center"></i>
+      <span>{{ _('Employees') }}</span>
+    </a>
+    <a href="{{ url_for('announcements.index') }}" onclick="closeSidebar()"
+       class="nav-item {% if active_nav == 'announcements' %}nav-item-active{% endif %}">
+      <i class="fa-solid fa-bullhorn" style="width:18px;text-align:center"></i>
+      <span>{{ _('Announcements') }}</span>
+    </a>
+
+    {# ── ADMINISTRACIÓN (admin/owner only) ──────────────────── #}
+    {% if current_user and current_user.role in ('admin','owner','super_admin') %}
+    <div class="px-2 pt-3 pb-1.5"><span class="text-[9px] font-bold uppercase tracking-[0.15em] text-[hsl(var(--sidebar-muted))]">{{ _('Admin') }}</span></div>
+    <a href="{{ url_for('finances.index') }}" onclick="closeSidebar()"
+       class="nav-item {% if active_nav == 'finances' %}nav-item-active{% endif %}">
+      <i class="fa-solid fa-chart-line" style="width:18px;text-align:center"></i>
+      <span>{{ _('Finances') }}</span>
+    </a>
+    <a href="{{ url_for('settings.index') }}" onclick="closeSidebar()"
+       class="nav-item {% if active_nav == 'settings' %}nav-item-active{% endif %}">
+      <i class="fa-solid fa-gear" style="width:18px;text-align:center"></i>
+      <span>{{ _('Settings') }}</span>
+    </a>
+    {% endif %}
+
+    {# ── PLATFORM (super_admin only) ─────────────────────────── #}
+    {% if current_user and current_user.role == 'super_admin' %}
+    <div class="px-2 pt-3 pb-1.5"><span class="text-[9px] font-bold uppercase tracking-[0.15em] text-[hsl(var(--sidebar-muted))]">Platform</span></div>
+    <a href="{{ url_for('organizations.platform_dashboard') }}" onclick="closeSidebar()"
+       class="nav-item {% if active_nav == 'platform' %}nav-item-active{% endif %}">
+      <i class="fa-solid fa-tower-control" style="width:18px;text-align:center"></i>
+      <span>Platform</span>
+    </a>
+    <a href="{{ url_for('organizations.list_orgs') }}" onclick="closeSidebar()"
+       class="nav-item {% if active_nav == 'organizations' %}nav-item-active{% endif %}">
+      <i class="fa-solid fa-building-columns" style="width:18px;text-align:center"></i>
+      <span>Organizations</span>
+    </a>
+    <a href="{{ url_for('organizations.leads_list') }}" onclick="closeSidebar()"
+       class="nav-item {% if active_nav == 'leads' %}nav-item-active{% endif %}">
+      <i class="fa-solid fa-inbox" style="width:18px;text-align:center"></i>
+      <span>Leads</span>
+    </a>
+    {% endif %}
+
+  </nav>
+</aside>
+
+<!-- ===== Main content area ===== -->
+<div class="lg:ml-60 flex-1 flex flex-col min-h-screen">
+  <!-- Topbar -->
+  <header class="sticky top-0 z-30 h-14 backdrop-blur-md border-b flex items-center gap-2 px-3 sm:px-6 transition-colors duration-200"
+          style="background:hsla(var(--card),0.85);border-color:hsl(var(--border))">
+    <!-- Hamburger (mobile) -->
+    <button onclick="openSidebar()" class="lg:hidden p-2 -ml-1 rounded-lg flex-shrink-0 hover:opacity-70 transition-opacity" aria-label="Open menu"
+            style="color:hsl(var(--muted-foreground))">
+      <i class="fa-solid fa-bars text-lg"></i>
+    </button>
+
+    <!-- Search -->
+    <div class="flex-1 max-w-md hidden sm:block">
+      <div class="relative">
+        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-sm" style="color:hsl(var(--muted-foreground))"></i>
+        <input type="text" placeholder="{{ _('Search cases, clients, employees...') }}"
+          class="w-full pl-9 pr-4 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 transition-colors"
+          style="background:hsl(var(--muted));border:1px solid hsl(var(--border));color:hsl(var(--foreground));--tw-ring-color:hsl(var(--ring))">
+      </div>
+    </div>
+    <div class="flex-1"></div>
+
+    <button type="button" onclick="toggleTheme()" id="theme-btn"
+            class="p-2 rounded-lg transition-colors hover:opacity-70 flex-shrink-0"
+            style="color:hsl(var(--muted-foreground))" title="{{ _('Toggle theme') }}">
+      <i id="theme-icon" class="fa-solid fa-moon"></i>
+    </button>
+    <a href="{{ url_for('inbox.index') }}" class="relative p-2 rounded-lg flex-shrink-0 hover:opacity-70 transition-opacity"
+       style="color:hsl(var(--muted-foreground))" title="{{ _('Inbox') }}">
+      <i class="fa-solid fa-envelope text-lg"></i>
+      {% if inbox_unread %}
+      <span class="absolute top-1 right-1 min-w-[16px] h-4 px-0.5 text-[9px] font-bold bg-rose-500 text-white rounded-full flex items-center justify-center">{{ inbox_unread }}</span>
+      {% endif %}
+    </a>
+    <button class="relative p-2 rounded-lg flex-shrink-0 hover:opacity-70 transition-opacity"
+            style="color:hsl(var(--muted-foreground))">
+      <i class="fa-solid fa-bell text-lg"></i>
+      <span class="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full"></span>
+    </button>
+    {% if current_user %}
+    <div class="flex items-center gap-2">
+      <a href="{{ url_for('settings.index') }}" class="flex items-center gap-2 hover:opacity-80">
+        <div class="avatar-initials w-9 h-9 text-sm" style="background-color:{{ current_user.avatar_color }}">
+          {{ get_initials(current_user.full_name) }}
+        </div>
+        <span class="text-sm font-medium hidden md:inline" style="color:hsl(var(--foreground))">{{ current_user.full_name }}</span>
+      </a>
+      <a href="{{ url_for('auth.logout') }}" class="p-2 rounded-lg hover:opacity-70 transition-opacity"
+         style="color:hsl(var(--muted-foreground))" title="{{ _('Logout') }}">
+        <i class="fa-solid fa-right-from-bracket text-sm"></i>
+      </a>
+    </div>
+    {% endif %}
+  </header>
+
+  <main class="flex-1 p-3 sm:p-4 md:p-6 overflow-x-hidden">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="mb-4 space-y-2">
+      {% for category, message in messages %}
+      <div class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm border"
+           style="{% if category == 'error' %}background:hsla(0,72%,51%,0.12);border-color:hsla(0,72%,51%,0.3);color:hsl(0,72%,55%){% elif category == 'success' %}background:hsla(152,60%,42%,0.12);border-color:hsla(152,60%,42%,0.3);color:hsl(152,60%,42%){% else %}background:hsla(200,80%,50%,0.12);border-color:hsla(200,80%,50%,0.3);color:hsl(200,80%,50%){% endif %}">
+        <i class="fa-solid {% if category == 'error' %}fa-circle-exclamation{% elif category == 'success' %}fa-circle-check{% else %}fa-circle-info{% endif %} text-xs flex-shrink-0"></i>
+        <span>{{ message }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', _updateThemeIcon);
+function openSidebar() {
+  document.getElementById('sidebar-drawer').classList.remove('drawer-closed');
+  document.getElementById('sidebar-drawer').classList.add('drawer-open');
+  document.getElementById('sidebar-overlay').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+function closeSidebar() {
+  document.getElementById('sidebar-drawer').classList.remove('drawer-open');
+  document.getElementById('sidebar-drawer').classList.add('drawer-closed');
+  document.getElementById('sidebar-overlay').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+</script>
+{% block scripts %}{% endblock %}
+
+{# ── PRESENCE (authenticated pages only) ─────────────────────── #}
+{% if current_user %}
+<script>
+// ── Config ──────────────────────────────────────────────────────
+var _presenceHBMs  = 30000;   // heartbeat every 30 s
+var _presenceIdle  = 300000;  // 5 min → away
+
+// ── State ───────────────────────────────────────────────────────
+var _presenceMap   = {};      // user_id -> entry
+var _presenceTimer = null;
+var _presenceSock  = null;
+var _presenceIsBusy = false;
+
+// ── Helpers ─────────────────────────────────────────────────────
+var _PC = { online: '#22c55e', away: '#f59e0b', offline: '#6b7280' };
+var _PT = { online: 'Online',  away: 'Away',    offline: 'Offline' };
+
+function _presenceSet(e) { _presenceMap[e.user_id] = e; }
+
+function _presenceRefresh() {
+  document.querySelectorAll('[data-presence-uid]').forEach(function (el) {
+    var uid   = parseInt(el.getAttribute('data-presence-uid'), 10);
+    var entry = _presenceMap[uid];
+    var state = entry ? entry.state : 'offline';
+    el.style.background = _PC[state] || _PC.offline;
+    el.title = _PT[state] || _PT.offline;
+  });
+}
+
+function _presenceResetIdle() {
+  clearTimeout(_presenceTimer);
+  if (_presenceIsBusy && _presenceSock) {
+    _presenceIsBusy = false;
+    _presenceSock.emit('presence_active');
+  }
+  _presenceTimer = setTimeout(function () {
+    _presenceIsBusy = true;
+    if (_presenceSock) _presenceSock.emit('presence_idle');
+  }, _presenceIdle);
+}
+
+// ── Public API ──────────────────────────────────────────────────
+window.Presence = {
+  get: function (uid) { return _presenceMap[uid] || null; },
+  all: function () { return Object.values(_presenceMap); },
+  dot: function (uid) {
+    var e = _presenceMap[uid];
+    var state = e ? e.state : 'offline';
+    return '<span class="presence-dot" data-presence-uid="' + uid + '" ' +
+           'style="display:inline-block;width:9px;height:9px;border-radius:50%;' +
+           'background:' + (_PC[state]||_PC.offline) + ';flex-shrink:0;vertical-align:middle;" ' +
+           'title="' + (_PT[state]||_PT.offline) + '"></span>';
+  },
+  refreshDots: _presenceRefresh,
+  onUpdate: null,
+};
+
+// ── Connect (called once io is ready) ───────────────────────────
+function _initPresence() {
+  _presenceSock = io('/presence', { transports: ['websocket', 'polling'] });
+
+  _presenceSock.on('presence_snapshot', function (data) {
+    (data.presence || []).forEach(_presenceSet);
+    _presenceRefresh();
+    if (typeof window.Presence.onUpdate === 'function')
+      (data.presence || []).forEach(window.Presence.onUpdate);
+  });
+
+  _presenceSock.on('presence_update', function (data) {
+    if (!data.user) return;
+    _presenceSet(data.user);
+    _presenceRefresh();
+    if (typeof window.Presence.onUpdate === 'function')
+      window.Presence.onUpdate(data.user);
+  });
+
+  setInterval(function () {
+    if (_presenceSock && _presenceSock.connected) _presenceSock.emit('presence_heartbeat');
+  }, _presenceHBMs);
+}
+
+// ── Idle detection ───────────────────────────────────────────────
+['mousemove','keydown','click','touchstart','scroll'].forEach(function (ev) {
+  document.addEventListener(ev, _presenceResetIdle, { passive: true });
+});
+_presenceResetIdle();
+
+// ── Bootstrap ────────────────────────────────────────────────────
+// If io is already defined (live_room loaded it), run now; otherwise load it.
+(function () {
+  function _boot() {
+    if (typeof io !== 'undefined') { _initPresence(); return; }
+    var s = document.createElement('script');
+    s.src = 'https://cdn.socket.io/4.7.5/socket.io.min.js';
+    s.integrity = 'sha384-2huIO7aB7PkA+y9OFriV6gGFGlWKvwV+Y0Kp4OCB8xoL0uOoZRFjbcQSgLInSCt';
+    s.crossOrigin = 'anonymous';
+    s.onload = _initPresence;
+    document.head.appendChild(s);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', _boot);
+  } else {
+    _boot();
+  }
+})();
+</script>
+{% endif %}
+</body>
+</html>

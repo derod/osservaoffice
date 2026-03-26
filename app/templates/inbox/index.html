@@ -1,0 +1,189 @@
+{% extends "base.html" %}{% set active_nav="inbox" %}
+{% block title %}{{ _('Inbox') }} — OSSERVA OFFICE{% endblock %}
+{% block content %}
+<div class="w-full max-w-4xl">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5 sm:mb-6">
+    <h1 class="text-xl sm:text-2xl font-bold" style="color:hsl(var(--foreground))">{{ _('Inbox') }}</h1>
+    <button onclick="document.getElementById('compose-modal').classList.remove('hidden')"
+      class="inline-flex items-center justify-center gap-2 text-sm font-medium px-4 py-2.5 rounded-xl transition-colors w-full sm:w-auto"
+      style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))">
+      <i class="fa-solid fa-pen-to-square text-xs"></i> {{ _('Compose') }}
+    </button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="flex gap-1 mb-4 overflow-x-auto" style="border-bottom:1px solid hsl(var(--border))">
+    <a href="{{ url_for('inbox.index', tab='received') }}"
+       class="px-3 sm:px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap
+         {% if tab == 'received' %}border-blue-500{% else %}border-transparent hover:opacity-80{% endif %}"
+       style="color:{% if tab == 'received' %}hsl(var(--foreground)){% else %}hsl(var(--muted-foreground)){% endif %}">
+      <i class="fa-solid fa-inbox text-xs mr-1"></i> {{ _('Received') }}
+      {% if inbox_unread %}
+      <span class="ml-1 inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold bg-rose-500 text-white rounded-full">{{ inbox_unread }}</span>
+      {% endif %}
+    </a>
+    <a href="{{ url_for('inbox.index', tab='sent') }}"
+       class="px-3 sm:px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap
+         {% if tab == 'sent' %}border-blue-500{% else %}border-transparent hover:opacity-80{% endif %}"
+       style="color:{% if tab == 'sent' %}hsl(var(--foreground)){% else %}hsl(var(--muted-foreground)){% endif %}">
+      <i class="fa-solid fa-paper-plane text-xs mr-1"></i> {{ _('Sent') }}
+    </a>
+    <a href="{{ url_for('inbox.index', tab='trash') }}"
+       class="px-3 sm:px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap
+         {% if tab == 'trash' %}border-blue-500{% else %}border-transparent hover:opacity-80{% endif %}"
+       style="color:{% if tab == 'trash' %}hsl(var(--foreground)){% else %}hsl(var(--muted-foreground)){% endif %}">
+      <i class="fa-solid fa-trash-can text-xs mr-1"></i> {{ _('Trash') }}
+      {% if trash_count %}
+      <span class="ml-1 inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold rounded-full" style="background:hsl(var(--muted));color:hsl(var(--muted-foreground))">{{ trash_count }}</span>
+      {% endif %}
+    </a>
+  </div>
+
+  <!-- Conversation list -->
+  <div class="space-y-2">
+    {% for msg in conversations %}
+    <div class="relative group dk-card dk-card-hover transition-colors duration-150
+      {% if tab == 'received' and unread_counts.get(msg.id, 0) > 0 %}border-l-[3px]{% endif %}"
+      style="{% if tab == 'received' and unread_counts.get(msg.id, 0) > 0 %}border-left-color:hsl(210,70%,58%){% endif %}">
+      <a href="{{ url_for('inbox.thread', msg_id=msg.id) }}" class="block p-4">
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0 flex-1">
+            <div class="avatar-initials w-9 h-9 text-sm flex-shrink-0" style="background-color:{{ msg.other_color }}">
+              {{ get_initials(msg.other_name) }}
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2">
+                <span class="font-medium text-sm truncate" style="color:{% if tab == 'received' and unread_counts.get(msg.id, 0) > 0 %}hsl(var(--foreground)){% else %}hsl(var(--muted-foreground)){% endif %}">
+                  {{ msg.other_name }}
+                </span>
+                {% if tab == 'received' and unread_counts.get(msg.id, 0) > 0 %}
+                <span class="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold bg-blue-500 text-white rounded-full">
+                  {{ unread_counts[msg.id] }}
+                </span>
+                {% endif %}
+              </div>
+              <div class="text-sm font-semibold truncate" style="color:hsl(var(--foreground))">{{ msg.subject }}</div>
+              <div class="text-xs mt-0.5 flex items-center gap-1" style="color:hsl(var(--muted-foreground))">
+                <span class="font-semibold">{{ msg.latest_sender_label }}</span>
+                <span style="color:hsl(var(--border))">&middot;</span>
+                <span class="truncate">{{ msg.latest_excerpt }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="text-xs flex-shrink-0 whitespace-nowrap text-right" style="color:hsl(var(--muted-foreground))">
+            <span class="block">{{ format_dt(msg.latest_at or msg.created_at, '%b %d') }}</span>
+            <span class="block text-[10px]">{{ format_time(msg.latest_at or msg.created_at) }}</span>
+          </div>
+        </div>
+      </a>
+      {% if tab == 'trash' %}
+      <form method="POST" action="{{ url_for('inbox.restore', msg_id=msg.id) }}"
+        class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button type="submit" title="{{ _('Restore') }}"
+          class="p-1.5 rounded-lg transition-colors" style="color:hsl(152,55%,50%)" onmouseover="this.style.background='hsla(152,55%,38%,0.12)'" onmouseout="this.style.background='transparent'">
+          <i class="fa-solid fa-arrow-rotate-left text-xs"></i>
+        </button>
+      </form>
+      {% else %}
+      <button type="button" title="{{ _('Delete') }}"
+        onclick="event.stopPropagation(); openDeleteModal({{ msg.id }}, '{{ msg.subject | e }}')"
+        class="absolute top-3 right-3 p-1.5 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+        style="color:hsl(var(--muted-foreground))" onmouseover="this.style.background='hsla(0,55%,40%,0.1)';this.style.color='hsl(0,60%,58%)'" onmouseout="this.style.background='transparent';this.style.color='hsl(var(--muted-foreground))'">
+        <i class="fa-solid fa-trash-can text-xs"></i>
+      </button>
+      {% endif %}
+    </div>
+    {% else %}
+    <div class="dk-card p-8 text-center">
+      <i class="fa-solid {% if tab == 'trash' %}fa-trash-can{% else %}fa-envelope-open{% endif %} text-3xl mb-3" style="color:hsl(var(--muted-foreground))"></i>
+      <p class="text-sm" style="color:hsl(var(--muted-foreground))">
+        {% if tab == 'trash' %}{{ _('Trash is empty') }}
+        {% elif tab == 'sent' %}{{ _('No sent messages') }}
+        {% else %}{{ _('No messages yet') }}{% endif %}
+      </p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="delete-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+  <div class="dk-modal w-full max-w-sm mx-4 overflow-hidden">
+    <div class="px-5 py-4" style="border-bottom:1px solid hsl(var(--border))">
+      <h3 class="font-semibold" style="color:hsl(var(--foreground))">{{ _('Delete conversation?') }}</h3>
+    </div>
+    <div class="px-5 py-4">
+      <p class="text-sm" style="color:hsl(var(--muted-foreground))">{{ _('This will move the conversation to trash. It can be restored within 30 days.') }}</p>
+      <p class="text-sm mt-2" style="color:hsl(var(--muted-foreground))" id="delete-subject-preview"></p>
+    </div>
+    <div class="flex justify-end gap-2 px-5 py-3 dk-modal-footer">
+      <button type="button" onclick="closeDeleteModal()"
+        class="px-4 py-2 text-sm rounded-lg transition-colors" style="color:hsl(var(--muted-foreground))" onmouseover="this.style.background='hsl(var(--muted))'" onmouseout="this.style.background='transparent'">{{ _('Cancel') }}</button>
+      <form id="delete-form" method="POST">
+        <button type="submit"
+          class="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+          style="background:hsla(0,55%,40%,0.18);color:hsl(0,60%,62%);border:1px solid hsla(0,55%,40%,0.25)">
+          <i class="fa-solid fa-trash-can text-xs"></i> {{ _('Delete') }}
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Compose Modal -->
+<div id="compose-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+  <div class="dk-modal w-full max-w-lg mx-4 overflow-hidden">
+    <div class="flex items-center justify-between px-5 py-4" style="border-bottom:1px solid hsl(var(--border))">
+      <h3 class="font-semibold" style="color:hsl(var(--foreground))">{{ _('New Message') }}</h3>
+      <button onclick="document.getElementById('compose-modal').classList.add('hidden')"
+        class="p-1 hover:opacity-70" style="color:hsl(var(--muted-foreground))">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <form method="POST" action="{{ url_for('inbox.compose') }}" class="p-5 space-y-4">
+      <div>
+        <label class="block text-xs font-medium mb-1" style="color:hsl(var(--muted-foreground))">{{ _('To') }}</label>
+        <select name="recipient_id" required class="dk-input w-full px-3 py-2.5 text-sm">
+          <option value="">{{ _('Select recipient...') }}</option>
+          {% for u in users %}
+          <option value="{{ u.id }}">{{ u.full_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-medium mb-1" style="color:hsl(var(--muted-foreground))">{{ _('Subject') }}</label>
+        <input name="subject" required class="dk-input w-full px-3 py-2 text-sm">
+      </div>
+      <div>
+        <label class="block text-xs font-medium mb-1" style="color:hsl(var(--muted-foreground))">{{ _('Message') }}</label>
+        <textarea name="body" rows="5" required class="dk-input w-full px-3 py-2 text-sm resize-none"></textarea>
+      </div>
+      <div class="flex flex-col-reverse xs:flex-row xs:justify-end gap-2">
+        <button type="button" onclick="document.getElementById('compose-modal').classList.add('hidden')"
+          class="px-4 py-2 text-sm rounded-lg transition-colors" style="color:hsl(var(--muted-foreground))" onmouseover="this.style.background='hsl(var(--muted))'" onmouseout="this.style.background='transparent'">{{ _('Cancel') }}</button>
+        <button type="submit"
+          class="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl transition-colors"
+          style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))">
+          <i class="fa-solid fa-paper-plane text-xs"></i> {{ _('Send') }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openDeleteModal(msgId, subject) {
+  document.getElementById('delete-form').action = '/inbox/delete/' + msgId;
+  document.getElementById('delete-subject-preview').textContent = '"' + subject + '"';
+  document.getElementById('delete-modal').classList.remove('hidden');
+}
+function closeDeleteModal() {
+  document.getElementById('delete-modal').classList.add('hidden');
+}
+document.getElementById('delete-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeDeleteModal();
+});
+</script>
+{% endblock %}

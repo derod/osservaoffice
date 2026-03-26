@@ -1,0 +1,190 @@
+{% extends "base.html" %}{% set active_nav="availability" %}
+{% block title %}Team Availability — OSSERVA OFFICE{% endblock %}
+{% block content %}
+<div class="page-container max-w-5xl">
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+    <div>
+      <h1 class="text-xl sm:text-2xl font-bold">Team Availability</h1>
+      <p class="text-sm text-[hsl(var(--muted-foreground))] mt-0.5">
+        <i class="fa-regular fa-calendar text-[hsl(var(--muted-foreground))] mr-1"></i>
+        {{ now.strftime('%A, %d %B %Y') }}
+        <span class="ml-2 text-[hsl(var(--muted-foreground))]">·</span>
+        <span class="ml-2 font-mono text-[hsl(var(--muted-foreground))]">{{ now.strftime('%H:%M') }}</span>
+      </p>
+    </div>
+
+    <!-- Filter + employee selector -->
+    <div class="flex flex-wrap items-center gap-2">
+      <div id="filterBtns" class="flex gap-1.5">
+        <button onclick="setFilter('all')" data-f="all"
+          class="avail-filter text-xs px-3 py-1.5 rounded-full border border-[hsl(var(--border))] bg-slate-800 text-white transition-all">
+          Today
+        </button>
+        <button onclick="setFilter('free')" data-f="free"
+          class="avail-filter text-xs px-3 py-1.5 rounded-full border border-[hsl(var(--border))] dk-card text-[hsl(var(--muted-foreground))] dk-card-hover transition-all">
+          Only Available Now
+        </button>
+      </div>
+      <form method="GET" class="flex items-center gap-2">
+        <input type="hidden" name="range_type" value="today">
+        <select name="employee_id" onchange="this.form.submit()"
+          class="border border-[hsl(var(--border))] rounded-lg px-3 py-1.5 text-xs focus:outline-none text-[hsl(var(--muted-foreground))] dk-card">
+          <option value="">All staff</option>
+          {% for u in all_users %}
+          <option value="{{ u.id }}" {% if selected_employee_id==u.id %}selected{% endif %}>{{ u.full_name }}</option>
+          {% endfor %}
+        </select>
+      </form>
+    </div>
+  </div>
+
+  <!-- Status legend -->
+  <div class="flex flex-wrap items-center gap-4 mb-5 px-1">
+    <span class="text-xs text-[hsl(var(--muted-foreground))] font-medium uppercase tracking-wide">Legend</span>
+    <span class="flex items-center gap-1.5 text-xs text-[hsl(var(--muted-foreground))]"><span class="w-3 h-3 rounded-full bg-emerald-400 inline-block"></span>Free</span>
+    <span class="flex items-center gap-1.5 text-xs text-[hsl(var(--muted-foreground))]"><span class="w-3 h-3 rounded-full bg-rose-400 inline-block"></span>Busy</span>
+    <span class="flex items-center gap-1.5 text-xs text-[hsl(var(--muted-foreground))]"><span class="w-3 h-3 rounded-full bg-blue-400 inline-block"></span>Focus</span>
+    <span class="flex items-center gap-1.5 text-xs text-[hsl(var(--muted-foreground))]"><span class="w-3 h-3 rounded-full bg-slate-300 inline-block"></span>Out of Office</span>
+  </div>
+
+  <!-- Hour axis labels -->
+  <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm px-5 pt-4 pb-5">
+    <div class="flex mb-2 pl-48">
+      {% for h in hours_labels %}
+      <div class="flex-1 text-[10px] text-[hsl(var(--muted-foreground))] font-mono -ml-2">{{ '%02d'|format(h) }}</div>
+      {% endfor %}
+    </div>
+
+    <!-- Employee rows -->
+    <div id="availList" class="space-y-5">
+    {% for item in availability_data %}
+    {% set emp = item.user %}
+    {% set busy = item.busy_blocks %}
+
+    {# Compute "available now": no busy block overlaps now #}
+    {% set now_mins = (now.hour - 8) * 60 + now.minute %}
+    {% set is_available = true %}
+    {% for block in busy %}
+      {% set b_start_mins = (block.start.hour - 8) * 60 + block.start.minute %}
+      {% set b_end_mins = (block.end.hour - 8) * 60 + block.end.minute %}
+      {% if b_start_mins <= now_mins and now_mins < b_end_mins %}
+        {% set is_available = false %}
+      {% endif %}
+    {% endfor %}
+
+    {# Next free slot: find first gap after now #}
+    {% set ns = namespace(next_free_start=none, next_free_end=none, cursor=now_mins) %}
+    {% for block in busy %}
+      {% set b_start = (block.start.hour - 8) * 60 + block.start.minute %}
+      {% set b_end = (block.end.hour - 8) * 60 + block.end.minute %}
+      {% if b_start > ns.cursor and ns.next_free_start is none %}
+        {# gap before this block #}
+        {% set ns.next_free_start = ns.cursor %}
+        {% set ns.next_free_end = b_start %}
+      {% endif %}
+      {% if b_end > ns.cursor %}
+        {% set ns.cursor = b_end %}
+      {% endif %}
+    {% endfor %}
+    {# if no block found after now, free until end of day #}
+    {% if ns.next_free_start is none and ns.cursor < (18 - 8) * 60 %}
+      {% set ns.next_free_start = ns.cursor %}
+      {% set ns.next_free_end = (18 - 8) * 60 %}
+    {% endif %}
+
+    {% if ns.next_free_start is not none %}
+      {% set nf_h_start = (ns.next_free_start // 60 + 8) %}
+      {% set nf_m_start = ns.next_free_start % 60 %}
+      {% set nf_h_end   = (ns.next_free_end   // 60 + 8) %}
+      {% set nf_m_end   = ns.next_free_end   % 60 %}
+    {% endif %}
+
+    <div class="avail-row" data-available="{{ 'true' if is_available else 'false' }}">
+      <div class="flex items-start gap-3 mb-2">
+        <!-- Avatar + name -->
+        <div class="flex items-center gap-2.5 w-44 flex-shrink-0">
+          <div class="avatar-initials w-8 h-8 text-xs flex-shrink-0" style="background-color:{{ emp.avatar_color }}">{{ get_initials(emp.full_name) }}</div>
+          <div class="min-w-0">
+            <div class="text-sm font-medium truncate">{{ emp.full_name }}</div>
+            <div class="text-[10px] text-[hsl(var(--muted-foreground))] truncate">{{ emp.job_title or emp.role.title() }}</div>
+          </div>
+        </div>
+
+        <!-- Badges -->
+        <div class="flex flex-wrap items-center gap-2 pt-0.5">
+          {% if is_available %}
+          <span class="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>Available Now
+          </span>
+          {% else %}
+          <span class="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">
+            <span class="w-1.5 h-1.5 rounded-full bg-rose-500 inline-block"></span>Busy Now
+          </span>
+          {% endif %}
+
+          {% if ns.next_free_start is not none %}
+          <span class="inline-flex items-center gap-1 text-[11px] text-[hsl(var(--muted-foreground))] style="background:hsl(var(--muted))" border border-[hsl(var(--border))] px-2 py-0.5 rounded-full">
+            <i class="fa-regular fa-clock text-[hsl(var(--muted-foreground))]" style="font-size:9px"></i>
+            Next free: {{ '%02d:%02d'|format(nf_h_start, nf_m_start) }} – {{ '%02d:%02d'|format(nf_h_end, nf_m_end) }}
+          </span>
+          {% else %}
+          <span class="text-[11px] text-[hsl(var(--muted-foreground))]">No free slots today</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Timeline bar -->
+      <div class="pl-48">
+        <div class="relative h-8 bg-emerald-100 rounded-lg overflow-hidden">
+          {% for block in busy %}
+          <div class="absolute h-full bg-blue-400 opacity-80 rounded"
+               style="left:{{ to_pct(block.start) }}%; width:{{ to_width_pct(block.start, block.end) }}%;"
+               title="{{ block.title }} ({{ block.start.strftime('%H:%M') }}–{{ block.end.strftime('%H:%M') }})">
+          </div>
+          {% endfor %}
+          <!-- Now indicator -->
+          {% if 8 <= now.hour < 18 %}
+          <div class="absolute top-0 h-full w-0.5 bg-rose-500 opacity-70 z-10"
+               style="left:{{ to_pct(now) }}%;" title="Now"></div>
+          {% endif %}
+        </div>
+        {% if busy %}
+        <div class="flex flex-wrap gap-1.5 mt-1.5">
+          {% for block in busy %}
+          <span class="text-[10px] text-[hsl(var(--muted-foreground))] bg-blue-50 px-1.5 py-0.5 rounded">
+            {{ block.title[:28] }}{% if block.title|length > 28 %}…{% endif %}
+            <span class="text-[hsl(var(--muted-foreground))]">{{ block.start.strftime('%H:%M') }}–{{ block.end.strftime('%H:%M') }}</span>
+          </span>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% else %}
+    <p class="text-sm text-[hsl(var(--muted-foreground))] text-center py-8">No staff to display.</p>
+    {% endfor %}
+    </div>
+  </div>
+</div>
+
+<script>
+function setFilter(f) {
+  document.querySelectorAll('.avail-filter').forEach(btn => {
+    const on = btn.dataset.f === f;
+    btn.classList.toggle('bg-slate-800', on);
+    btn.classList.toggle('text-white', on);
+    btn.classList.toggle('dk-card', !on);
+    btn.classList.toggle('text-[hsl(var(--muted-foreground))]', !on);
+  });
+  document.querySelectorAll('.avail-row').forEach(row => {
+    if (f === 'free') {
+      row.style.display = row.dataset.available === 'true' ? '' : 'none';
+    } else {
+      row.style.display = '';
+    }
+  });
+}
+</script>
+{% endblock %}

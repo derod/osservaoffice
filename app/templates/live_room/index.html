@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+{% block title %}Live Room — OSSERVA OFFICE{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/live_room.css') }}">
+
+{# Inject current-user data so live_room.js can read it without an extra XHR #}
+<div id="lr-user-data"
+     data-user-id="{{ current_user.id }}"
+     data-user-name="{{ current_user.full_name }}"
+     data-user-initials="{{ get_initials(current_user.full_name) }}"
+     style="display:none"></div>
+
+<div class="live-room-wrapper">
+
+  <!-- ── PAGE HEADER ─────────────────────────────────────────── -->
+  <div class="lr-header">
+    <div>
+      <h1 class="lr-title"><i class="fa-solid fa-tower-broadcast"></i> Live Room</h1>
+      <p class="lr-subtitle">Team chat, camera, screen sharing, and presentations</p>
+    </div>
+    <div class="lr-header-actions" style="flex-wrap:wrap;gap:0.5rem">
+      <button id="btn-camera" class="lr-btn lr-btn-secondary" onclick="LR.toggleCamera()">
+        <i class="fa-solid fa-video"></i>
+        <span class="hidden xs:inline">Start Camera</span>
+      </button>
+      <button id="btn-screen" class="lr-btn lr-btn-secondary" onclick="LR.toggleScreen()">
+        <i class="fa-solid fa-display"></i>
+        <span class="hidden xs:inline">Share Screen</span>
+      </button>
+      <button class="lr-btn lr-btn-secondary" onclick="LR.openUploadDialog()">
+        <i class="fa-solid fa-film"></i>
+        <span class="hidden sm:inline">Upload MP4</span>
+      </button>
+      <button class="lr-btn lr-btn-secondary" onclick="LR.openYouTubeDialog()">
+        <i class="fa-brands fa-youtube"></i>
+        <span class="hidden sm:inline">YouTube</span>
+      </button>
+      <button class="lr-btn lr-btn-danger" onclick="LR.leaveRoom()">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        <span class="hidden xs:inline">Leave Room</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── MAIN GRID ───────────────────────────────────────────── -->
+  <div class="lr-grid">
+
+    <!-- LEFT: Presentation + Participants -->
+    <div class="lr-left">
+
+      <!-- Presentation Panel -->
+      <div class="lr-card lr-presentation-card">
+        <div class="lr-card-header">
+          <span class="lr-card-title"><i class="fa-solid fa-rectangle-ad"></i> Presentation</span>
+          <div class="lr-presentation-tabs">
+            <button class="lr-tab active" data-panel="none" onclick="LR.switchPanel('none', this)">None</button>
+            <button class="lr-tab" data-panel="screen" onclick="LR.switchPanel('screen', this)">Screen</button>
+            <button class="lr-tab" data-panel="mp4" onclick="LR.switchPanel('mp4', this)">MP4</button>
+            <button class="lr-tab" data-panel="youtube" onclick="LR.switchPanel('youtube', this)">YouTube</button>
+          </div>
+        </div>
+        <div class="lr-presentation-body">
+
+          <!-- Empty state -->
+          <div id="panel-none" class="lr-panel lr-panel-active">
+            <div class="lr-empty-state">
+              <i class="fa-solid fa-photo-film lr-empty-icon"></i>
+              <p class="lr-empty-title">No presentation active</p>
+              <p class="lr-empty-sub">Start your camera, share your screen, upload an MP4, or paste a YouTube link.</p>
+            </div>
+          </div>
+
+          <!-- Screen share -->
+          <div id="panel-screen" class="lr-panel">
+            <video id="screen-video" class="lr-video-el" autoplay muted playsinline></video>
+            <div id="screen-empty" class="lr-empty-state">
+              <i class="fa-solid fa-display lr-empty-icon"></i>
+              <p class="lr-empty-title">No screen shared yet</p>
+              <p class="lr-empty-sub">Click <strong>Share Screen</strong> to begin.</p>
+            </div>
+          </div>
+
+          <!-- MP4 player -->
+          <div id="panel-mp4" class="lr-panel">
+            <video id="mp4-video" class="lr-video-el" controls playsinline></video>
+            <div id="mp4-empty" class="lr-empty-state">
+              <i class="fa-solid fa-film lr-empty-icon"></i>
+              <p class="lr-empty-title">No video uploaded yet</p>
+              <p class="lr-empty-sub">Click <strong>Upload MP4</strong> to select a file.</p>
+            </div>
+          </div>
+
+          <!-- YouTube embed -->
+          <div id="panel-youtube" class="lr-panel">
+            <div id="youtube-frame-wrap" class="lr-youtube-wrap" style="display:none">
+              <iframe id="youtube-iframe" class="lr-youtube-iframe"
+                src="" frameborder="0" allowfullscreen
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture">
+              </iframe>
+            </div>
+            <div id="youtube-empty" class="lr-empty-state">
+              <i class="fa-brands fa-youtube lr-empty-icon"></i>
+              <p class="lr-empty-title">No YouTube video loaded</p>
+              <p class="lr-empty-sub">Click <strong>Open YouTube</strong> to paste a link.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Participants Strip -->
+      <div class="lr-card lr-participants-card">
+        <div class="lr-card-header">
+          <span class="lr-card-title"><i class="fa-solid fa-users"></i> Participants</span>
+          <span id="participant-count" class="lr-badge">1</span>
+        </div>
+        <div id="participants-grid" class="lr-participants-grid">
+
+          <!-- Local user tile (always shown, sid filled by JS on connect) -->
+          <div class="lr-participant-tile lr-tile-self" id="tile-self" data-sid="">
+            <div class="lr-tile-video-wrap">
+              <video id="camera-video" class="lr-tile-video" autoplay muted playsinline style="display:none"></video>
+              <div id="camera-avatar" class="lr-tile-avatar">
+                <span>{{ get_initials(current_user.full_name) }}</span>
+              </div>
+              <span class="lr-presenting-badge" style="display:none"><i class="fa-solid fa-display"></i> Presenting</span>
+            </div>
+            <div class="lr-tile-info">
+              <span class="lr-tile-name">{{ current_user.full_name }} <span class="lr-you-badge">You</span></span>
+              <span id="camera-status" class="lr-tile-status">Camera off</span>
+            </div>
+          </div>
+
+          <!-- Remote participant tiles injected here by live_room.js -->
+
+        </div>
+      </div>
+
+    </div><!-- /lr-left -->
+
+    <!-- RIGHT: Chat -->
+    <div class="lr-card lr-chat-card">
+      <div class="lr-card-header">
+        <span class="lr-card-title"><i class="fa-solid fa-comments"></i> Chat</span>
+      </div>
+      <div id="chat-messages" class="lr-chat-messages">
+        <div class="lr-chat-empty" id="chat-empty">
+          <i class="fa-solid fa-comment-slash lr-empty-icon-sm"></i>
+          <p>No messages yet. Say hello!</p>
+        </div>
+      </div>
+      <div class="lr-chat-composer">
+        <input id="chat-input" type="text" placeholder="Type a message…" maxlength="500"
+               class="lr-chat-input" onkeydown="if(event.key==='Enter')LR.sendChatMessage()">
+        <button class="lr-btn lr-btn-primary lr-send-btn" onclick="LR.sendChatMessage()">
+          <i class="fa-solid fa-paper-plane"></i>
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /lr-grid -->
+</div>
+
+<!-- ── HIDDEN FILE INPUT ────────────────────────────────────── -->
+<input type="file" id="mp4-file-input" accept=".mp4,video/mp4" style="display:none" onchange="LR.handleMp4File(event)">
+
+<!-- ── YOUTUBE DIALOG ──────────────────────────────────────── -->
+<div id="youtube-dialog" class="lr-dialog-overlay" style="display:none" onclick="LR.closeYouTubeDialog(event)">
+  <div class="lr-dialog">
+    <div class="lr-dialog-header">
+      <h3><i class="fa-brands fa-youtube"></i> Paste YouTube URL</h3>
+      <button onclick="LR.closeYouTubeDialogForced()" class="lr-dialog-close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="lr-dialog-body">
+      <input id="youtube-url-input" type="url" placeholder="https://www.youtube.com/watch?v=…"
+             class="lr-chat-input" style="width:100%">
+      <p id="youtube-error" class="lr-error-msg" style="display:none">Invalid YouTube URL. Please try again.</p>
+    </div>
+    <div class="lr-dialog-footer">
+      <button class="lr-btn lr-btn-secondary" onclick="LR.closeYouTubeDialogForced()">Cancel</button>
+      <button class="lr-btn lr-btn-primary" onclick="LR.loadYouTube()">Load Video</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── UPLOAD PROGRESS TOAST ───────────────────────────────── -->
+<div id="upload-toast" class="lr-toast" style="display:none">
+  <i class="fa-solid fa-spinner fa-spin"></i>
+  <span id="upload-toast-msg">Uploading…</span>
+</div>
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"
+        integrity="sha384-2huIO7aB7PkA+y9OFriV6gGFGlWKvwV+Y0Kp4OCB8xoL0uOoZRFjbcQSgLInSCt"
+        crossorigin="anonymous"></script>
+<script src="{{ url_for('static', filename='js/live_room.js') }}"></script>
+{% endblock %}

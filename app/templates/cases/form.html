@@ -1,0 +1,55 @@
+{% extends "base.html" %}{% set active_nav="cases" %}
+{% block title %}New Case — OSSERVA OFFICE{% endblock %}
+{% block content %}
+<div class="page-container max-w-2xl">
+  <div class="mb-5"><a href="{{ url_for('cases.board') }}" class="text-sm text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]">← Cases</a></div>
+  <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-4 sm:p-6">
+    <h1 class="text-xl font-bold mb-6">New Case</h1>
+    <form method="POST" action="{{ url_for('cases.new_case') }}" class="space-y-5">
+      <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Case Title *</label>
+        <input name="title" required class="w-full dk-input rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-2" placeholder="e.g. Smith Contract Dispute"></div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Client</label>
+          <select name="client_id" class="w-full dk-input rounded-lg px-3 py-2.5 text-sm focus:outline-none">
+            <option value="">No client</option>
+            {% for c in clients %}<option value="{{ c.id }}">{{ c.full_name }}{% if c.company_name %} ({{ c.company_name }}){% endif %}</option>{% endfor %}
+          </select></div>
+        <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Due Date</label>
+          <input type="date" name="due_date" class="w-full dk-input rounded-lg px-3 py-2.5 text-sm focus:outline-none"></div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Court Name</label>
+          <input name="court_name" class="w-full dk-input rounded-lg px-3 py-2.5 text-sm focus:outline-none" placeholder="e.g. Tribunale di Roma"></div>
+        <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Case Number</label>
+          <input name="case_number" class="w-full dk-input rounded-lg px-3 py-2.5 text-sm focus:outline-none" placeholder="e.g. 1234/2025"></div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Status</label>
+          <select name="status" class="w-full dk-input rounded-lg px-3 py-2.5 text-sm focus:outline-none">
+            <option value="open">Open</option><option value="litigation">Litigation</option><option value="closed">Closed</option>
+          </select></div>
+        <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Priority</label>
+          <select name="priority" class="w-full dk-input rounded-lg px-3 py-2.5 text-sm focus:outline-none">
+            <option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option><option value="urgent">Urgent</option>
+          </select></div>
+      </div>
+      <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Assigned Staff (Ctrl/Cmd+click for multiple)</label>
+        <select name="assigned_users" multiple class="w-full dk-input rounded-lg px-3 py-2 text-sm focus:outline-none h-28">
+          {% for u in users %}<option value="{{ u.id }}">{{ u.full_name }} ({{ u.role }})</option>{% endfor %}
+        </select></div>
+      <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Description</label>
+        <textarea name="description" rows="3" class="w-full dk-input rounded-lg px-3 py-2 text-sm focus:outline-none"></textarea></div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {% for f,l in [('overview','Overview'),('current_step','Current Step'),('next_action','Next Action'),('blockers','Blockers')] %}
+        <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">{{ l }}</label>
+          <textarea name="{{ f }}" rows="2" class="w-full dk-input rounded-lg px-3 py-2 text-sm focus:outline-none"></textarea></div>
+        {% endfor %}
+      </div>
+      <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-2">
+        <a href="{{ url_for('cases.board') }}" class="inline-flex items-center justify-center gap-2 dk-card dk-card-hover text-[hsl(var(--card-foreground))] text-sm font-medium px-4 py-2.5 rounded-lg border border-[hsl(var(--border))]">Cancel</a>
+        <button type="submit" class="inline-flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg">Create Case</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,315 @@
+{% extends "public/_base_public.html" %}
+{% set active_pub = "privacy" %}
+{% block title %}Privacy Policy — OSSERVA OFFICE{% endblock %}
+
+{% block content %}
+
+<!-- Page header -->
+<div class="mb-10">
+  <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-semibold tracking-widest uppercase mb-4"
+       style="background:hsl(var(--muted));border-color:hsl(var(--border));color:hsl(var(--muted-foreground))">
+    Legal
+  </div>
+  <h1 class="font-display font-bold mb-3"
+      style="font-size:clamp(1.75rem,3.5vw,2.5rem);color:hsl(var(--foreground))">
+    Privacy Policy
+  </h1>
+  <p class="text-sm" style="color:hsl(var(--muted-foreground))">
+    Last updated: {{ now().strftime('%B %d, %Y') }}
+  </p>
+</div>
+
+<!-- Intro -->
+<div class="dk-card rounded-xl p-6 mb-8">
+  <p class="text-sm leading-relaxed" style="color:hsl(var(--muted-foreground))">
+    OSSERVA OFFICE is committed to protecting the privacy of users and the confidentiality of
+    data processed through the platform. This Privacy Policy explains what information we collect,
+    how we use it, how it is stored and protected, and what rights you have as a user.
+  </p>
+  <p class="text-sm leading-relaxed mt-3" style="color:hsl(var(--muted-foreground))">
+    This policy applies to all individuals who access the platform, including firm administrators,
+    staff users, and any third parties whose data is processed through the platform on behalf
+    of a subscribing organisation.
+  </p>
+</div>
+
+<!-- Sections -->
+<div class="space-y-4">
+
+  <!-- 1. Information Collected -->
+  <div class="dk-card rounded-xl p-6 sm:p-7">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+           style="background:hsl(var(--muted))">
+        <i class="fa-solid fa-list-check text-xs" style="color:hsl(var(--primary))"></i>
+      </div>
+      <h2 class="font-display font-bold text-base" style="color:hsl(var(--foreground))">1. Information We Collect</h2>
+    </div>
+
+    <p class="text-sm leading-relaxed mb-4" style="color:hsl(var(--muted-foreground))">
+      We collect the following categories of information through the operation of the platform:
+    </p>
+
+    <div class="space-y-4">
+      <div class="rounded-lg p-4" style="background:hsl(var(--muted))">
+        <p class="text-xs font-bold uppercase tracking-widest mb-2"
+           style="color:hsl(var(--muted-foreground))">Account Information</p>
+        <ul class="space-y-1.5">
+          {% for item in [
+            'Full name and email address provided during account creation.',
+            'Job title and phone number if provided by the user or administrator.',
+            'Hashed password credentials (stored in encrypted form; never readable by OSSERVA staff).',
+            'Preferred interface language and display settings.',
+          ] %}
+          <li class="flex items-start gap-2.5 text-sm leading-relaxed"
+              style="color:hsl(var(--muted-foreground))">
+            <span class="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-2"
+                  style="background:hsl(var(--primary))"></span>
+            {{ item }}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="rounded-lg p-4" style="background:hsl(var(--muted))">
+        <p class="text-xs font-bold uppercase tracking-widest mb-2"
+           style="color:hsl(var(--muted-foreground))">Operational Data</p>
+        <ul class="space-y-1.5">
+          {% for item in [
+            'Case records, client information, appointments, tasks, and documents created by users.',
+            'Internal messages exchanged between team members.',
+            'Check-in and attendance records for employees.',
+            'Activity logs recording actions taken within the platform.',
+          ] %}
+          <li class="flex items-start gap-2.5 text-sm leading-relaxed"
+              style="color:hsl(var(--muted-foreground))">
+            <span class="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-2"
+                  style="background:hsl(var(--primary))"></span>
+            {{ item }}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="rounded-lg p-4" style="background:hsl(var(--muted))">
+        <p class="text-xs font-bold uppercase tracking-widest mb-2"
+           style="color:hsl(var(--muted-foreground))">Technical Data</p>
+        <ul class="space-y-1.5">
+          {% for item in [
+            'Session tokens stored in encrypted browser sessions to maintain authentication.',
+            'Basic server-side logs including access timestamps, error records, and request metadata.',
+            'Integration configuration data such as Gmail OAuth tokens when enabled by the administrator.',
+          ] %}
+          <li class="flex items-start gap-2.5 text-sm leading-relaxed"
+              style="color:hsl(var(--muted-foreground))">
+            <span class="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-2"
+                  style="background:hsl(var(--primary))"></span>
+            {{ item }}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. How Information Is Used -->
+  <div class="dk-card rounded-xl p-6 sm:p-7">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+           style="background:hsl(var(--muted))">
+        <i class="fa-solid fa-gear text-xs" style="color:hsl(var(--primary))"></i>
+      </div>
+      <h2 class="font-display font-bold text-base" style="color:hsl(var(--foreground))">2. How Information Is Used</h2>
+    </div>
+    <p class="text-sm leading-relaxed mb-3" style="color:hsl(var(--muted-foreground))">
+      All data collected through the platform is used exclusively to provide, maintain, and improve
+      the OSSERVA OFFICE service. Specifically:
+    </p>
+    <ul class="space-y-2">
+      {% for item in [
+        'To authenticate users and maintain secure session access.',
+        'To display relevant records, assignments, calendars, and documents within the platform.',
+        'To send internal notifications and messages between team members.',
+        'To generate reports, dashboards, and financial summaries for account administrators.',
+        'To diagnose technical issues and maintain service reliability.',
+        'To comply with applicable legal obligations if required.',
+      ] %}
+      <li class="flex items-start gap-2.5 text-sm leading-relaxed"
+          style="color:hsl(var(--muted-foreground))">
+        <span class="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-2"
+              style="background:hsl(var(--primary))"></span>
+        {{ item }}
+      </li>
+      {% endfor %}
+    </ul>
+    <p class="text-sm leading-relaxed mt-4" style="color:hsl(var(--muted-foreground))">
+      We do not sell, rent, or share your personal information with third parties for marketing
+      purposes. We do not use your data to train third-party machine learning models.
+    </p>
+  </div>
+
+  <!-- 3. Data Storage and Protection -->
+  <div class="dk-card rounded-xl p-6 sm:p-7">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+           style="background:hsl(var(--muted))">
+        <i class="fa-solid fa-shield-halved text-xs" style="color:hsl(var(--primary))"></i>
+      </div>
+      <h2 class="font-display font-bold text-base" style="color:hsl(var(--foreground))">3. Data Storage and Protection</h2>
+    </div>
+    <p class="text-sm leading-relaxed mb-3" style="color:hsl(var(--muted-foreground))">
+      OSSERVA OFFICE is deployed on production-grade cloud infrastructure. Data protection
+      measures include:
+    </p>
+    <ul class="space-y-2 mb-4">
+      {% for item in [
+        'Encrypted connections over HTTPS for all platform access.',
+        'Password credentials stored using a one-way cryptographic hash; plaintext passwords are never retained.',
+        'Session tokens are cryptographically signed and expire after the configured session lifetime.',
+        'Database access is restricted to application-layer processes; no direct public database access is permitted.',
+        'Uploaded documents are stored in access-controlled storage with path randomisation.',
+      ] %}
+      <li class="flex items-start gap-2.5 text-sm leading-relaxed"
+          style="color:hsl(var(--muted-foreground))">
+        <span class="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-2"
+              style="background:hsl(var(--primary))"></span>
+        {{ item }}
+      </li>
+      {% endfor %}
+    </ul>
+    <p class="text-sm leading-relaxed" style="color:hsl(var(--muted-foreground))">
+      No security system is infallible. While we maintain strong technical controls, we cannot
+      guarantee absolute security. We encourage users to follow strong password practices and
+      report suspected security issues promptly to our team.
+    </p>
+  </div>
+
+  <!-- 4. User Responsibilities -->
+  <div class="dk-card rounded-xl p-6 sm:p-7">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+           style="background:hsl(var(--muted))">
+        <i class="fa-solid fa-user-check text-xs" style="color:hsl(var(--primary))"></i>
+      </div>
+      <h2 class="font-display font-bold text-base" style="color:hsl(var(--foreground))">4. User Responsibilities</h2>
+    </div>
+    <p class="text-sm leading-relaxed mb-3" style="color:hsl(var(--muted-foreground))">
+      Users and account administrators are responsible for:
+    </p>
+    <ul class="space-y-2">
+      {% for item in [
+        'Ensuring that only authorised individuals are granted access to the platform.',
+        'Managing the accuracy and appropriateness of data entered into the platform.',
+        'Complying with applicable data protection regulations when entering client or third-party personal information.',
+        'Ensuring that clients and third parties whose data is stored in the platform have been informed appropriately under applicable law.',
+        'Reporting unauthorised access, security incidents, or data breaches to OSSERVA promptly.',
+      ] %}
+      <li class="flex items-start gap-2.5 text-sm leading-relaxed"
+          style="color:hsl(var(--muted-foreground))">
+        <span class="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-2"
+              style="background:hsl(var(--primary))"></span>
+        {{ item }}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <!-- 5. Third-Party Services -->
+  <div class="dk-card rounded-xl p-6 sm:p-7">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+           style="background:hsl(var(--muted))">
+        <i class="fa-solid fa-plug text-xs" style="color:hsl(var(--primary))"></i>
+      </div>
+      <h2 class="font-display font-bold text-base" style="color:hsl(var(--foreground))">5. Third-Party Services</h2>
+    </div>
+    <p class="text-sm leading-relaxed mb-4" style="color:hsl(var(--muted-foreground))">
+      OSSERVA OFFICE may interact with third-party services when enabled by account administrators.
+      These integrations are governed by the respective providers' privacy policies:
+    </p>
+    <div class="space-y-3">
+      {% for provider, desc in [
+        ('Google Gmail API', 'When the Gmail integration is enabled, the platform accesses email data using OAuth tokens authorised by the account administrator. Only the mailbox associated with the authorised credentials is accessed. OSSERVA does not share this data with any other party.'),
+        ('OpenAI API', 'The Legal Consultant feature may send anonymised legal query context to the OpenAI API for AI-assisted analysis. No personally identifiable information is intentionally included in these requests. Administrators may disable this feature.'),
+        ('Cloud Infrastructure', 'The platform is hosted on production cloud infrastructure. Database contents, uploaded files, and session data reside on this infrastructure within the selected deployment region.'),
+      ] %}
+      <div class="rounded-lg p-4" style="background:hsl(var(--muted))">
+        <p class="text-xs font-bold uppercase tracking-widest mb-1.5"
+           style="color:hsl(var(--muted-foreground))">{{ provider }}</p>
+        <p class="text-sm leading-relaxed" style="color:hsl(var(--muted-foreground))">{{ desc }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- 6. Data Retention -->
+  <div class="dk-card rounded-xl p-6 sm:p-7">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+           style="background:hsl(var(--muted))">
+        <i class="fa-solid fa-clock-rotate-left text-xs" style="color:hsl(var(--primary))"></i>
+      </div>
+      <h2 class="font-display font-bold text-base" style="color:hsl(var(--foreground))">6. Data Retention</h2>
+    </div>
+    <p class="text-sm leading-relaxed mb-3" style="color:hsl(var(--muted-foreground))">
+      Data is retained for the duration of the active subscription and for a reasonable period
+      thereafter to allow for account recovery and export requests.
+    </p>
+    <ul class="space-y-2 mb-3">
+      {% for item in [
+        'Active account data is retained for the duration of the subscription.',
+        'Following account termination or cancellation, data may be retained for up to 30 days to allow for export or appeal.',
+        'After the retention period, data is permanently deleted from production systems.',
+        'Anonymised aggregate usage statistics may be retained indefinitely for internal analysis.',
+        'Backup copies of data may persist for a limited period beyond deletion from production systems, consistent with standard backup practices.',
+      ] %}
+      <li class="flex items-start gap-2.5 text-sm leading-relaxed"
+          style="color:hsl(var(--muted-foreground))">
+        <span class="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-2"
+              style="background:hsl(var(--primary))"></span>
+        {{ item }}
+      </li>
+      {% endfor %}
+    </ul>
+    <p class="text-sm leading-relaxed" style="color:hsl(var(--muted-foreground))">
+      Account administrators may request a full export of their organisation's data at any time
+      by contacting us at the address below.
+    </p>
+  </div>
+
+  <!-- 7. Contact -->
+  <div class="dk-card rounded-xl p-6 sm:p-7">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+           style="background:hsl(var(--muted))">
+        <i class="fa-solid fa-envelope text-xs" style="color:hsl(var(--primary))"></i>
+      </div>
+      <h2 class="font-display font-bold text-base" style="color:hsl(var(--foreground))">7. Contact and Data Requests</h2>
+    </div>
+    <p class="text-sm leading-relaxed mb-3" style="color:hsl(var(--muted-foreground))">
+      For any questions regarding this Privacy Policy, data access or deletion requests, or to
+      report a suspected security incident, please contact us:
+    </p>
+    <div class="rounded-lg p-4 space-y-1.5" style="background:hsl(var(--muted))">
+      <p class="text-sm font-semibold" style="color:hsl(var(--foreground))">OSSERVA OFFICE</p>
+      <p class="text-sm" style="color:hsl(var(--muted-foreground))">
+        Privacy inquiries:
+        <a href="mailto:privacy@osserva.com"
+           class="font-medium transition-colors hover:opacity-80"
+           style="color:hsl(var(--primary))">privacy@osserva.com</a>
+      </p>
+      <p class="text-sm" style="color:hsl(var(--muted-foreground))">
+        General contact:
+        <a href="mailto:contact@osserva.com"
+           class="font-medium transition-colors hover:opacity-80"
+           style="color:hsl(var(--primary))">contact@osserva.com</a>
+      </p>
+    </div>
+    <p class="text-sm leading-relaxed mt-4" style="color:hsl(var(--muted-foreground))">
+      We aim to respond to all privacy-related inquiries within five business days.
+    </p>
+  </div>
+
+</div>
+
+{% endblock %}

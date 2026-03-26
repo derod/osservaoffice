@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% set active_nav = "platform" %}
+{% block title %}Platform Dashboard — OSSERVA{% endblock %}
+
+{% block content %}
+<div class="w-full max-w-7xl space-y-6">
+
+  <!-- Header -->
+  <div>
+    <h1 class="text-xl font-bold" style="color:hsl(var(--foreground))">Platform Dashboard</h1>
+    <p class="text-sm mt-0.5" style="color:hsl(var(--muted-foreground))">SaaS control center — all tenants and leads.</p>
+  </div>
+
+  <!-- Tenant stat cards -->
+  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+    {% set stat_cards = [
+      ('fa-building-columns', 'text-blue-400',    total_orgs,     'Organizations'),
+      ('fa-circle-check',     'text-emerald-400', active_orgs,    'Active'),
+      ('fa-hourglass-half',   'text-amber-400',   trial_orgs,     'On Trial'),
+      ('fa-ban',              'text-rose-400',     suspended_orgs, 'Suspended'),
+      ('fa-users',            'text-teal-400',     total_users,    'Total Users'),
+    ] %}
+    {% for icon, color, val, label in stat_cards %}
+    <div class="dk-card p-4 shadow-soft">
+      <div class="{{ color }} mb-2"><i class="fa-solid {{ icon }} text-lg"></i></div>
+      <div class="text-2xl font-bold" style="color:hsl(var(--foreground))">{{ val }}</div>
+      <div class="text-xs mt-0.5" style="color:hsl(var(--muted-foreground))">{{ label }}</div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Lead pipeline summary -->
+  <div>
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-base font-semibold" style="color:hsl(var(--foreground))">Lead Pipeline</h2>
+      <a href="{{ url_for('organizations.leads_list') }}"
+         class="text-sm hover:opacity-80 transition-opacity" style="color:hsl(var(--muted-foreground))">View all →</a>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+      {% set pipeline_tiles = [
+        ('new',           stage_counts.get('new',0),             'New',            'text-blue-400',   'bg-blue-500/10'),
+        ('contacted',     stage_counts.get('contacted',0),       'Contacted',      'text-amber-400',  'bg-amber-500/10'),
+        ('demo_scheduled',stage_counts.get('demo_scheduled',0),  'Demo Scheduled', 'text-violet-400', 'bg-violet-500/10'),
+        ('qualified',     stage_counts.get('qualified',0),       'Qualified',      'text-emerald-400','bg-emerald-500/10'),
+        ('proposal_sent', stage_counts.get('proposal_sent',0),   'Proposal Sent',  'text-cyan-400',   'bg-cyan-500/10'),
+        ('onboarding',    stage_counts.get('onboarding',0),      'Onboarding',     'text-teal-400',   'bg-teal-500/10'),
+        ('closed_won',    stage_counts.get('closed_won',0),      'Closed Won',     'text-green-400',  'bg-green-500/10'),
+        ('closed_lost',   stage_counts.get('closed_lost',0),     'Closed Lost',    'text-rose-400',   'bg-rose-500/10'),
+      ] %}
+      {% for stage_key, cnt, label, color, bg in pipeline_tiles %}
+      <a href="{{ url_for('organizations.leads_list', stage=stage_key) }}"
+         class="dk-card dk-card-hover p-4 block transition-colors duration-150">
+        <div class="text-xl font-bold {{ color }}">{{ cnt }}</div>
+        <div class="text-xs mt-0.5" style="color:hsl(var(--muted-foreground))">{{ label }}</div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Two-column: orgs + recent leads -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+    <!-- Recent Organizations -->
+    <div class="lg:col-span-2">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-base font-semibold" style="color:hsl(var(--foreground))">Recent Organizations</h2>
+        <a href="{{ url_for('organizations.list_orgs') }}"
+           class="text-sm hover:opacity-80 transition-opacity" style="color:hsl(var(--muted-foreground))">View all →</a>
+      </div>
+      <div class="dk-card overflow-hidden">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b" style="border-color:hsl(var(--border))">
+              <th class="text-left px-4 py-3 font-semibold" style="color:hsl(var(--muted-foreground))">Name</th>
+              <th class="text-left px-4 py-3 font-semibold hidden sm:table-cell" style="color:hsl(var(--muted-foreground))">Plan</th>
+              <th class="text-left px-4 py-3 font-semibold hidden sm:table-cell" style="color:hsl(var(--muted-foreground))">Users</th>
+              <th class="text-left px-4 py-3 font-semibold" style="color:hsl(var(--muted-foreground))">Status</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y" style="divide-color:hsl(var(--border))">
+            {% for org in recent_orgs %}
+            <tr class="hover:bg-[hsl(var(--muted))/0.4] transition-colors">
+              <td class="px-4 py-3">
+                <a href="{{ url_for('organizations.edit_org', org_id=org.id) }}"
+                   class="font-medium hover:opacity-70 transition-opacity"
+                   style="color:hsl(var(--foreground))">{{ org.name }}</a>
+              </td>
+              <td class="px-4 py-3 hidden sm:table-cell">
+                <span class="badge badge-blue text-xs">{{ org.plan }}</span>
+              </td>
+              <td class="px-4 py-3 hidden sm:table-cell text-sm" style="color:hsl(var(--foreground))">{{ org.user_count }}</td>
+              <td class="px-4 py-3">
+                {% if org.is_active %}
+                <span class="badge badge-green text-xs">Active</span>
+                {% else %}
+                <span class="badge text-xs" style="background:hsl(var(--muted));color:hsl(var(--muted-foreground))">Suspended</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% else %}
+            <tr>
+              <td colspan="4" class="px-4 py-8 text-center text-sm" style="color:hsl(var(--muted-foreground))">No organizations yet.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="mt-3">
+        <a href="{{ url_for('organizations.new_org') }}"
+           class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white"
+           style="background:hsl(var(--primary))">
+          <i class="fa-solid fa-plus"></i> New Organization
+        </a>
+      </div>
+    </div>
+
+    <!-- Recent Leads -->
+    <div>
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-base font-semibold" style="color:hsl(var(--foreground))">
+          Recent Leads
+          {% if new_leads_count %}
+          <span class="ml-1.5 inline-flex items-center justify-center min-w-[20px] h-5 px-1 text-[10px] font-bold bg-blue-500 text-white rounded-full">{{ new_leads_count }}</span>
+          {% endif %}
+        </h2>
+        <a href="{{ url_for('organizations.leads_list') }}"
+           class="text-sm hover:opacity-80 transition-opacity" style="color:hsl(var(--muted-foreground))">View all →</a>
+      </div>
+      <div class="space-y-2">
+        {% for lead in recent_leads %}
+        {% set stage = lead.pipeline_stage or 'new' %}
+        <a href="{{ url_for('organizations.lead_detail', lead_id=lead.id) }}"
+           class="dk-card dk-card-hover p-3 block transition-colors duration-150">
+          <div class="flex items-start justify-between gap-2 mb-1">
+            <div class="min-w-0 flex-1">
+              <div class="text-sm font-medium truncate" style="color:hsl(var(--foreground))">{{ lead.full_name }}</div>
+              <div class="text-xs truncate" style="color:hsl(var(--muted-foreground))">{{ lead.firm_name }}</div>
+            </div>
+            <span class="flex-shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full
+              {% if stage == 'new' %}bg-blue-500/15 text-blue-400
+              {% elif stage == 'contacted' %}bg-amber-500/15 text-amber-400
+              {% elif stage == 'demo_scheduled' %}bg-violet-500/15 text-violet-400
+              {% elif stage == 'qualified' %}bg-emerald-500/15 text-emerald-400
+              {% elif stage == 'proposal_sent' %}bg-cyan-500/15 text-cyan-400
+              {% elif stage == 'onboarding' %}bg-teal-500/15 text-teal-400
+              {% elif stage == 'closed_won' %}bg-green-500/15 text-green-400
+              {% elif stage == 'closed_lost' %}bg-rose-500/15 text-rose-400
+              {% else %}bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]
+              {% endif %}">
+              {{ stage_labels.get(stage, stage|replace('_',' ')|title) }}
+            </span>
+          </div>
+          <div class="text-xs" style="color:hsl(var(--muted-foreground))">{{ lead.interest_type }}</div>
+        </a>
+        {% else %}
+        <div class="dk-card p-6 text-center">
+          <p class="text-sm" style="color:hsl(var(--muted-foreground))">No leads yet.</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

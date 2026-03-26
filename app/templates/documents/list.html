@@ -1,0 +1,81 @@
+{% extends "base.html" %}{% set active_nav="documents" %}
+{% block title %}Documents — OSSERVA OFFICE{% endblock %}
+{% block content %}
+<div class="w-full max-w-5xl">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5 sm:mb-6">
+    <h1 class="text-xl sm:text-2xl font-bold" style="color:hsl(var(--foreground))">{{ _('Documents') }}</h1>
+    <a href="{{ url_for('trash.index', tab='documents') }}" class="inline-flex items-center gap-2 text-sm px-3 py-2 rounded-lg hover:bg-slate-100" style="color:hsl(var(--muted-foreground))">
+      <i class="fa-solid fa-trash-can text-xs"></i> {{ _('Trash') }}
+    </a>
+  </div>
+
+  <!-- Upload form -->
+  <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-4 sm:p-6 mb-5">
+    <h3 class="font-semibold mb-4" style="color:hsl(var(--foreground))">{{ _('Upload Document') }}</h3>
+    <form method="POST" action="{{ url_for('documents.upload') }}" enctype="multipart/form-data" class="space-y-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+        <div><label class="block text-xs font-medium mb-1" style="color:hsl(var(--muted-foreground))">{{ _('Link to Case') }}</label>
+          <select name="case_id" class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm focus:outline-none" style="color:hsl(var(--card-foreground));background:hsl(var(--card))">
+            <option value="">{{ _('No case') }}</option>
+            {% for c in all_cases %}<option value="{{ c.id }}">{{ c.title[:40] }}</option>{% endfor %}
+          </select></div>
+        <div><label class="block text-xs font-medium mb-1" style="color:hsl(var(--muted-foreground))">{{ _('Link to Client') }}</label>
+          <select name="client_id" class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm focus:outline-none" style="color:hsl(var(--card-foreground));background:hsl(var(--card))">
+            <option value="">{{ _('No client') }}</option>
+            {% for c in all_clients %}<option value="{{ c.id }}">{{ c.full_name }}</option>{% endfor %}
+          </select></div>
+      </div>
+      <div><label class="block text-xs font-medium mb-1" style="color:hsl(var(--muted-foreground))">{{ _('File') }} *</label>
+        <input type="file" name="file" required class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm focus:outline-none" style="color:hsl(var(--muted-foreground))"></div>
+      <div><label class="block text-xs font-medium mb-1" style="color:hsl(var(--muted-foreground))">{{ _('Description') }}</label>
+        <input name="description" class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm focus:outline-none" style="color:hsl(var(--card-foreground));background:hsl(var(--card))"></div>
+      <button type="submit" class="inline-flex items-center justify-center gap-2 text-sm font-medium px-4 py-2.5 rounded-lg w-full sm:w-auto" style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))">{{ _('Upload') }}</button>
+    </form>
+  </div>
+
+  <!-- Document list -->
+  <div class="space-y-3">
+    {% for doc in documents %}
+    <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-3 sm:p-4 flex items-start gap-3 sm:gap-4">
+      <div class="w-10 h-10 bg-rose-100 rounded-lg flex items-center justify-center flex-shrink-0">
+        {% if doc.original_filename.endswith('.pdf') %}<i class="fa-solid fa-file-pdf text-rose-500"></i>
+        {% elif doc.original_filename.endswith(('.jpg','.jpeg','.png','.gif')) %}<i class="fa-solid fa-file-image text-blue-500"></i>
+        {% elif doc.original_filename.endswith(('.doc','.docx')) %}<i class="fa-solid fa-file-word text-blue-600"></i>
+        {% elif doc.original_filename.endswith(('.xls','.xlsx')) %}<i class="fa-solid fa-file-excel text-emerald-600"></i>
+        {% else %}<i class="fa-solid fa-file" style="color:hsl(var(--muted-foreground))"></i>{% endif %}
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="font-medium text-sm truncate" style="color:hsl(var(--foreground))">{{ doc.original_filename }}</div>
+        <div class="text-xs mt-0.5" style="color:hsl(var(--muted-foreground))">{{ format_size(doc.file_size) }} · {{ doc.uploader_name }} · {{ format_dt(doc.created_at, '%b %d, %Y') }}</div>
+        {% if doc.case_title %}<div class="text-xs mt-0.5" style="color:hsl(var(--muted-foreground))">{{ _('Case') }}: {{ doc.case_title }}</div>{% endif %}
+        {% if doc.client_name %}<div class="text-xs" style="color:hsl(var(--muted-foreground))">{{ _('Client') }}: {{ doc.client_name }}</div>{% endif %}
+        <!-- Mobile action buttons -->
+        <div class="flex items-center gap-2 mt-2 sm:hidden">
+          <a href="{{ url_for('documents.download', doc_id=doc.id) }}" class="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-2 rounded-lg flex-1 justify-center" style="background:hsl(var(--muted));color:hsl(var(--card-foreground))">
+            <i class="fa-solid fa-download text-xs"></i> {{ _('Download') }}
+          </a>
+          {% if current_user.role in ('admin','owner','super_admin') or doc.uploaded_by_user_id == current_user.id %}
+          <form method="POST" action="{{ url_for('trash.trash_doc', doc_id=doc.id) }}" onsubmit="return confirm('{{ _('Move to trash?') }}')">
+            <button class="p-2 rounded-lg text-rose-500 hover:bg-rose-50 transition-colors min-w-[40px] min-h-[40px] flex items-center justify-center" title="{{ _('Move to Trash') }}"><i class="fa-solid fa-trash text-sm"></i></button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+      <!-- Desktop action buttons -->
+      <div class="hidden sm:flex items-center gap-2 flex-shrink-0">
+        <a href="{{ url_for('documents.download', doc_id=doc.id) }}" class="inline-flex items-center gap-2 text-xs font-medium px-3 py-2 rounded-lg" style="background:hsl(var(--muted));color:hsl(var(--card-foreground))">
+          <i class="fa-solid fa-download"></i> {{ _('Download') }}
+        </a>
+        {% if current_user.role in ('admin','owner','super_admin') or doc.uploaded_by_user_id == current_user.id %}
+        <form method="POST" action="{{ url_for('trash.trash_doc', doc_id=doc.id) }}" onsubmit="return confirm('{{ _('Move to trash?') }}')">
+          <button class="text-rose-500 hover:text-rose-700 hover:bg-rose-50 p-2 rounded-lg transition-colors" title="{{ _('Move to Trash') }}"><i class="fa-solid fa-trash text-sm"></i></button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+    {% else %}
+    <div class="dk-card rounded-xl border border-[hsl(var(--border))] p-12 text-center" style="color:hsl(var(--muted-foreground))">{{ _('No documents yet') }}</div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

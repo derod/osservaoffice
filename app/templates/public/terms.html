@@ -1,0 +1,194 @@
+{% extends "public/_base_public.html" %}
+{% set active_pub = "terms" %}
+{% block title %}Terms and Conditions — OSSERVA OFFICE{% endblock %}
+
+{% block content %}
+
+<!-- Page header -->
+<div class="mb-10">
+  <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-semibold tracking-widest uppercase mb-4"
+       style="background:hsl(var(--muted));border-color:hsl(var(--border));color:hsl(var(--muted-foreground))">
+    Legal
+  </div>
+  <h1 class="font-display font-bold mb-3"
+      style="font-size:clamp(1.75rem,3.5vw,2.5rem);color:hsl(var(--foreground))">
+    Terms and Conditions
+  </h1>
+  <p class="text-sm" style="color:hsl(var(--muted-foreground))">
+    Last updated: {{ now().strftime('%B %d, %Y') }}
+  </p>
+</div>
+
+<!-- Intro -->
+<div class="dk-card rounded-xl p-6 mb-8 prose-pub">
+  <p>
+    These Terms and Conditions govern your access to and use of OSSERVA OFFICE, a cloud-based
+    legal operations platform operated by OSSERVA. By accessing the platform, creating an account,
+    or using any features of the service, you agree to be bound by these terms. If you do not
+    accept these terms, you must discontinue use immediately.
+  </p>
+  <p>
+    These terms apply to all users including firm administrators, staff members, and any other
+    individuals granted access by an account holder.
+  </p>
+</div>
+
+<!-- Sections -->
+<div class="space-y-0 prose-pub">
+
+  {% set sections = [
+    (
+      '1. Acceptance of Terms',
+      'fa-file-signature',
+      [
+        ('', 'By accessing or using OSSERVA OFFICE, you acknowledge that you have read, understood, and agreed to these Terms and Conditions, as well as our Privacy Policy.'),
+        ('', 'We reserve the right to update these terms at any time. Continued use of the platform after changes have been published constitutes acceptance of the revised terms. We will make reasonable efforts to notify account administrators of material changes.'),
+      ]
+    ),
+    (
+      '2. Description of Service',
+      'fa-server',
+      [
+        ('', 'OSSERVA OFFICE is a software-as-a-service (SaaS) platform providing legal operations tools including case management, client records, scheduling, internal messaging, document storage, financial summaries, team coordination, and related functionality.'),
+        ('', 'The platform is made available through a web browser and is designed for use by legal professionals and their support staff. Features may vary depending on the subscription plan associated with your account.'),
+      ]
+    ),
+    (
+      '3. User Accounts',
+      'fa-user-lock',
+      [
+        ('', 'Each user account is personal and non-transferable. Account access is granted by the firm administrator responsible for the subscription. You are responsible for maintaining the confidentiality of your login credentials and for all activity that occurs under your account.'),
+        ('', 'You must notify your account administrator immediately if you become aware of any unauthorised access to your account. OSSERVA is not liable for losses resulting from unauthorised access caused by your failure to protect your credentials.'),
+        ('', 'Accounts must be associated with a real individual. The creation of automated or fictitious accounts is prohibited.'),
+      ]
+    ),
+    (
+      '4. Permitted Use',
+      'fa-circle-check',
+      [
+        ('', 'You may use OSSERVA OFFICE solely for lawful internal business purposes related to your legal practice or organisation. You agree not to:'),
+        ('list', [
+          'Use the platform in any manner that violates applicable laws or regulations.',
+          'Attempt to gain unauthorised access to any part of the system or related infrastructure.',
+          'Reverse engineer, decompile, or extract source code from the platform.',
+          'Use automated scripts, bots, or scraping tools to interact with the platform.',
+          'Upload content that is unlawful, harmful, or violates the rights of any third party.',
+          'Share your access credentials with individuals not authorised by your account administrator.',
+        ]),
+      ]
+    ),
+    (
+      '5. Data and Document Responsibility',
+      'fa-database',
+      [
+        ('', 'You retain full ownership of all data, documents, and content you upload or create within the platform. OSSERVA does not claim ownership over your legal files, case records, or client information.'),
+        ('', 'You are solely responsible for the accuracy, legality, and appropriateness of data you store within the platform. OSSERVA is not responsible for any errors in your data or for any legal consequences arising from the content you manage through the platform.'),
+        ('', 'You are responsible for maintaining appropriate backups of critical data. While OSSERVA maintains infrastructure-level redundancy, we do not guarantee that data will never be lost and recommend independent backup practices for critical information.'),
+      ]
+    ),
+    (
+      '6. Availability of Service',
+      'fa-tower-broadcast',
+      [
+        ('', 'OSSERVA OFFICE is provided on an "as available" basis. We make reasonable efforts to maintain high uptime but do not guarantee uninterrupted access. Scheduled maintenance, infrastructure events, or circumstances beyond our control may result in temporary unavailability.'),
+        ('', 'We are not liable for losses or damages resulting from platform downtime, data inaccessibility during maintenance windows, or service interruptions caused by third-party providers.'),
+      ]
+    ),
+    (
+      '7. Intellectual Property',
+      'fa-shield-halved',
+      [
+        ('', 'The OSSERVA OFFICE platform, including its design, codebase, user interface, workflows, and all associated intellectual property, is owned exclusively by OSSERVA. No part of the platform may be copied, reproduced, distributed, or used as the basis for a competing product without express written permission.'),
+        ('', 'The OSSERVA name, logo, and related marks are proprietary. You may not use them in any context outside the platform without prior written consent.'),
+      ]
+    ),
+    (
+      '8. Subscription and Billing',
+      'fa-credit-card',
+      [
+        ('', 'Access to OSSERVA OFFICE is provided on a subscription basis. Subscription fees, billing cycles, and payment terms are defined in your service agreement or the applicable pricing plan selected at onboarding.'),
+        ('', 'Subscription fees are non-refundable except where explicitly required by applicable law or expressly stated in your agreement. Failure to pay may result in suspension or termination of access.'),
+        ('', 'We reserve the right to modify pricing with reasonable advance notice. Continued use after a pricing change takes effect constitutes acceptance of the new rates.'),
+      ]
+    ),
+    (
+      '9. Limitation of Liability',
+      'fa-scale-balanced',
+      [
+        ('', 'To the fullest extent permitted by applicable law, OSSERVA and its affiliates, officers, employees, and service providers shall not be liable for any indirect, incidental, consequential, punitive, or special damages arising from your use of or inability to use the platform, even if we have been advised of the possibility of such damages.'),
+        ('', 'Our total liability to you for any claims arising from your use of the platform shall not exceed the total fees paid by you during the three months preceding the event giving rise to the claim.'),
+        ('', 'Nothing in these terms limits liability for death, personal injury, fraud, or any other matter that cannot be excluded or limited under applicable law.'),
+      ]
+    ),
+    (
+      '10. Confidentiality and Security',
+      'fa-lock',
+      [
+        ('', 'OSSERVA implements industry-standard technical and organisational security measures to protect data stored within the platform. However, no system can be guaranteed completely secure. You acknowledge that data transmission over the internet carries inherent risk.'),
+        ('', 'You are responsible for ensuring that users within your organisation access the platform only through secure networks and devices, and that your own internal security practices are maintained.'),
+        ('', 'OSSERVA personnel do not access your data except as strictly necessary to provide support, resolve technical issues, or comply with legal obligations.'),
+      ]
+    ),
+    (
+      '11. Termination or Suspension',
+      'fa-ban',
+      [
+        ('', 'OSSERVA reserves the right to suspend or terminate your account with or without prior notice if we determine, in our sole discretion, that you have violated these terms, engaged in fraudulent activity, or that continued access poses a risk to the platform or other users.'),
+        ('', 'Upon termination, your access to the platform and all associated data will be disabled. You may request an export of your data within 30 days of termination. After this period, data may be permanently deleted from our systems.'),
+        ('', 'You may cancel your subscription at any time through your account administrator or by contacting us directly. Cancellation takes effect at the end of the current billing period.'),
+      ]
+    ),
+    (
+      '12. Governing Law',
+      'fa-gavel',
+      [
+        ('', 'These Terms and Conditions shall be governed by and construed in accordance with the laws of the Republic of Costa Rica, without regard to its conflict of law provisions.'),
+        ('', 'Any dispute arising from or relating to these terms or your use of the platform shall first be subject to good-faith negotiation. If unresolved, disputes shall be referred to the competent courts of Costa Rica.'),
+      ]
+    ),
+    (
+      '13. Contact Information',
+      'fa-envelope',
+      [
+        ('', 'If you have questions regarding these Terms and Conditions, please contact us:'),
+        ('', 'OSSERVA OFFICE — Legal Operations Platform'),
+        ('', 'Email: legal@osserva.com'),
+        ('', 'General inquiries: contact@osserva.com'),
+      ]
+    ),
+  ] %}
+
+  {% for title, icon, content_blocks in sections %}
+  <div class="dk-card rounded-xl p-6 sm:p-7 mb-4">
+    <div class="flex items-center gap-3 mb-4">
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+           style="background:hsl(var(--muted))">
+        <i class="fa-solid {{ icon }} text-xs" style="color:hsl(var(--primary))"></i>
+      </div>
+      <h2 class="font-display font-bold text-base" style="color:hsl(var(--foreground));margin:0;border:none;padding:0">
+        {{ title }}
+      </h2>
+    </div>
+    {% for type, body in content_blocks %}
+      {% if type == 'list' %}
+      <ul class="space-y-1.5 mt-2">
+        {% for item in body %}
+        <li class="flex items-start gap-2.5 text-sm leading-relaxed"
+            style="color:hsl(var(--muted-foreground))">
+          <span class="w-1.5 h-1.5 rounded-full flex-shrink-0 mt-2"
+                style="background:hsl(var(--primary))"></span>
+          {{ item }}
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-sm leading-relaxed mb-3 last:mb-0"
+         style="color:hsl(var(--muted-foreground))">{{ body }}</p>
+      {% endif %}
+    {% endfor %}
+  </div>
+  {% endfor %}
+
+</div>
+
+{% endblock %}

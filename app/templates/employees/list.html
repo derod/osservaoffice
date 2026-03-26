@@ -1,0 +1,88 @@
+{% extends "base.html" %}{% set active_nav="employees" %}
+{% block title %}Employees — OSSERVA OFFICE{% endblock %}
+{% block content %}
+<div class="w-full max-w-6xl">
+  <h1 class="text-xl sm:text-2xl font-bold mb-5 sm:mb-6" style="color:hsl(var(--foreground))">Team Directory</h1>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+    {% for item in employee_data %}
+    {% set emp = item.user %}{% set status = item.status %}
+    <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-4 sm:p-5">
+      <div class="flex items-start justify-between mb-3">
+        <div class="flex items-center gap-3 min-w-0 flex-1">
+          {# Avatar with presence dot overlay #}
+          <div class="relative flex-shrink-0">
+            <div class="avatar-initials w-11 h-11" style="background-color:{{ emp.avatar_color }}">{{ get_initials(emp.full_name) }}</div>
+            <span class="presence-dot absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-[hsl(var(--card))]"
+                  data-presence-uid="{{ emp.id }}"
+                  style="background:#6b7280"
+                  title="Offline"></span>
+          </div>
+          <div class="min-w-0">
+            <div class="font-semibold text-sm truncate" style="color:hsl(var(--foreground))">{{ emp.full_name }}</div>
+            <div class="text-xs truncate flex items-center gap-1.5" style="color:hsl(var(--muted-foreground))">
+              {{ emp.job_title or emp.role }}
+            </div>
+            {# Last seen — shown only when offline, filled by JS #}
+            <div class="text-[10px] mt-0.5 presence-last-seen hidden" data-presence-lastseen="{{ emp.id }}"
+                 style="color:hsl(var(--muted-foreground))"></div>
+          </div>
+        </div>
+        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ml-2
+          {% if status=='free' %}badge-success{% elif status=='busy' %}badge-warning{% else %}badge-danger{% endif %}">
+          {{ status.replace('_',' ').title() }}
+        </span>
+      </div>
+      <div class="text-xs mb-3" style="color:hsl(var(--muted-foreground))">{{ item.today_appointments|length }} appointment(s) today</div>
+      <a href="{{ url_for('employees.agenda', user_id=emp.id) }}"
+         class="inline-flex items-center justify-center w-full text-sm font-medium py-2.5 rounded-lg border border-[hsl(var(--border))] dk-card-hover transition-colors"
+         style="color:hsl(var(--card-foreground))">View agenda →</a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  function _timeAgo(isoStr) {
+    if (!isoStr) return '';
+    var d = new Date(isoStr.replace(' ', 'T') + 'Z');
+    var secs = Math.floor((Date.now() - d.getTime()) / 1000);
+    if (secs < 60)  return 'just now';
+    if (secs < 3600) return Math.floor(secs / 60) + 'm ago';
+    if (secs < 86400) return Math.floor(secs / 3600) + 'h ago';
+    return Math.floor(secs / 86400) + 'd ago';
+  }
+
+  function _applyUpdate(entry) {
+    // Update last-seen label
+    var lsEl = document.querySelector('[data-presence-lastseen="' + entry.user_id + '"]');
+    if (lsEl) {
+      if (entry.state === 'offline' && entry.last_seen_at) {
+        lsEl.textContent = 'Last seen ' + _timeAgo(entry.last_seen_at);
+        lsEl.classList.remove('hidden');
+      } else {
+        lsEl.textContent = '';
+        lsEl.classList.add('hidden');
+      }
+    }
+  }
+
+  // Hook into global Presence
+  function _boot() {
+    if (!window.Presence) return;
+    // Apply updates already in cache
+    window.Presence.all().forEach(_applyUpdate);
+    // Subscribe to live updates
+    window.Presence.onUpdate = _applyUpdate;
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(_boot, 200); });
+  } else {
+    setTimeout(_boot, 200);
+  }
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends "base.html" %}{% set active_nav="announcements" %}
+{% block title %}Announcements — OSSERVA OFFICE{% endblock %}
+{% block content %}
+<div class="page-container max-w-3xl">
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+    <div>
+      <h1 class="text-xl sm:text-2xl font-bold">Announcements</h1>
+      <p class="text-sm text-[hsl(var(--muted-foreground))] mt-0.5">Internal notices for the team</p>
+    </div>
+    <button onclick="document.getElementById('newModal').classList.remove('hidden')"
+      class="inline-flex items-center justify-center gap-2 style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))" text-sm font-medium px-4 py-2.5 rounded-lg transition-colors self-start sm:self-auto">
+      <i class="fa-solid fa-plus text-xs"></i> New Announcement
+    </button>
+  </div>
+
+  <!-- List -->
+  <div class="space-y-4">
+    {% for ann in announcements %}
+    <div class="dk-card rounded-xl border {% if ann.is_pinned %}border-amber-200 shadow-amber-50{% else %}border-[hsl(var(--border))]{% endif %} shadow-sm p-5">
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex-1 min-w-0">
+          <div class="flex flex-wrap items-center gap-2 mb-1">
+            {% if ann.is_pinned %}
+            <span class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full badge-warning">
+              <i class="fa-solid fa-thumbtack text-[10px]"></i> Pinned
+            </span>
+            {% endif %}
+            <h2 class="text-sm font-semibold text-[hsl(var(--foreground))]">{{ ann.title }}</h2>
+          </div>
+          <p class="text-sm text-[hsl(var(--muted-foreground))] leading-relaxed whitespace-pre-wrap break-words">{{ ann.content }}</p>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center gap-1 flex-shrink-0">
+          {% if current_user.role in ('admin', 'owner', 'super_admin') %}
+          <form method="POST" action="{{ url_for('announcements.toggle_pin', ann_id=ann.id) }}">
+            <button type="submit" title="{{ 'Unpin' if ann.is_pinned else 'Pin' }}"
+              class="p-1.5 rounded-lg {% if ann.is_pinned %}text-amber-500 hover:bg-amber-50{% else %}text-slate-300 hover:text-amber-500 hover:bg-amber-50{% endif %} transition-colors">
+              <i class="fa-solid fa-thumbtack text-xs"></i>
+            </button>
+          </form>
+          {% endif %}
+          {% if current_user.role in ('admin', 'owner', 'super_admin') or ann.user_id == current_user.id %}
+          <form method="POST" action="{{ url_for('announcements.delete', ann_id=ann.id) }}"
+                onsubmit="return confirm('Delete this announcement?')">
+            <button type="submit" title="Delete"
+              class="p-1.5 rounded-lg text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-colors">
+              <i class="fa-solid fa-trash-can text-xs"></i>
+            </button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Author + date -->
+      <div class="flex items-center gap-2 mt-4 pt-3 border-t border-[hsl(var(--border))]">
+        <div class="avatar-initials w-6 h-6 text-[10px] flex-shrink-0" style="background-color:{{ ann.avatar_color or '#94a3b8' }}">
+          {{ get_initials(ann.author_name or 'U') }}
+        </div>
+        <span class="text-xs text-[hsl(var(--muted-foreground))]">{{ ann.author_name or 'Unknown' }}</span>
+        <span class="text-slate-300 text-xs">·</span>
+        <span class="text-xs text-[hsl(var(--muted-foreground))]">{{ format_dt(ann.created_at, '%d %b %Y, %H:%M') }}</span>
+      </div>
+    </div>
+    {% else %}
+    <div class="dk-card rounded-xl border border-dashed border-[hsl(var(--border))] p-12 text-center">
+      <div class="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
+        <i class="fa-solid fa-bullhorn text-slate-300 text-lg"></i>
+      </div>
+      <p class="text-sm font-medium text-[hsl(var(--muted-foreground))]">No announcements yet</p>
+      <p class="text-xs text-[hsl(var(--muted-foreground))] mt-1">Post the first one for your team.</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- New Announcement Modal -->
+<div id="newModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-start sm:items-center justify-center p-2 sm:p-4 overflow-y-auto">
+  <div class="dk-card rounded-2xl shadow-xl w-full max-w-lg my-4">
+    <div class="p-4 sm:p-5 border-b border-[hsl(var(--border))] flex items-center justify-between">
+      <h2 class="font-semibold">New Announcement</h2>
+      <button onclick="document.getElementById('newModal').classList.add('hidden')"
+        class="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--muted-foreground))] p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+    </div>
+    <form method="POST" action="{{ url_for('announcements.create') }}" class="p-4 sm:p-5 space-y-4">
+      <div>
+        <label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Title *</label>
+        <input name="title" required maxlength="200"
+          class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-800"
+          placeholder="e.g. Office closed on Friday">
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Message *</label>
+        <textarea name="content" required rows="5"
+          class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-800 resize-none"
+          placeholder="Write your announcement here…"></textarea>
+      </div>
+      <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-1">
+        <button type="button" onclick="document.getElementById('newModal').classList.add('hidden')"
+          class="inline-flex items-center justify-center dk-card dk-card-hover text-[hsl(var(--card-foreground))] text-sm font-medium px-4 py-2.5 rounded-lg border border-[hsl(var(--border))]">
+          Cancel
+        </button>
+        <button type="submit"
+          class="inline-flex items-center justify-center style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))" text-sm font-medium px-4 py-2.5 rounded-lg">
+          Post Announcement
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
