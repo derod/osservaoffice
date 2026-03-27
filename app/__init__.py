@@ -80,6 +80,16 @@ def create_app():
     app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
     app.config["SESSION_COOKIE_SECURE"] = is_production
 
+    # --- Ensure upload directory exists ---
+    _upload_dir = os.environ.get(
+        "UPLOAD_DIR",
+        os.path.join(os.path.dirname(__file__), "static", "uploads"),
+    )
+    try:
+        os.makedirs(_upload_dir, exist_ok=True)
+    except OSError as _e:
+        print(f"[uploads] Could not create upload dir '{_upload_dir}': {_e}")
+
     # --- Health check (no auth, no DB) ---
     @app.route("/health")
     def health():
@@ -91,12 +101,18 @@ def create_app():
         init_db()
 
     # --- Bootstrap super_admin from env vars ---
-    with app.app_context():
-        _bootstrap_super_admin()
+    try:
+        with app.app_context():
+            _bootstrap_super_admin()
+    except Exception as _e:
+        print(f"[super_admin] Bootstrap skipped: {_e}")
 
     # --- Bootstrap default org and assign orphan records ---
-    with app.app_context():
-        _bootstrap_default_org()
+    try:
+        with app.app_context():
+            _bootstrap_default_org()
+    except Exception as _e:
+        print(f"[org] Bootstrap skipped: {_e}")
 
     # --- Register blueprints ---
     from app.routes.auth import bp as auth_bp
@@ -145,7 +161,7 @@ def create_app():
     socketio.init_app(
         app,
         cors_allowed_origins="same_origin",
-        async_mode="threading",
+        async_mode="gevent",
         logger=False,
         engineio_logger=False,
     )
