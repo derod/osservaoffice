@@ -5,7 +5,13 @@ Handles OpenAI API calls, system prompt construction, jurisdiction profiles,
 mentor mode, confidence scoring, and title generation.
 """
 
-import openai
+try:
+    import openai as _openai_module
+    _OPENAI_AVAILABLE = True
+except ImportError:
+    _openai_module = None
+    _OPENAI_AVAILABLE = False
+
 from app.database import get_integration_setting, db_conn
 
 # ---------------------------------------------------------------------------
@@ -210,6 +216,12 @@ def generate_legal_response(
     Raises ValueError if the API key is missing.
     Raises RuntimeError on API errors.
     """
+    if not _OPENAI_AVAILABLE:
+        raise RuntimeError(
+            "The OpenAI library is not installed on this server. "
+            "The Legal Consultant feature is currently unavailable."
+        )
+
     api_key = get_openai_api_key()
     if not api_key:
         raise ValueError("OpenAI API key is not configured.")
@@ -221,7 +233,7 @@ def generate_legal_response(
     full_messages = [system_msg] + messages
 
     try:
-        client = openai.OpenAI(api_key=api_key)
+        client = _openai_module.OpenAI(api_key=api_key)
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=full_messages,
@@ -231,11 +243,11 @@ def generate_legal_response(
         raw_reply = response.choices[0].message.content or ""
         clean_text, confidence = _extract_confidence(raw_reply)
         return clean_text, confidence
-    except openai.AuthenticationError:
+    except _openai_module.AuthenticationError:
         raise RuntimeError("Invalid OpenAI API key. Please check your Settings.")
-    except openai.RateLimitError:
+    except _openai_module.RateLimitError:
         raise RuntimeError("OpenAI rate limit reached. Please try again in a moment.")
-    except openai.APIError as exc:
+    except _openai_module.APIError as exc:
         raise RuntimeError(f"OpenAI API error: {exc}")
     except Exception as exc:
         raise RuntimeError(f"Unexpected error calling OpenAI: {exc}")

@@ -194,7 +194,10 @@ def deny(req_id):
 
 # ───────── DOCUMENTS ─────────
 docs_bp = Blueprint("documents", __name__, url_prefix="/documents")
-UPLOAD_DIR = os.environ.get("UPLOAD_DIR", "app/static/uploads")
+UPLOAD_DIR = os.environ.get(
+    "UPLOAD_DIR",
+    os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "app", "static", "uploads"),
+)
 MAX_SIZE = int(os.environ.get("MAX_UPLOAD_SIZE_MB", "20")) * 1024 * 1024
 ALLOWED_EXT = {".pdf", ".doc", ".docx", ".jpg", ".jpeg", ".png", ".gif", ".txt", ".xls", ".xlsx"}
 

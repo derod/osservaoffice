@@ -5,9 +5,13 @@ from app.auth_utils import login_required
 
 bp = Blueprint("live_room", __name__, url_prefix="/live-room")
 
-UPLOAD_FOLDER = os.path.join(
+_DEFAULT_UPLOAD_BASE = os.path.join(
     os.path.dirname(os.path.dirname(__file__)),
-    "static", "uploads", "live_room"
+    "static", "uploads",
+)
+UPLOAD_FOLDER = os.path.join(
+    os.environ.get("UPLOAD_DIR", _DEFAULT_UPLOAD_BASE),
+    "live_room",
 )
 ALLOWED_EXTENSIONS = {"mp4"}
 MAX_MP4_BYTES = 200 * 1024 * 1024  # 200 MB
