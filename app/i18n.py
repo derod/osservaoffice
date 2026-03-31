@@ -1212,6 +1212,176 @@ _TRANSLATIONS = {
 }
 
 
+# ---------------------------------------------------------------------------
+# Login page translations (used before auth — keyed by English string)
+# ---------------------------------------------------------------------------
+LOGIN_TRANSLATIONS = {
+    "Legal Operations Platform": {
+        "es": "Plataforma de Operaciones Legales",
+        "it": "Piattaforma per Operazioni Legali",
+        "ja": "リーガルオペレーションプラットフォーム",
+        "pt": "Plataforma de Operações Jurídicas",
+    },
+    "Operational control for modern law firms": {
+        "es": "Control operativo para despachos jurídicos modernos",
+        "it": "Controllo operativo per studi legali moderni",
+        "ja": "現代の法律事務所向けの業務管理",
+        "pt": "Controle operacional para escritórios jurídicos modernos",
+    },
+    "Manage cases, calendars, clients, documents, internal workflows, and team coordination from one secure platform designed for legal operations.": {
+        "es": "Gestione casos, calendarios, clientes, documentos, flujos de trabajo internos y coordinación de equipo desde una plataforma segura diseñada para operaciones legales.",
+        "it": "Gestisci casi, calendari, clienti, documenti, flussi di lavoro interni e coordinamento del team da un'unica piattaforma sicura progettata per le operazioni legali.",
+        "ja": "案件、カレンダー、クライアント、文書、内部ワークフロー、チームの連携を、法律業務向けに設計された一つのセキュアなプラットフォームで管理します。",
+        "pt": "Gerencie casos, calendários, clientes, documentos, fluxos de trabalho internos e coordenação de equipe em uma plataforma segura projetada para operações jurídicas.",
+    },
+    "Why firms choose OSSERVA OFFICE": {
+        "es": "Por qué los despachos eligen OSSERVA OFFICE",
+        "it": "Perché gli studi scelgono OSSERVA OFFICE",
+        "ja": "法律事務所がOSSERVA OFFICEを選ぶ理由",
+        "pt": "Por que escritórios escolhem OSSERVA OFFICE",
+    },
+    "Available Languages": {
+        "es": "Idiomas disponibles",
+        "it": "Lingue disponibili",
+        "ja": "対応言語",
+        "pt": "Idiomas disponíveis",
+    },
+    "Welcome back": {
+        "es": "Bienvenido de nuevo",
+        "it": "Bentornato",
+        "ja": "おかえりなさい",
+        "pt": "Bem-vindo de volta",
+    },
+    "Sign in to your office portal to continue.": {
+        "es": "Inicia sesión en tu portal de oficina para continuar.",
+        "it": "Accedi al tuo portale ufficio per continuare.",
+        "ja": "オフィスポータルにサインインして続けてください。",
+        "pt": "Faça login no seu portal para continuar.",
+    },
+    "Email address": {
+        "es": "Correo electrónico",
+        "it": "Indirizzo email",
+        "ja": "メールアドレス",
+        "pt": "Endereço de e-mail",
+    },
+    "Password": {
+        "es": "Contraseña",
+        "it": "Password",
+        "ja": "パスワード",
+        "pt": "Senha",
+    },
+    "Sign in to OSSERVA": {
+        "es": "Iniciar sesión en OSSERVA",
+        "it": "Accedi a OSSERVA",
+        "ja": "OSSERVAにサインイン",
+        "pt": "Entrar no OSSERVA",
+    },
+    "Need access for your firm?": {
+        "es": "¿Necesitas acceso para tu despacho?",
+        "it": "Hai bisogno di accesso per il tuo studio?",
+        "ja": "事務所のアクセスが必要ですか？",
+        "pt": "Precisa de acesso para o seu escritório?",
+    },
+    "Request a demo": {
+        "es": "Solicitar una demostración",
+        "it": "Richiedi una demo",
+        "ja": "デモを申請する",
+        "pt": "Solicitar uma demonstração",
+    },
+    "About": {
+        "es": "Acerca de",
+        "it": "Chi siamo",
+        "ja": "概要",
+        "pt": "Sobre",
+    },
+    "Contact": {
+        "es": "Contacto",
+        "it": "Contatti",
+        "ja": "お問い合わせ",
+        "pt": "Contato",
+    },
+    "Terms": {
+        "es": "Términos",
+        "it": "Termini",
+        "ja": "利用規約",
+        "pt": "Termos",
+    },
+    "Privacy": {
+        "es": "Privacidad",
+        "it": "Privacy",
+        "ja": "プライバシー",
+        "pt": "Privacidade",
+    },
+    "Secure Portal Access": {
+        "es": "Acceso seguro al portal",
+        "it": "Accesso sicuro al portale",
+        "ja": "セキュアポータルアクセス",
+        "pt": "Acesso seguro ao portal",
+    },
+    "Implementation and Advisory": {
+        "es": "Implementación y Asesoría",
+        "it": "Implementazione e Consulenza",
+        "ja": "導入・アドバイザリー",
+        "pt": "Implementação e Consultoria",
+    },
+    "A configured platform, not a generic tool": {
+        "es": "Una plataforma configurada, no una herramienta genérica",
+        "it": "Una piattaforma configurata, non uno strumento generico",
+        "ja": "汎用ツールではなく、設定済みのプラットフォーム",
+        "pt": "Uma plataforma configurada, não uma ferramenta genérica",
+    },
+    "Ready to evaluate OSSERVA OFFICE for your firm?": {
+        "es": "¿Listo para evaluar OSSERVA OFFICE para tu despacho?",
+        "it": "Pronto a valutare OSSERVA OFFICE per il tuo studio?",
+        "ja": "貴事務所でOSSERVA OFFICEを評価する準備はできていますか？",
+        "pt": "Pronto para avaliar OSSERVA OFFICE para o seu escritório?",
+    },
+    "Contact Sales": {
+        "es": "Contactar ventas",
+        "it": "Contatta le vendite",
+        "ja": "営業へのお問い合わせ",
+        "pt": "Falar com vendas",
+    },
+    "Sign In": {
+        "es": "Iniciar sesión",
+        "it": "Accedi",
+        "ja": "サインイン",
+        "pt": "Entrar",
+    },
+    "or": {
+        "es": "o",
+        "it": "o",
+        "ja": "または",
+        "pt": "ou",
+    },
+    "About Us": {
+        "es": "Sobre nosotros",
+        "it": "Chi siamo",
+        "ja": "私たちについて",
+        "pt": "Sobre nós",
+    },
+    "Request Demo": {
+        "es": "Solicitar demo",
+        "it": "Richiedi demo",
+        "ja": "デモを申請",
+        "pt": "Solicitar demo",
+    },
+}
+
+
+def login_t(key: str, lang: str) -> str:
+    """Translate a login page string to the given language code.
+
+    Falls back to the key (English) if no translation exists.
+    """
+    if lang == "en":
+        return key
+    entry = LOGIN_TRANSLATIONS.get(key)
+    if entry is None:
+        return key
+    return entry.get(lang, key)
+
+
 def translate(key: str) -> str:
     """Return the translated string for the current user's language.
 

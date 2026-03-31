@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ lang }}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-  <title>OSSERVA OFFICE — Legal Operations Platform</title>
+  <title>OSSERVA OFFICE — {{ t('Legal Operations Platform') }}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -101,7 +101,7 @@
       box-shadow: 0 0 0 3px hsla(220,60%,58%,0.15);
     }
 
-    /* Language badge */
+    /* Language badge (static list) */
     .lang-badge {
       display: inline-flex;
       align-items: center;
@@ -115,14 +115,42 @@
       color: hsl(var(--sidebar-foreground));
     }
 
+    /* Language selector pill buttons */
+    .lang-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.3rem 0.7rem;
+      border-radius: 9999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      transition: background 150ms, border-color 150ms, color 150ms, box-shadow 150ms;
+      border: 1px solid hsl(var(--border));
+      background: hsl(var(--muted));
+      color: hsl(var(--muted-foreground));
+      white-space: nowrap;
+    }
+    .lang-pill:hover {
+      border-color: hsl(var(--primary));
+      color: hsl(var(--foreground));
+    }
+    .lang-pill.active {
+      background: hsl(var(--primary));
+      border-color: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+      box-shadow: 0 0 0 2px hsla(220,60%,55%,0.2);
+    }
+
     /* Footer link */
     .pub-footer-link {
-      color: hsl(var(--sidebar-muted));
+      color: hsl(var(--muted-foreground));
       font-size: 0.75rem;
       transition: color 150ms;
       text-decoration: none;
     }
-    .pub-footer-link:hover { color: hsl(var(--sidebar-foreground)); }
+    .pub-footer-link:hover { color: hsl(var(--foreground)); }
 
     /* Smooth scroll */
     html { scroll-behavior: smooth; }
@@ -154,13 +182,13 @@
     <!-- Nav links (desktop) -->
     <nav class="hidden md:flex items-center gap-6">
       <a href="{{ url_for('public.about') }}" class="text-sm font-medium transition-colors hover:opacity-80"
-         style="color:hsl(var(--muted-foreground))">About</a>
+         style="color:hsl(var(--muted-foreground))">{{ t('About') }}</a>
       <a href="{{ url_for('public.contact') }}" class="text-sm font-medium transition-colors hover:opacity-80"
-         style="color:hsl(var(--muted-foreground))">Contact</a>
+         style="color:hsl(var(--muted-foreground))">{{ t('Contact') }}</a>
       <a href="{{ url_for('public.terms') }}" class="text-sm font-medium transition-colors hover:opacity-80"
-         style="color:hsl(var(--muted-foreground))">Terms</a>
+         style="color:hsl(var(--muted-foreground))">{{ t('Terms') }}</a>
       <a href="{{ url_for('public.privacy') }}" class="text-sm font-medium transition-colors hover:opacity-80"
-         style="color:hsl(var(--muted-foreground))">Privacy</a>
+         style="color:hsl(var(--muted-foreground))">{{ t('Privacy') }}</a>
     </nav>
 
     <!-- Right side -->
@@ -173,7 +201,7 @@
       <a href="#login"
          class="inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-lg transition-opacity hover:opacity-90"
          style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))">
-        Sign In
+        {{ t('Sign In') }}
       </a>
     </div>
   </div>
@@ -195,26 +223,25 @@
         <span class="w-1.5 h-1.5 rounded-full flex-shrink-0"
               style="background:hsl(var(--sidebar-primary))"></span>
         <span class="text-xs font-semibold tracking-widest uppercase"
-              style="color:hsl(var(--sidebar-foreground))">Legal Operations Platform</span>
+              style="color:hsl(var(--sidebar-foreground))">{{ t('Legal Operations Platform') }}</span>
       </div>
 
       <!-- Headline -->
       <h1 class="font-display font-bold leading-tight mb-4"
           style="color:hsl(var(--sidebar-foreground));font-size:clamp(2rem,4vw,3rem)">
-        Operational control<br>for modern law firms
+        {{ t('Operational control for modern law firms') }}
       </h1>
 
       <!-- Subheadline -->
       <p class="text-base leading-relaxed mb-10"
          style="color:hsl(var(--sidebar-muted));max-width:44ch">
-        Manage cases, calendars, clients, documents, internal workflows,
-        and team coordination from one secure platform designed for legal operations.
+        {{ t('Manage cases, calendars, clients, documents, internal workflows, and team coordination from one secure platform designed for legal operations.') }}
       </p>
 
       <!-- Benefits -->
       <div class="mb-10">
         <p class="text-xs font-bold uppercase tracking-widest mb-4"
-           style="color:hsl(var(--sidebar-muted))">Why firms choose OSSERVA OFFICE</p>
+           style="color:hsl(var(--sidebar-muted))">{{ t('Why firms choose OSSERVA OFFICE') }}</p>
         <ul class="space-y-3">
           {% set benefits = [
             ('fa-briefcase',        'Centralized case and client management'),
@@ -235,18 +262,13 @@
         </ul>
       </div>
 
-      <!-- Languages -->
+      <!-- Available Languages -->
       <div>
         <p class="text-xs font-bold uppercase tracking-widest mb-3"
-           style="color:hsl(var(--sidebar-muted))">Available Languages</p>
+           style="color:hsl(var(--sidebar-muted))">{{ t('Available Languages') }}</p>
         <div class="flex flex-wrap gap-2 mb-3">
-          {% for lang in ['English', 'Spanish', 'French', 'German', 'Dutch'] %}
-          <span class="lang-badge">{{ lang }}</span>
-          {% endfor %}
-        </div>
-        <div class="flex flex-wrap gap-2 mb-3">
-          {% for lang in ['Portuguese', 'Italian'] %}
-          <span class="lang-badge" style="opacity:0.55">{{ lang }} — coming soon</span>
+          {% for label in ['🇬🇧 English', '🇪🇸 Spanish', '🇮🇹 Italian', '🇯🇵 Japanese', '🇧🇷 Português'] %}
+          <span class="lang-badge">{{ label }}</span>
           {% endfor %}
         </div>
         <p class="text-xs leading-relaxed" style="color:hsl(var(--sidebar-muted));max-width:42ch">
@@ -274,14 +296,39 @@
           <div class="font-display font-bold text-base tracking-wide"
                style="color:hsl(var(--foreground))">OSSERVA OFFICE</div>
           <div class="text-[10px] font-medium tracking-widest uppercase"
-               style="color:hsl(var(--muted-foreground))">Secure Portal Access</div>
+               style="color:hsl(var(--muted-foreground))">{{ t('Secure Portal Access') }}</div>
+        </div>
+      </div>
+
+      <!-- Language selector -->
+      <div class="mb-6">
+        <p class="text-[10px] font-semibold uppercase tracking-widest mb-2"
+           style="color:hsl(var(--muted-foreground))">Language</p>
+        <div class="flex flex-wrap gap-1.5">
+          {% set lang_options = [
+            ('en', '🇬🇧', 'EN'),
+            ('es', '🇪🇸', 'ES'),
+            ('it', '🇮🇹', 'IT'),
+            ('ja', '🇯🇵', 'JA'),
+            ('pt', '🇧🇷', 'PT'),
+          ] %}
+          {% for code, flag, label in lang_options %}
+          <form method="POST" action="{{ url_for('auth.set_lang') }}" style="display:inline">
+            <input type="hidden" name="lang" value="{{ code }}">
+            <button type="submit"
+                    class="lang-pill{% if lang == code %} active{% endif %}">
+              <span>{{ flag }}</span>
+              <span>{{ label }}</span>
+            </button>
+          </form>
+          {% endfor %}
         </div>
       </div>
 
       <!-- Heading -->
-      <h2 class="text-xl font-semibold mb-1" style="color:hsl(var(--foreground))">Welcome back</h2>
+      <h2 class="text-xl font-semibold mb-1" style="color:hsl(var(--foreground))">{{ t('Welcome back') }}</h2>
       <p class="text-sm mb-7" style="color:hsl(var(--muted-foreground))">
-        Sign in to your office portal to continue.
+        {{ t('Sign in to your office portal to continue.') }}
       </p>
 
       <!-- Error alert -->
@@ -298,7 +345,7 @@
 
         <div>
           <label class="block text-xs font-medium mb-1.5"
-                 style="color:hsl(var(--muted-foreground))">Email address</label>
+                 style="color:hsl(var(--muted-foreground))">{{ t('Email address') }}</label>
           <div class="relative">
             <i class="fa-solid fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-xs"
                style="color:hsl(var(--muted-foreground))"></i>
@@ -315,7 +362,7 @@
 
         <div>
           <label class="block text-xs font-medium mb-1.5"
-                 style="color:hsl(var(--muted-foreground))">Password</label>
+                 style="color:hsl(var(--muted-foreground))">{{ t('Password') }}</label>
           <div class="relative">
             <i class="fa-solid fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-xs"
                style="color:hsl(var(--muted-foreground))"></i>
@@ -339,32 +386,32 @@
         <button type="submit"
                 class="w-full font-semibold py-3 rounded-lg text-sm transition-opacity hover:opacity-90 mt-2"
                 style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))">
-          Sign in to OSSERVA
+          {{ t('Sign in to OSSERVA') }}
         </button>
 
       </form>
 
       <!-- Divider -->
-      <div class="section-divider my-6">or</div>
+      <div class="section-divider my-6">{{ t('or') }}</div>
 
       <!-- Contact CTA -->
       <p class="text-center text-xs" style="color:hsl(var(--muted-foreground))">
-        Need access for your firm?
+        {{ t('Need access for your firm?') }}
         <a href="{{ url_for('public.contact') }}"
            class="font-semibold transition-colors hover:opacity-80"
-           style="color:hsl(var(--primary))">Request a demo</a>
+           style="color:hsl(var(--primary))">{{ t('Request a demo') }}</a>
       </p>
 
       <!-- Footer links -->
       <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 mt-8 pt-6"
            style="border-top:1px solid hsl(var(--border))">
-        <a href="{{ url_for('public.about') }}"   class="pub-footer-link" style="color:hsl(var(--muted-foreground))">About Us</a>
+        <a href="{{ url_for('public.about') }}"   class="pub-footer-link" style="color:hsl(var(--muted-foreground))">{{ t('About Us') }}</a>
         <span style="color:hsl(var(--border))">·</span>
-        <a href="{{ url_for('public.contact') }}" class="pub-footer-link" style="color:hsl(var(--muted-foreground))">Contact</a>
+        <a href="{{ url_for('public.contact') }}" class="pub-footer-link" style="color:hsl(var(--muted-foreground))">{{ t('Contact') }}</a>
         <span style="color:hsl(var(--border))">·</span>
-        <a href="{{ url_for('public.terms') }}"   class="pub-footer-link" style="color:hsl(var(--muted-foreground))">Terms</a>
+        <a href="{{ url_for('public.terms') }}"   class="pub-footer-link" style="color:hsl(var(--muted-foreground))">{{ t('Terms') }}</a>
         <span style="color:hsl(var(--border))">·</span>
-        <a href="{{ url_for('public.privacy') }}" class="pub-footer-link" style="color:hsl(var(--muted-foreground))">Privacy</a>
+        <a href="{{ url_for('public.privacy') }}" class="pub-footer-link" style="color:hsl(var(--muted-foreground))">{{ t('Privacy') }}</a>
       </div>
 
       <p class="text-center text-[10px] mt-4" style="color:hsl(var(--muted-foreground));opacity:0.6">
@@ -394,11 +441,11 @@
     <div class="max-w-2xl mb-10 sm:mb-14">
       <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-semibold tracking-widest uppercase mb-4"
            style="background:hsl(var(--muted));border-color:hsl(var(--border));color:hsl(var(--muted-foreground))">
-        Implementation and Advisory
+        {{ t('Implementation and Advisory') }}
       </div>
       <h2 class="font-display font-bold leading-snug mb-3"
           style="font-size:clamp(1.5rem,3vw,2.125rem);color:hsl(var(--foreground))">
-        A configured platform, not a generic tool
+        {{ t('A configured platform, not a generic tool') }}
       </h2>
       <p class="text-base leading-relaxed" style="color:hsl(var(--muted-foreground))">
         OSSERVA OFFICE is not limited to a standard setup. We offer implementation guidance,
@@ -415,7 +462,7 @@
         ('fa-route',                  'Onboarding Guidance',          'Structured onboarding for administrators, user role setup, and operational baseline configuration.'),
         ('fa-wrench',                 'Customization Services',       'Tailored adaptation for firms with specific workflow requirements beyond standard configuration.'),
         ('fa-cloud-arrow-up',         'Deployment Support',           'Assistance with cloud deployment, domain configuration, and production readiness for dedicated instances.'),
-        ('fa-language',               'Multilingual Environments',    'Each team member selects their own interface language. English, Spanish, French, German, and Dutch available now.'),
+        ('fa-language',               'Multilingual Environments',    'Each team member selects their own interface language. English, Spanish, Italian, Japanese, and Português available now.'),
       ] %}
       {% for icon, title, desc in adv_services %}
       <div class="dk-card rounded-xl p-5">
@@ -436,7 +483,7 @@
          style="background:hsl(var(--muted));border-color:hsl(var(--border))">
       <div>
         <p class="font-display font-bold text-base mb-1" style="color:hsl(var(--foreground))">
-          Ready to evaluate OSSERVA OFFICE for your firm?
+          {{ t('Ready to evaluate OSSERVA OFFICE for your firm?') }}
         </p>
         <p class="text-sm" style="color:hsl(var(--muted-foreground))">
           Need a tailored setup? Ask about customization and data transfer consultation.
@@ -446,12 +493,12 @@
         <a href="{{ url_for('public.contact') }}?interest=Request+Demo"
            class="inline-flex items-center justify-center gap-2 text-sm font-semibold px-5 py-3 rounded-lg transition-opacity hover:opacity-90 whitespace-nowrap"
            style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))">
-          Request Demo
+          {{ t('Request Demo') }}
         </a>
         <a href="{{ url_for('public.contact') }}?interest=Pricing"
            class="inline-flex items-center justify-center gap-2 text-sm font-medium px-5 py-3 rounded-lg border transition-colors hover:opacity-80 whitespace-nowrap"
            style="border-color:hsl(var(--border));color:hsl(var(--muted-foreground))">
-          Contact Sales
+          {{ t('Contact Sales') }}
         </a>
       </div>
     </div>
