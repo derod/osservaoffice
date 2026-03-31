@@ -44,8 +44,22 @@
           {% endfor %}
         </div>
       </div>
-      <div><label class="block text-xs font-medium mb-1" style="color:hsl(var(--muted-foreground))">{% if user %}New Password (leave blank to keep current){% else %}Password *{% endif %}</label>
-        <input type="password" name="{% if user %}new_password{% else %}password{% endif %}" {% if not user %}required{% endif %} class="w-full dk-input rounded-lg px-3 py-2.5 text-sm focus:outline-none"></div>
+      <div>
+        <label class="block text-xs font-medium mb-1" style="color:hsl(var(--muted-foreground))">{% if user %}New Password (leave blank to keep current){% else %}Password *{% endif %}</label>
+        <div class="relative">
+          <input type="password" id="pw-field"
+                 name="{% if user %}new_password{% else %}password{% endif %}"
+                 {% if not user %}required{% endif %}
+                 class="w-full dk-input rounded-lg px-3 pr-10 py-2.5 text-sm focus:outline-none">
+          <button type="button" id="pw-toggle"
+                  onclick="(function(){var f=document.getElementById('pw-field'),i=document.getElementById('pw-eye');if(f.type==='password'){f.type='text';i.className='fa-solid fa-eye-slash text-xs';document.getElementById('pw-toggle').setAttribute('aria-label','Hide password');}else{f.type='password';i.className='fa-solid fa-eye text-xs';document.getElementById('pw-toggle').setAttribute('aria-label','Show password');}})()"
+                  aria-label="Show password"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded transition-opacity hover:opacity-70 focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]"
+                  style="color:hsl(var(--muted-foreground))" tabindex="0">
+            <i id="pw-eye" class="fa-solid fa-eye text-xs"></i>
+          </button>
+        </div>
+      </div>
       {% if user %}
       <div class="flex items-center gap-2">
         <input type="checkbox" id="is_active" name="is_active" {% if user.is_active %}checked{% endif %} class="w-5 h-5 rounded border-[hsl(var(--border))]">
