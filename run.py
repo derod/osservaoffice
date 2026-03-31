@@ -1,4 +1,12 @@
 import os
+
+# Load .env for local development (no-op if python-dotenv not installed or no .env file)
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 from app import create_app, socketio
 
 app = create_app()

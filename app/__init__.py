@@ -158,10 +158,14 @@ def create_app():
     app.register_blueprint(presence_bp)
 
     # ── SocketIO ───────────────────────────────────────────────
+    # gevent is required under GeventWebSocketWorker (Railway/Gunicorn).
+    # For local dev (python run.py / Flask dev server) use threading.
+    _env = os.environ.get("FLASK_ENV") or os.environ.get("ENVIRONMENT") or ""
+    _async_mode = "gevent" if _env.lower() in ("prod", "production") else "threading"
     socketio.init_app(
         app,
         cors_allowed_origins="same_origin",
-        async_mode="gevent",
+        async_mode=_async_mode,
         logger=False,
         engineio_logger=False,
     )
