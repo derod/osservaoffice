@@ -28,12 +28,25 @@ def list_employees():
     today = datetime.utcnow().replace(hour=0, minute=0, second=0).strftime("%Y-%m-%d %H:%M:%S")
     today_end = datetime.utcnow().replace(hour=23, minute=59).strftime("%Y-%m-%d %H:%M:%S")
 
+    current_role = g.user["role"]
     uc, up = org_filter(g.user)
     with db_conn() as conn:
         q = f"SELECT * FROM users WHERE 1=1{uc}"
         params = list(up)
+
+        # Always exclude super_admin from org-level directory
+        q += " AND role != 'super_admin'"
+
+        # Staff can only see other staff in their org (no admin/owner visibility)
+        if current_role == "staff":
+            q += " AND role = 'staff'"
+
         if role_filter != "all":
-            q += " AND role=?"; params.append(role_filter)
+            # Prevent URL-based filter from bypassing visibility rules
+            if current_role == "staff":
+                role_filter = "staff"  # staff is locked to staff view
+            if role_filter != "super_admin":  # never allow super_admin filter for anyone
+                q += " AND role=?"; params.append(role_filter)
         if status_filter == "active":
             q += " AND is_active=1"
         elif status_filter == "inactive":
@@ -66,7 +79,10 @@ def list_employees():
 @bp.route("/<int:user_id>/agenda")
 @login_required
 def agenda(user_id):
-    if g.user["role"] == "staff" and g.user["id"] != user_id:
+    current_role = g.user["role"]
+
+    # Staff can only view their own agenda
+    if current_role == "staff" and g.user["id"] != user_id:
         return redirect(url_for("employees.agenda", user_id=g.user["id"]))
 
     view = request.args.get("view", "day")
@@ -93,6 +109,15 @@ def agenda(user_id):
         if not employee:
             abort(404)
         employee = dict(employee)
+
+        # Prevent non-super-admin from viewing agenda of users outside their org
+        if current_role != "super_admin":
+            if employee.get("organization_id") != g.user.get("organization_id"):
+                abort(403)
+
+        # Prevent admin/owner from viewing super_admin agenda
+        if employee["role"] == "super_admin" and current_role != "super_admin":
+            abort(403)
         appointments = [dict(r) for r in conn.execute("""
             SELECT * FROM appointments
             WHERE assigned_to_user_id=? AND start_datetime>=? AND start_datetime<=?

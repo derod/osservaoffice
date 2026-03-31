@@ -526,11 +526,17 @@ from app.auth_utils import hash_password
 @settings_bp.route("")
 @login_required
 def index():
+    if g.user["role"] == "staff":
+        return redirect(url_for("dashboard.index"))
     uc, up = org_filter(g.user)
+    params = list(up)
+    q = f"SELECT * FROM users WHERE 1=1{uc}"
+    # Non-super-admin should never see super_admin accounts in their user list
+    if g.user["role"] != "super_admin":
+        q += " AND role != 'super_admin'"
+    q += " ORDER BY full_name"
     with db_conn() as conn:
-        users = [dict(r) for r in conn.execute(
-            f"SELECT * FROM users WHERE 1=1{uc} ORDER BY full_name", up
-        ).fetchall()]
+        users = [dict(r) for r in conn.execute(q, params).fetchall()]
     # Mask stored API key for display
     raw_key = get_integration_setting("openai_api_key") or ""
     masked_key = ("*" * (len(raw_key) - 4) + raw_key[-4:]) if len(raw_key) > 4 else ("*" * len(raw_key))
@@ -656,14 +662,21 @@ def new_user():
                 new_lang = f.get("language", "en")
                 if new_lang not in ("en", "es", "it", "ja", "pt"):
                     new_lang = "en"
-                # New users inherit the creating admin's org (super_admin can set any)
-                new_org_id = org_id_for(g.user)
+                new_role = f.get("role", "staff")
+                # Only super_admin can create super_admin users
+                if new_role == "super_admin" and g.user["role"] != "super_admin":
+                    new_role = "staff"
+                # super_admin users have no org; all others inherit the creating admin's org
+                if new_role == "super_admin":
+                    new_org_id = None
+                else:
+                    new_org_id = org_id_for(g.user)
                 conn.execute("""
                     INSERT INTO users (full_name, email, hashed_password, role, job_title, phone, avatar_color, is_active, language, organization_id)
                     VALUES (?,?,?,?,?,?,?,1,?,?)
                 """, (f["full_name"], f["email"].lower().strip(),
                       hash_password(f["password"]),
-                      f.get("role","staff"),
+                      new_role,
                       f.get("job_title") or None,
                       f.get("phone") or None,
                       f.get("avatar_color","#6366f1"),
@@ -681,6 +694,14 @@ def edit_user(user_id):
         if not user:
             abort(404)
         user = dict(user)
+
+        # Non-super-admin cannot edit users outside their own org or super_admin users
+        if g.user["role"] != "super_admin":
+            if user["role"] == "super_admin":
+                abort(403)
+            if user.get("organization_id") != g.user.get("organization_id"):
+                abort(403)
+
         if request.method == "POST":
             f = request.form
             is_active = 1 if f.get("is_active") == "on" else 0
@@ -702,22 +723,32 @@ def edit_user(user_id):
             if new_role == "super_admin" and g.user["role"] != "super_admin":
                 new_role = user["role"]
 
+            # Normalize organization_id based on role
+            if new_role == "super_admin":
+                # super_admin must not belong to any tenant org
+                new_org_id = None
+            elif user["role"] == "super_admin" and new_role != "super_admin":
+                # Demoted from super_admin — assign to the editing admin's org
+                new_org_id = g.user.get("organization_id")
+            else:
+                new_org_id = user.get("organization_id")
+
             if f.get("new_password"):
                 conn.execute("""
                     UPDATE users SET full_name=?,email=?,role=?,job_title=?,phone=?,
-                        avatar_color=?,is_active=?,language=?,hashed_password=? WHERE id=?
+                        avatar_color=?,is_active=?,language=?,hashed_password=?,organization_id=? WHERE id=?
                 """, (f["full_name"], f["email"].lower().strip(),
                       new_role, f.get("job_title") or None,
                       f.get("phone") or None, f.get("avatar_color","#6366f1"),
-                      is_active, edit_lang, hash_password(f["new_password"]), user_id))
+                      is_active, edit_lang, hash_password(f["new_password"]), new_org_id, user_id))
             else:
                 conn.execute("""
                     UPDATE users SET full_name=?,email=?,role=?,job_title=?,phone=?,
-                        avatar_color=?,is_active=?,language=? WHERE id=?
+                        avatar_color=?,is_active=?,language=?,organization_id=? WHERE id=?
                 """, (f["full_name"], f["email"].lower().strip(),
                       new_role, f.get("job_title") or None,
                       f.get("phone") or None, f.get("avatar_color","#6366f1"),
-                      is_active, edit_lang, user_id))
+                      is_active, edit_lang, new_org_id, user_id))
             return redirect(url_for("settings.index"))
     return render_template("settings/user_form.html", current_user=g.user, user=user, error=None)
 
