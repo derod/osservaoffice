@@ -1,6 +1,6 @@
 {% extends "public/_base_public.html" %}
 {% set active_pub = "privacy" %}
-{% block title %}Privacy Policy — OSSERVA OFFICE{% endblock %}
+{% block title %}{{ t('Privacy Policy') }} — OSSERVA OFFICE{% endblock %}
 
 {% block content %}
 
@@ -8,14 +8,14 @@
 <div class="mb-10">
   <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-semibold tracking-widest uppercase mb-4"
        style="background:hsl(var(--muted));border-color:hsl(var(--border));color:hsl(var(--muted-foreground))">
-    Legal
+    {{ t('Legal') }}
   </div>
   <h1 class="font-display font-bold mb-3"
       style="font-size:clamp(1.75rem,3.5vw,2.5rem);color:hsl(var(--foreground))">
-    Privacy Policy
+    {{ t('Privacy Policy') }}
   </h1>
   <p class="text-sm" style="color:hsl(var(--muted-foreground))">
-    Last updated: {{ now().strftime('%B %d, %Y') }}
+    {{ t('Last updated') }}: {{ now().strftime('%B %d, %Y') }}
   </p>
 </div>
 
@@ -43,7 +43,7 @@
            style="background:hsl(var(--muted))">
         <i class="fa-solid fa-list-check text-xs" style="color:hsl(var(--primary))"></i>
       </div>
-      <h2 class="font-display font-bold text-base" style="color:hsl(var(--foreground))">1. Information We Collect</h2>
+      <h2 class="font-display font-bold text-base" style="color:hsl(var(--foreground))">{{ t('1. Information We Collect') }}</h2>
     </div>
 
     <p class="text-sm leading-relaxed mb-4" style="color:hsl(var(--muted-foreground))">
@@ -119,7 +119,7 @@
            style="background:hsl(var(--muted))">
         <i class="fa-solid fa-gear text-xs" style="color:hsl(var(--primary))"></i>
       </div>
-      <h2 class="font-display font-bold text-base" style="color:hsl(var(--foreground))">2. How Information Is Used</h2>
+      <h2 class="font-display font-bold text-base" style="color:hsl(var(--foreground))">{{ t('2. How Information Is Used') }}</h2>
     </div>
     <p class="text-sm leading-relaxed mb-3" style="color:hsl(var(--muted-foreground))">
       All data collected through the platform is used exclusively to provide, maintain, and improve
@@ -155,7 +155,7 @@
            style="background:hsl(var(--muted))">
         <i class="fa-solid fa-shield-halved text-xs" style="color:hsl(var(--primary))"></i>
       </div>
-      <h2 class="font-display font-bold text-base" style="color:hsl(var(--foreground))">3. Data Storage and Protection</h2>
+      <h2 class="font-display font-bold text-base" style="color:hsl(var(--foreground))">{{ t('3. Data Storage and Protection') }}</h2>
     </div>
     <p class="text-sm leading-relaxed mb-3" style="color:hsl(var(--muted-foreground))">
       OSSERVA OFFICE is deployed on production-grade cloud infrastructure. Data protection
@@ -191,7 +191,7 @@
            style="background:hsl(var(--muted))">
         <i class="fa-solid fa-user-check text-xs" style="color:hsl(var(--primary))"></i>
       </div>
-      <h2 class="font-display font-bold text-base" style="color:hsl(var(--foreground))">4. User Responsibilities</h2>
+      <h2 class="font-display font-bold text-base" style="color:hsl(var(--foreground))">{{ t('4. User Responsibilities') }}</h2>
     </div>
     <p class="text-sm leading-relaxed mb-3" style="color:hsl(var(--muted-foreground))">
       Users and account administrators are responsible for:
@@ -221,7 +221,7 @@
            style="background:hsl(var(--muted))">
         <i class="fa-solid fa-plug text-xs" style="color:hsl(var(--primary))"></i>
       </div>
-      <h2 class="font-display font-bold text-base" style="color:hsl(var(--foreground))">5. Third-Party Services</h2>
+      <h2 class="font-display font-bold text-base" style="color:hsl(var(--foreground))">{{ t('5. Third-Party Services') }}</h2>
     </div>
     <p class="text-sm leading-relaxed mb-4" style="color:hsl(var(--muted-foreground))">
       OSSERVA OFFICE may interact with third-party services when enabled by account administrators.
@@ -249,7 +249,7 @@
            style="background:hsl(var(--muted))">
         <i class="fa-solid fa-clock-rotate-left text-xs" style="color:hsl(var(--primary))"></i>
       </div>
-      <h2 class="font-display font-bold text-base" style="color:hsl(var(--foreground))">6. Data Retention</h2>
+      <h2 class="font-display font-bold text-base" style="color:hsl(var(--foreground))">{{ t('6. Data Retention') }}</h2>
     </div>
     <p class="text-sm leading-relaxed mb-3" style="color:hsl(var(--muted-foreground))">
       Data is retained for the duration of the active subscription and for a reasonable period
@@ -284,7 +284,7 @@
            style="background:hsl(var(--muted))">
         <i class="fa-solid fa-envelope text-xs" style="color:hsl(var(--primary))"></i>
       </div>
-      <h2 class="font-display font-bold text-base" style="color:hsl(var(--foreground))">7. Contact and Data Requests</h2>
+      <h2 class="font-display font-bold text-base" style="color:hsl(var(--foreground))">{{ t('7. Contact and Data Requests') }}</h2>
     </div>
     <p class="text-sm leading-relaxed mb-3" style="color:hsl(var(--muted-foreground))">
       For any questions regarding this Privacy Policy, data access or deletion requests, or to

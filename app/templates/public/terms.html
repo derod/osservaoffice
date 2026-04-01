@@ -1,6 +1,6 @@
 {% extends "public/_base_public.html" %}
 {% set active_pub = "terms" %}
-{% block title %}Terms and Conditions — OSSERVA OFFICE{% endblock %}
+{% block title %}{{ t('Terms and Conditions') }} — OSSERVA OFFICE{% endblock %}
 
 {% block content %}
 
@@ -8,28 +8,24 @@
 <div class="mb-10">
   <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-semibold tracking-widest uppercase mb-4"
        style="background:hsl(var(--muted));border-color:hsl(var(--border));color:hsl(var(--muted-foreground))">
-    Legal
+    {{ t('Legal') }}
   </div>
   <h1 class="font-display font-bold mb-3"
       style="font-size:clamp(1.75rem,3.5vw,2.5rem);color:hsl(var(--foreground))">
-    Terms and Conditions
+    {{ t('Terms and Conditions') }}
   </h1>
   <p class="text-sm" style="color:hsl(var(--muted-foreground))">
-    Last updated: {{ now().strftime('%B %d, %Y') }}
+    {{ t('Last updated') }}: {{ now().strftime('%B %d, %Y') }}
   </p>
 </div>
 
 <!-- Intro -->
 <div class="dk-card rounded-xl p-6 mb-8 prose-pub">
   <p>
-    These Terms and Conditions govern your access to and use of OSSERVA OFFICE, a cloud-based
-    legal operations platform operated by OSSERVA. By accessing the platform, creating an account,
-    or using any features of the service, you agree to be bound by these terms. If you do not
-    accept these terms, you must discontinue use immediately.
+    {{ t('These Terms and Conditions govern your access to and use of OSSERVA OFFICE, a cloud-based legal operations platform operated by OSSERVA. By accessing the platform, creating an account, or using any features of the service, you agree to be bound by these terms. If you do not accept these terms, you must discontinue use immediately.') }}
   </p>
   <p>
-    These terms apply to all users including firm administrators, staff members, and any other
-    individuals granted access by an account holder.
+    {{ t('These terms apply to all users including firm administrators, staff members, and any other individuals granted access by an account holder.') }}
   </p>
 </div>
 
@@ -166,7 +162,7 @@
         <i class="fa-solid {{ icon }} text-xs" style="color:hsl(var(--primary))"></i>
       </div>
       <h2 class="font-display font-bold text-base" style="color:hsl(var(--foreground));margin:0;border:none;padding:0">
-        {{ title }}
+        {{ t(title) }}
       </h2>
     </div>
     {% for type, body in content_blocks %}

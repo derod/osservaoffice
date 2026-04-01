@@ -1603,6 +1603,240 @@ LOGIN_TRANSLATIONS = {
         "ja": "営業へのお問い合わせ",
         "pt": "Falar com vendas",
     },
+
+    # ── About page ────────────────────────────────────────────────────────
+    "About OSSERVA OFFICE": {
+        "es": "Acerca de OSSERVA OFFICE",
+        "it": "Informazioni su OSSERVA OFFICE",
+        "ja": "OSSERVA OFFICEについて",
+        "pt": "Sobre OSSERVA OFFICE",
+    },
+    "Built for the demands of modern legal practice": {
+        "es": "Diseñado para las exigencias de la práctica legal moderna",
+        "it": "Costruito per le esigenze della pratica legale moderna",
+        "ja": "現代の法律実務の要求に応えるために構築",
+        "pt": "Construído para as exigências da prática jurídica moderna",
+    },
+    "OSSERVA OFFICE is a purpose-built legal operations platform created to bring clarity, efficiency, and control to the way law firms manage their internal work.": {
+        "es": "OSSERVA OFFICE es una plataforma de operaciones legales creada para aportar claridad, eficiencia y control a la forma en que los despachos gestionan su trabajo interno.",
+        "it": "OSSERVA OFFICE è una piattaforma per le operazioni legali creata per portare chiarezza, efficienza e controllo nella gestione del lavoro interno degli studi legali.",
+        "ja": "OSSERVA OFFICEは、法律事務所の内部業務の管理に明確さ、効率性、コントロールをもたらすために設計された法律業務専用プラットフォームです。",
+        "pt": "OSSERVA OFFICE é uma plataforma de operações jurídicas criada para trazer clareza, eficiência e controle à forma como os escritórios jurídicos gerenciam seu trabalho interno.",
+    },
+    "Our Origin": {
+        "es": "Nuestro origen",
+        "it": "La nostra origine",
+        "ja": "私たちの起源",
+        "pt": "Nossa origem",
+    },
+    "Technology Foundation": {
+        "es": "Base tecnológica",
+        "it": "Fondamenti tecnologici",
+        "ja": "技術基盤",
+        "pt": "Base tecnológica",
+    },
+    "Our mission": {
+        "es": "Nuestra misión",
+        "it": "La nostra missione",
+        "ja": "私たちのミッション",
+        "pt": "Nossa missão",
+    },
+    "To improve legal operations, internal visibility, and firm efficiency through software that is clear to use, reliable to run, and built to scale with the firms that depend on it.": {
+        "es": "Mejorar las operaciones legales, la visibilidad interna y la eficiencia del despacho mediante software fácil de usar, confiable y diseñado para escalar con los despachos que dependen de él.",
+        "it": "Migliorare le operazioni legali, la visibilità interna e l'efficienza dello studio attraverso un software chiaro da usare, affidabile e costruito per crescere con gli studi che ne dipendono.",
+        "ja": "明確に使用でき、信頼性が高く、依存する事務所と共にスケールするように構築されたソフトウェアを通じて、法律業務、内部可視性、事務所の効率を向上させる。",
+        "pt": "Melhorar as operações jurídicas, a visibilidade interna e a eficiência do escritório por meio de software claro de usar, confiável e construído para escalar com os escritórios que dependem dele.",
+    },
+    "What the platform covers": {
+        "es": "Qué cubre la plataforma",
+        "it": "Cosa copre la piattaforma",
+        "ja": "プラットフォームがカバーする機能",
+        "pt": "O que a plataforma cobre",
+    },
+    "Multilingual by Design": {
+        "es": "Multilingüe por diseño",
+        "it": "Multilingue per design",
+        "ja": "設計によるマルチリンガル",
+        "pt": "Multilíngue por design",
+    },
+    "OSSERVA OFFICE is designed to support multilingual work environments and international teams. Each user can select their preferred interface language independently of other team members.": {
+        "es": "OSSERVA OFFICE está diseñado para entornos de trabajo multilingüe y equipos internacionales. Cada usuario puede seleccionar su idioma de interfaz preferido de forma independiente.",
+        "it": "OSSERVA OFFICE è progettato per supportare ambienti di lavoro multilingue e team internazionali. Ogni utente può selezionare la propria lingua dell'interfaccia preferita indipendentemente dagli altri.",
+        "ja": "OSSERVA OFFICEは、多言語作業環境と国際チームをサポートするように設計されています。各ユーザーは他のメンバーとは独立して希望のインターフェース言語を選択できます。",
+        "pt": "OSSERVA OFFICE é projetado para suportar ambientes de trabalho multilíngues e equipes internacionais. Cada usuário pode selecionar seu idioma preferido independentemente de outros membros.",
+    },
+    "Available": {
+        "es": "Disponible",
+        "it": "Disponibile",
+        "ja": "利用可能",
+        "pt": "Disponível",
+    },
+    "For platform inquiries, demonstrations, or enterprise deployments, contact us at": {
+        "es": "Para consultas, demostraciones o implementaciones empresariales, contáctenos en",
+        "it": "Per richieste, dimostrazioni o implementazioni aziendali, contattaci a",
+        "ja": "プラットフォームのお問い合わせ、デモ、エンタープライズ展開については、次の宛先までご連絡ください：",
+        "pt": "Para consultas, demonstrações ou implantações empresariais, entre em contato em",
+    },
+
+    # ── Terms page ────────────────────────────────────────────────────────
+    "Legal": {
+        "es": "Legal",
+        "it": "Legale",
+        "ja": "法的情報",
+        "pt": "Jurídico",
+    },
+    "Terms and Conditions": {
+        "es": "Términos y Condiciones",
+        "it": "Termini e Condizioni",
+        "ja": "利用規約",
+        "pt": "Termos e Condições",
+    },
+    "Last updated": {
+        "es": "Última actualización",
+        "it": "Ultimo aggiornamento",
+        "ja": "最終更新",
+        "pt": "Última atualização",
+    },
+    "These Terms and Conditions govern your access to and use of OSSERVA OFFICE, a cloud-based legal operations platform operated by OSSERVA. By accessing the platform, creating an account, or using any features of the service, you agree to be bound by these terms. If you do not accept these terms, you must discontinue use immediately.": {
+        "es": "Estos Términos y Condiciones rigen su acceso y uso de OSSERVA OFFICE, una plataforma de operaciones legales basada en la nube. Al acceder, crear una cuenta o usar el servicio, usted acepta quedar vinculado por estos términos. Si no los acepta, debe dejar de usar el servicio de inmediato.",
+        "it": "Questi Termini e Condizioni regolano l'accesso e l'utilizzo di OSSERVA OFFICE, una piattaforma cloud per le operazioni legali. Accedendo, creando un account o utilizzando il servizio, si accetta di essere vincolati da questi termini. In caso contrario, è necessario interrompere immediatamente l'utilizzo.",
+        "ja": "本利用規約は、OSSERVAが運営するクラウドベースの法律業務プラットフォーム「OSSERVA OFFICE」へのアクセスおよび使用を規定します。プラットフォームへのアクセス、アカウントの作成、またはサービスの使用により、これらの規約に拘束されることに同意したものとみなされます。",
+        "pt": "Estes Termos e Condições regem o acesso e o uso do OSSERVA OFFICE, uma plataforma de operações jurídicas baseada em nuvem. Ao acessar, criar uma conta ou usar o serviço, você concorda em ficar vinculado a estes termos. Caso não concorde, você deve interromper o uso imediatamente.",
+    },
+    "These terms apply to all users including firm administrators, staff members, and any other individuals granted access by an account holder.": {
+        "es": "Estos términos aplican a todos los usuarios, incluidos administradores, miembros del personal y cualquier persona a quien el titular de la cuenta haya concedido acceso.",
+        "it": "Questi termini si applicano a tutti gli utenti, inclusi amministratori, membri del personale e chiunque abbia ricevuto accesso da un titolare di account.",
+        "ja": "本規約は、事務所の管理者、スタッフ、およびアカウント保有者によってアクセスを許可されたすべての個人に適用されます。",
+        "pt": "Estes termos se aplicam a todos os usuários, incluindo administradores, membros da equipe e quaisquer outros com acesso concedido pelo titular da conta.",
+    },
+    "1. Acceptance of Terms": {
+        "es": "1. Aceptación de los términos",
+        "it": "1. Accettazione dei termini",
+        "ja": "1. 規約への同意",
+        "pt": "1. Aceitação dos termos",
+    },
+    "2. Description of Service": {
+        "es": "2. Descripción del servicio",
+        "it": "2. Descrizione del servizio",
+        "ja": "2. サービスの説明",
+        "pt": "2. Descrição do serviço",
+    },
+    "3. User Accounts": {
+        "es": "3. Cuentas de usuario",
+        "it": "3. Account utente",
+        "ja": "3. ユーザーアカウント",
+        "pt": "3. Contas de usuário",
+    },
+    "4. Permitted Use": {
+        "es": "4. Uso permitido",
+        "it": "4. Uso consentito",
+        "ja": "4. 許可される使用",
+        "pt": "4. Uso permitido",
+    },
+    "5. Data and Document Responsibility": {
+        "es": "5. Responsabilidad sobre datos y documentos",
+        "it": "5. Responsabilità sui dati e sui documenti",
+        "ja": "5. データおよび文書の責任",
+        "pt": "5. Responsabilidade sobre dados e documentos",
+    },
+    "6. Availability of Service": {
+        "es": "6. Disponibilidad del servicio",
+        "it": "6. Disponibilità del servizio",
+        "ja": "6. サービスの可用性",
+        "pt": "6. Disponibilidade do serviço",
+    },
+    "7. Intellectual Property": {
+        "es": "7. Propiedad intelectual",
+        "it": "7. Proprietà intellettuale",
+        "ja": "7. 知的財産",
+        "pt": "7. Propriedade intelectual",
+    },
+    "8. Subscription and Billing": {
+        "es": "8. Suscripción y facturación",
+        "it": "8. Abbonamento e fatturazione",
+        "ja": "8. サブスクリプションと請求",
+        "pt": "8. Assinatura e faturamento",
+    },
+    "9. Limitation of Liability": {
+        "es": "9. Limitación de responsabilidad",
+        "it": "9. Limitazione di responsabilità",
+        "ja": "9. 責任の制限",
+        "pt": "9. Limitação de responsabilidade",
+    },
+    "10. Confidentiality and Security": {
+        "es": "10. Confidencialidad y seguridad",
+        "it": "10. Riservatezza e sicurezza",
+        "ja": "10. 機密性とセキュリティ",
+        "pt": "10. Confidencialidade e segurança",
+    },
+    "11. Termination or Suspension": {
+        "es": "11. Rescisión o suspensión",
+        "it": "11. Risoluzione o sospensione",
+        "ja": "11. 終了または停止",
+        "pt": "11. Rescisão ou suspensão",
+    },
+    "12. Governing Law": {
+        "es": "12. Ley aplicable",
+        "it": "12. Legge applicabile",
+        "ja": "12. 準拠法",
+        "pt": "12. Lei aplicável",
+    },
+    "13. Contact Information": {
+        "es": "13. Información de contacto",
+        "it": "13. Informazioni di contatto",
+        "ja": "13. お問い合わせ情報",
+        "pt": "13. Informações de contato",
+    },
+
+    # ── Privacy page ──────────────────────────────────────────────────────
+    "Privacy Policy": {
+        "es": "Política de Privacidad",
+        "it": "Informativa sulla Privacy",
+        "ja": "プライバシーポリシー",
+        "pt": "Política de Privacidade",
+    },
+    "1. Information We Collect": {
+        "es": "1. Información que recopilamos",
+        "it": "1. Informazioni che raccogliamo",
+        "ja": "1. 収集する情報",
+        "pt": "1. Informações que coletamos",
+    },
+    "2. How Information Is Used": {
+        "es": "2. Cómo se usa la información",
+        "it": "2. Come vengono utilizzate le informazioni",
+        "ja": "2. 情報の使用方法",
+        "pt": "2. Como as informações são usadas",
+    },
+    "3. Data Storage and Protection": {
+        "es": "3. Almacenamiento y protección de datos",
+        "it": "3. Archiviazione e protezione dei dati",
+        "ja": "3. データの保存と保護",
+        "pt": "3. Armazenamento e proteção de dados",
+    },
+    "4. User Responsibilities": {
+        "es": "4. Responsabilidades del usuario",
+        "it": "4. Responsabilità degli utenti",
+        "ja": "4. ユーザーの責任",
+        "pt": "4. Responsabilidades do usuário",
+    },
+    "5. Third-Party Services": {
+        "es": "5. Servicios de terceros",
+        "it": "5. Servizi di terze parti",
+        "ja": "5. サードパーティサービス",
+        "pt": "5. Serviços de terceiros",
+    },
+    "6. Data Retention": {
+        "es": "6. Retención de datos",
+        "it": "6. Conservazione dei dati",
+        "ja": "6. データ保持",
+        "pt": "6. Retenção de datos",
+    },
+    "7. Contact and Data Requests": {
+        "es": "7. Contacto y solicitudes de datos",
+        "it": "7. Contatti e richieste di dati",
+        "ja": "7. お問い合わせとデータリクエスト",
+        "pt": "7. Contato e solicitações de dados",
+    },
 }
 
 

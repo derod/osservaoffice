@@ -1,6 +1,6 @@
 {% extends "public/_base_public.html" %}
 {% set active_pub = "about" %}
-{% block title %}About Us — OSSERVA OFFICE{% endblock %}
+{% block title %}{{ t('About OSSERVA OFFICE') }} — OSSERVA OFFICE{% endblock %}
 
 {% block content %}
 
@@ -8,15 +8,14 @@
 <div class="mb-10 sm:mb-12">
   <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-semibold tracking-widest uppercase mb-4"
        style="background:hsl(var(--muted));border-color:hsl(var(--border));color:hsl(var(--muted-foreground))">
-    About OSSERVA OFFICE
+    {{ t('About OSSERVA OFFICE') }}
   </div>
   <h1 class="font-display font-bold leading-tight mb-3"
       style="font-size:clamp(1.75rem,3.5vw,2.5rem);color:hsl(var(--foreground))">
-    Built for the demands<br class="hidden sm:inline"> of modern legal practice
+    {{ t('Built for the demands of modern legal practice') }}
   </h1>
   <p class="text-base leading-relaxed max-w-2xl" style="color:hsl(var(--muted-foreground))">
-    OSSERVA OFFICE is a purpose-built legal operations platform created to bring clarity,
-    efficiency, and control to the way law firms manage their internal work.
+    {{ t('OSSERVA OFFICE is a purpose-built legal operations platform created to bring clarity, efficiency, and control to the way law firms manage their internal work.') }}
   </p>
 </div>
 
@@ -30,7 +29,7 @@
            style="background:hsl(var(--muted))">
         <i class="fa-solid fa-location-dot text-sm" style="color:hsl(var(--primary))"></i>
       </div>
-      <h2 class="font-display font-bold text-base" style="color:hsl(var(--foreground))">Our Origin</h2>
+      <h2 class="font-display font-bold text-base" style="color:hsl(var(--foreground))">{{ t('Our Origin') }}</h2>
     </div>
     <p class="text-sm leading-relaxed" style="color:hsl(var(--muted-foreground))">
       OSSERVA OFFICE was created in Costa Rica by a collaborative team of experienced software
@@ -51,7 +50,7 @@
            style="background:hsl(var(--muted))">
         <i class="fa-solid fa-code text-sm" style="color:hsl(var(--primary))"></i>
       </div>
-      <h2 class="font-display font-bold text-base" style="color:hsl(var(--foreground))">Technology Foundation</h2>
+      <h2 class="font-display font-bold text-base" style="color:hsl(var(--foreground))">{{ t('Technology Foundation') }}</h2>
     </div>
     <p class="text-sm leading-relaxed" style="color:hsl(var(--muted-foreground))">
       The platform is built with modern, proven web technologies — including Python, Flask,
@@ -71,19 +70,17 @@
 <div class="rounded-xl border p-7 sm:p-9 mb-10"
      style="background:hsl(var(--muted));border-color:hsl(var(--border))">
   <p class="text-xs font-bold uppercase tracking-widest mb-3"
-     style="color:hsl(var(--muted-foreground))">Our mission</p>
+     style="color:hsl(var(--muted-foreground))">{{ t('Our mission') }}</p>
   <blockquote class="font-display font-semibold leading-snug"
               style="font-size:clamp(1.125rem,2.5vw,1.375rem);color:hsl(var(--foreground))">
-    To improve legal operations, internal visibility, and firm efficiency through
-    software that is clear to use, reliable to run, and built to scale with
-    the firms that depend on it.
+    {{ t('To improve legal operations, internal visibility, and firm efficiency through software that is clear to use, reliable to run, and built to scale with the firms that depend on it.') }}
   </blockquote>
 </div>
 
 <!-- What OSSERVA OFFICE does -->
 <div class="mb-12">
   <h2 class="font-display font-bold text-xl mb-6" style="color:hsl(var(--foreground))">
-    What the platform covers
+    {{ t('What the platform covers') }}
   </h2>
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
     {% set capabilities = [
@@ -114,41 +111,38 @@
 <div class="dk-card rounded-xl p-6 sm:p-8 mb-10">
   <div class="flex items-center gap-3 mb-5">
     <i class="fa-solid fa-language text-base" style="color:hsl(var(--primary))"></i>
-    <h2 class="font-display font-bold text-base" style="color:hsl(var(--foreground))">Multilingual by Design</h2>
+    <h2 class="font-display font-bold text-base" style="color:hsl(var(--foreground))">{{ t('Multilingual by Design') }}</h2>
   </div>
   <p class="text-sm leading-relaxed mb-5" style="color:hsl(var(--muted-foreground))">
-    OSSERVA OFFICE is designed to support multilingual work environments and international teams.
-    Each user can select their preferred interface language independently of other team members.
+    {{ t('OSSERVA OFFICE is designed to support multilingual work environments and international teams. Each user can select their preferred interface language independently of other team members.') }}
   </p>
   <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
     {% set languages = [
-      ('English',    'fa-flag',     'Available'),
-      ('Spanish',    'fa-flag',     'Available'),
-      ('French',     'fa-flag',     'Available'),
-      ('German',     'fa-flag',     'Available'),
-      ('Dutch',      'fa-flag',     'Available'),
+      ('🇬🇧', 'English'),
+      ('🇪🇸', 'Spanish'),
+      ('🇮🇹', 'Italian'),
+      ('🇯🇵', 'Japanese'),
+      ('🇧🇷', 'Português'),
     ] %}
-    {% for name, icon, status in languages %}
+    {% for flag, name in languages %}
     <div class="flex flex-col items-center gap-2 py-4 px-3 rounded-lg border text-center"
          style="border-color:hsl(var(--border));background:hsl(var(--muted))">
+      <span class="text-2xl leading-none">{{ flag }}</span>
       <span class="font-semibold text-sm" style="color:hsl(var(--foreground))">{{ name }}</span>
       <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold"
             style="background:hsla(152,55%,38%,0.15);color:hsl(152,55%,50%);border:1px solid hsla(152,55%,38%,0.2)">
-        {{ status }}
+        {{ t('Available') }}
       </span>
     </div>
     {% endfor %}
   </div>
-  <p class="text-xs mt-5" style="color:hsl(var(--muted-foreground))">
-    Portuguese and Italian are planned for a future release.
-  </p>
 </div>
 
 <!-- Contact -->
 <div class="border-t pt-8" style="border-color:hsl(var(--border))">
-  <h2 class="font-display font-semibold text-base mb-2" style="color:hsl(var(--foreground))">Get in touch</h2>
+  <h2 class="font-display font-semibold text-base mb-2" style="color:hsl(var(--foreground))">{{ t('Get in touch') }}</h2>
   <p class="text-sm" style="color:hsl(var(--muted-foreground))">
-    For platform inquiries, demonstrations, or enterprise deployments, contact us at
+    {{ t('For platform inquiries, demonstrations, or enterprise deployments, contact us at') }}
     <a href="mailto:contact@osserva.com"
        class="font-medium transition-colors hover:opacity-80"
        style="color:hsl(var(--primary))">contact@osserva.com</a>.
