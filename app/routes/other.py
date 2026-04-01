@@ -528,15 +528,6 @@ from app.auth_utils import hash_password
 def index():
     if g.user["role"] == "staff":
         return redirect(url_for("dashboard.index"))
-    uc, up = org_filter(g.user)
-    params = list(up)
-    q = f"SELECT * FROM users WHERE 1=1{uc}"
-    # Non-super-admin should never see super_admin accounts in their user list
-    if g.user["role"] != "super_admin":
-        q += " AND role != 'super_admin'"
-    q += " ORDER BY full_name"
-    with db_conn() as conn:
-        users = [dict(r) for r in conn.execute(q, params).fetchall()]
     # Mask stored API key for display
     raw_key = get_integration_setting("openai_api_key") or ""
     masked_key = ("*" * (len(raw_key) - 4) + raw_key[-4:]) if len(raw_key) > 4 else ("*" * len(raw_key))
@@ -555,11 +546,27 @@ def index():
     gmail_enabled = get_integration_setting("gmail_enabled") == "1"
     gmail_auto_create = get_integration_setting("gmail_auto_create_clients") == "1"
     return render_template("settings/index.html",
-        current_user=g.user, users=users,
+        current_user=g.user,
         openai_key_set=bool(raw_key), openai_key_masked=masked_key,
         gmail_configured=gmail_configured, gmail_has_token=gmail_has_token,
         gmail_creds_path=gmail_creds_path, gmail_token_path=gmail_token_path,
         gmail_enabled=gmail_enabled, gmail_auto_create=gmail_auto_create)
+
+
+@settings_bp.route("/users")
+@login_required
+def user_list():
+    if g.user["role"] not in ("admin", "owner", "super_admin"):
+        abort(403)
+    uc, up = org_filter(g.user)
+    params = list(up)
+    q = f"SELECT * FROM users WHERE 1=1{uc}"
+    if g.user["role"] != "super_admin":
+        q += " AND role != 'super_admin'"
+    q += " ORDER BY full_name"
+    with db_conn() as conn:
+        users = [dict(r) for r in conn.execute(q, params).fetchall()]
+    return render_template("settings/users.html", current_user=g.user, users=users)
 
 
 @settings_bp.route("/ai", methods=["POST"])
@@ -681,7 +688,7 @@ def new_user():
                       f.get("phone") or None,
                       f.get("avatar_color","#6366f1"),
                       new_lang, new_org_id))
-                return redirect(url_for("settings.index"))
+                return redirect(url_for("settings.user_list"))
     return render_template("settings/user_form.html", current_user=g.user, user=None, error=error)
 
 @settings_bp.route("/users/<int:user_id>/edit", methods=["GET","POST"])
@@ -749,7 +756,7 @@ def edit_user(user_id):
                       new_role, f.get("job_title") or None,
                       f.get("phone") or None, f.get("avatar_color","#6366f1"),
                       is_active, edit_lang, new_org_id, user_id))
-            return redirect(url_for("settings.index"))
+            return redirect(url_for("settings.user_list"))
     return render_template("settings/user_form.html", current_user=g.user, user=user, error=None)
 
 @settings_bp.route("/profile/edit", methods=["POST"])

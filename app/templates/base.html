@@ -177,6 +177,11 @@
       <i class="fa-solid fa-chart-line" style="width:18px;text-align:center"></i>
       <span>{{ _('Finances') }}</span>
     </a>
+    <a href="{{ url_for('settings.user_list') }}" onclick="closeSidebar()"
+       class="nav-item {% if active_nav == 'user_management' %}nav-item-active{% endif %}">
+      <i class="fa-solid fa-users-gear" style="width:18px;text-align:center"></i>
+      <span>{{ _('User Management') }}</span>
+    </a>
     <a href="{{ url_for('settings.index') }}" onclick="closeSidebar()"
        class="nav-item {% if active_nav == 'settings' %}nav-item-active{% endif %}">
       <i class="fa-solid fa-gear" style="width:18px;text-align:center"></i>

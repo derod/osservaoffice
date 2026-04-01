@@ -1,8 +1,8 @@
-{% extends "base.html" %}{% set active_nav="settings" %}
+{% extends "base.html" %}{% set active_nav="user_management" %}
 {% block title %}{% if user %}Edit{% else %}New{% endif %} User — OSSERVA OFFICE{% endblock %}
 {% block content %}
 <div class="w-full max-w-xl">
-  <div class="mb-4"><a href="{{ url_for('settings.index') }}" class="text-sm hover:opacity-80" style="color:hsl(var(--muted-foreground))">← Settings</a></div>
+  <div class="mb-4"><a href="{{ url_for('settings.user_list') }}" class="text-sm hover:opacity-80" style="color:hsl(var(--muted-foreground))">← {{ _('User Management') }}</a></div>
   <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-4 sm:p-6">
     <h1 class="text-xl font-bold mb-5" style="color:hsl(var(--foreground))">{% if user %}Edit User{% else %}New User{% endif %}</h1>
     {% if error %}
@@ -67,7 +67,7 @@
       </div>
       {% endif %}
       <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-2">
-        <a href="{{ url_for('settings.index') }}" class="inline-flex items-center justify-center gap-2 dk-card dk-card-hover text-sm font-medium px-4 py-2.5 rounded-lg border border-[hsl(var(--border))]" style="color:hsl(var(--card-foreground))">Cancel</a>
+        <a href="{{ url_for('settings.user_list') }}" class="inline-flex items-center justify-center gap-2 dk-card dk-card-hover text-sm font-medium px-4 py-2.5 rounded-lg border border-[hsl(var(--border))]" style="color:hsl(var(--card-foreground))">Cancel</a>
         <button type="submit" class="inline-flex items-center justify-center gap-2 text-sm font-medium px-4 py-2.5 rounded-lg" style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))">{% if user %}Save{% else %}Create{% endif %}</button>
       </div>
     </form>
