@@ -34,19 +34,18 @@ def list_employees():
         q = f"SELECT * FROM users WHERE 1=1{uc}"
         params = list(up)
 
-        # Always exclude super_admin from org-level directory
+        # super_admin is always excluded from tenant-level directory listings.
+        # This catches any legacy records that may have organization_id set.
         q += " AND role != 'super_admin'"
 
-        # Staff can only see other staff in their org (no admin/owner visibility)
-        if current_role == "staff":
-            q += " AND role = 'staff'"
-
+        # Clamp the role_filter so URL params can never bypass visibility rules.
+        # Staff see all non-super_admin members of their org (read-only directory).
+        # super_admin filter is blocked for everyone at this level.
+        if role_filter == "super_admin":
+            role_filter = "all"
         if role_filter != "all":
-            # Prevent URL-based filter from bypassing visibility rules
-            if current_role == "staff":
-                role_filter = "staff"  # staff is locked to staff view
-            if role_filter != "super_admin":  # never allow super_admin filter for anyone
-                q += " AND role=?"; params.append(role_filter)
+            q += " AND role=?"; params.append(role_filter)
+
         if status_filter == "active":
             q += " AND is_active=1"
         elif status_filter == "inactive":
@@ -74,6 +73,7 @@ def list_employees():
         selected_role=role_filter,
         selected_status=status_filter,
         now=datetime.utcnow(),
+        is_admin=is_admin_like(g.user),
     )
 
 @bp.route("/<int:user_id>/agenda")
