@@ -1,6 +1,7 @@
 import logging
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, session
 from app.database import db_conn
+from app.i18n import login_t
 
 bp = Blueprint("public", __name__)
 log = logging.getLogger(__name__)
@@ -23,19 +24,30 @@ _VALID_SOURCES = {
 }
 
 
+_SUPPORTED_LANGS = {"en", "es", "it", "ja", "pt"}
+
+
+def _pub_lang():
+    lang = session.get("lang", "en")
+    return lang if lang in _SUPPORTED_LANGS else "en"
+
+
 @bp.route("/about")
 def about():
-    return render_template("public/about.html")
+    lang = _pub_lang()
+    return render_template("public/about.html", lang=lang, t=lambda k: login_t(k, lang))
 
 
 @bp.route("/terms")
 def terms():
-    return render_template("public/terms.html")
+    lang = _pub_lang()
+    return render_template("public/terms.html", lang=lang, t=lambda k: login_t(k, lang))
 
 
 @bp.route("/privacy")
 def privacy():
-    return render_template("public/privacy.html")
+    lang = _pub_lang()
+    return render_template("public/privacy.html", lang=lang, t=lambda k: login_t(k, lang))
 
 
 @bp.route("/contact", methods=["GET", "POST"])
@@ -91,6 +103,7 @@ def contact():
     if source_hint not in _VALID_SOURCES:
         source_hint = "website"
 
+    lang = _pub_lang()
     return render_template(
         "public/contact.html",
         submitted=submitted,
@@ -98,4 +111,6 @@ def contact():
         interest_types=sorted(_VALID_INTEREST_TYPES),
         team_sizes=["1-5", "6-15", "16-30", "31-60", "60+"],
         source_hint=source_hint,
+        lang=lang,
+        t=lambda k: login_t(k, lang),
     )

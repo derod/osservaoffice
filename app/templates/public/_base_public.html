@@ -114,19 +114,36 @@
     <nav class="hidden md:flex items-center gap-5">
       <a href="{{ url_for('public.about') }}"
          class="text-sm font-medium transition-colors hover:opacity-80 {% if active_pub == 'about' %}underline underline-offset-4{% endif %}"
-         style="color:hsl(var(--muted-foreground))">About</a>
+         style="color:hsl(var(--muted-foreground))">{{ t('About') if t is defined else 'About' }}</a>
       <a href="{{ url_for('public.contact') }}"
          class="text-sm font-medium transition-colors hover:opacity-80 {% if active_pub == 'contact' %}underline underline-offset-4{% endif %}"
-         style="color:hsl(var(--muted-foreground))">Contact</a>
+         style="color:hsl(var(--muted-foreground))">{{ t('Contact') if t is defined else 'Contact' }}</a>
       <a href="{{ url_for('public.terms') }}"
          class="text-sm font-medium transition-colors hover:opacity-80 {% if active_pub == 'terms' %}underline underline-offset-4{% endif %}"
-         style="color:hsl(var(--muted-foreground))">Terms</a>
+         style="color:hsl(var(--muted-foreground))">{{ t('Terms') if t is defined else 'Terms' }}</a>
       <a href="{{ url_for('public.privacy') }}"
          class="text-sm font-medium transition-colors hover:opacity-80 {% if active_pub == 'privacy' %}underline underline-offset-4{% endif %}"
-         style="color:hsl(var(--muted-foreground))">Privacy</a>
+         style="color:hsl(var(--muted-foreground))">{{ t('Privacy') if t is defined else 'Privacy' }}</a>
     </nav>
 
     <div class="flex items-center gap-2">
+      {# Language pill selector — reuses /auth/set-lang, works on all public pages #}
+      {% set _lang = lang if lang is defined else 'en' %}
+      {% set _lang_opts = [('en','🇬🇧'),('es','🇪🇸'),('it','🇮🇹'),('ja','🇯🇵'),('pt','🇧🇷')] %}
+      <div class="hidden md:flex items-center gap-1">
+        {% for code, flag in _lang_opts %}
+        <form method="POST" action="{{ url_for('auth.set_lang') }}" style="display:inline">
+          <input type="hidden" name="lang" value="{{ code }}">
+          <button type="submit" title="{{ code.upper() }}"
+                  class="w-7 h-7 rounded-md flex items-center justify-center text-sm transition-all
+                         {% if _lang == code %}ring-2 ring-offset-1{% endif %}"
+                  style="{% if _lang == code %}ring-color:hsl(var(--primary));background:hsl(var(--muted)){% else %}background:transparent{% endif %};opacity:{% if _lang == code %}1{% else %}0.55{% endif %}"
+                  onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='{% if _lang == code %}1{% else %}0.55{% endif %}'">
+            {{ flag }}
+          </button>
+        </form>
+        {% endfor %}
+      </div>
       <button onclick="toggleTheme()" id="theme-btn"
               class="p-2 rounded-lg transition-colors hover:opacity-70"
               style="color:hsl(var(--muted-foreground))" title="Toggle theme">
@@ -135,7 +152,7 @@
       <a href="{{ url_for('auth.login') }}"
          class="inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-lg transition-opacity hover:opacity-90"
          style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))">
-        Sign In
+        {{ t('Sign In') if t is defined else 'Sign In' }}
       </a>
     </div>
   </div>
@@ -159,11 +176,11 @@
       </div>
 
       <nav class="flex flex-wrap items-center gap-x-5 gap-y-2">
-        <a href="{{ url_for('auth.login') }}"    class="pub-footer-link">Sign In</a>
-        <a href="{{ url_for('public.about') }}"  class="pub-footer-link">About Us</a>
-        <a href="{{ url_for('public.contact') }}" class="pub-footer-link">Contact Sales</a>
-        <a href="{{ url_for('public.terms') }}"  class="pub-footer-link">Terms</a>
-        <a href="{{ url_for('public.privacy') }}" class="pub-footer-link">Privacy</a>
+        <a href="{{ url_for('auth.login') }}"     class="pub-footer-link">{{ t('Sign In') if t is defined else 'Sign In' }}</a>
+        <a href="{{ url_for('public.about') }}"   class="pub-footer-link">{{ t('About Us') if t is defined else 'About Us' }}</a>
+        <a href="{{ url_for('public.contact') }}" class="pub-footer-link">{{ t('Contact Sales') if t is defined else 'Contact Sales' }}</a>
+        <a href="{{ url_for('public.terms') }}"   class="pub-footer-link">{{ t('Terms') if t is defined else 'Terms' }}</a>
+        <a href="{{ url_for('public.privacy') }}" class="pub-footer-link">{{ t('Privacy') if t is defined else 'Privacy' }}</a>
       </nav>
 
       <p class="text-[11px]" style="color:hsl(var(--muted-foreground));opacity:0.55">
