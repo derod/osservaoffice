@@ -558,12 +558,20 @@ def index():
 def user_list():
     if g.user["role"] not in ("admin", "owner", "super_admin"):
         abort(403)
-    uc, up = org_filter(g.user)
-    params = list(up)
-    q = f"SELECT * FROM users WHERE 1=1{uc}"
-    if g.user["role"] != "super_admin":
-        q += " AND role != 'super_admin'"
-    q += " ORDER BY full_name"
+    if g.user["role"] == "super_admin":
+        # super_admin sees everyone
+        q = "SELECT * FROM users ORDER BY full_name"
+        params = []
+    else:
+        # owner/admin: must be scoped to their org; never see super_admin
+        org_id = g.user.get("organization_id")
+        if not org_id:
+            # safety: no org assigned → show only themselves
+            q = "SELECT * FROM users WHERE id = ?"
+            params = [g.user["id"]]
+        else:
+            q = "SELECT * FROM users WHERE organization_id = ? AND role != 'super_admin' ORDER BY full_name"
+            params = [org_id]
     with db_conn() as conn:
         users = [dict(r) for r in conn.execute(q, params).fetchall()]
     return render_template("settings/users.html", current_user=g.user, users=users)
