@@ -1,47 +1,51 @@
 #!/usr/bin/env python3
-"""Debug: simulate the exact login route flow."""
+"""Debug: simulate the exact login route flow and test hash storage round-trip."""
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
 
 from app.database import db_conn
-from app.auth_utils import verify_password
+from app.auth_utils import hash_password, verify_password
 
 email = "demo@osservaoffice.com"
 password = "demo"
 
+# Step 1: Generate a fresh hash and immediately verify it
+fresh_hash = hash_password(password)
+print(f"Fresh hash: {fresh_hash}")
+print(f"Fresh hash length: {len(fresh_hash)}")
+print(f"Verify fresh (in-memory): {verify_password(password, fresh_hash)}")
+
 with db_conn() as conn:
-    # Exact same query as auth.py line 34
-    user = conn.execute(
-        "SELECT * FROM users WHERE email=?", (email,)
-    ).fetchone()
+    # Step 2: Write the fresh hash
+    conn.execute("UPDATE users SET hashed_password = ? WHERE email = ?", (fresh_hash, email))
+
+with db_conn() as conn:
+    # Step 3: Read it back in a NEW connection and verify
+    user = conn.execute("SELECT id, email, hashed_password FROM users WHERE email = ?", (email,)).fetchone()
 
     if not user:
-        print(f"NOT FOUND with email='{email}'")
-        # Try LIKE search
+        print(f"NOT FOUND: {email}")
         rows = conn.execute("SELECT id, email FROM users WHERE email LIKE ?", ("%demo%",)).fetchall()
-        print(f"LIKE '%demo%' results: {[dict(r) for r in rows]}")
+        print(f"LIKE search: {[dict(r) for r in rows]}")
         sys.exit(1)
 
-    print(f"Found: id={user['id']}, email='{user['email']}', active={user['is_active']}")
-    print(f"Hash: {user['hashed_password']}")
-    print(f"Hash length: {len(user['hashed_password'])}")
-    print(f"Hash repr: {repr(user['hashed_password'][:80])}")
+    stored = user["hashed_password"]
+    print(f"\nStored hash: {stored}")
+    print(f"Stored hash length: {len(stored)}")
+    print(f"Hashes match exactly: {fresh_hash == stored}")
+    print(f"Verify from DB: {verify_password(password, stored)}")
 
-    # Check for is_active
-    if not user["is_active"]:
-        print("BLOCKED: is_active is falsy")
-        sys.exit(1)
+    # Step 4: Check for hidden chars
+    if fresh_hash != stored:
+        print(f"\nMISMATCH!")
+        print(f"Fresh repr: {repr(fresh_hash)}")
+        print(f"Stored repr: {repr(stored)}")
+    else:
+        print(f"\nHash round-trip OK. Password 'demo' verified against DB.")
 
-    result = verify_password(password, user["hashed_password"])
-    print(f"verify_password('{password}', hash) = {result}")
-
-    if result:
-        print("\nAll checks PASS — login should work.")
-        print("If it still fails, the issue is session/cookie/SECRET_KEY related.")
-
-        # Check if SECRET_KEY might be different between deploys
-        try:
-            secret = os.environ.get("SECRET_KEY", "NOT SET")
-            print(f"SECRET_KEY env: {'SET (' + str(len(secret)) + ' chars)' if secret != 'NOT SET' else 'NOT SET'}")
-        except:
-            pass
+    # Step 5: Also verify other working user for comparison
+    rod = conn.execute("SELECT id, email, hashed_password FROM users WHERE email = ?", ("rodgabriel12@gmail.com",)).fetchone()
+    if rod:
+        print(f"\nComparison - rodgabriel12 hash length: {len(rod['hashed_password'])}")
+        print(f"rodgabriel12 hash prefix: {rod['hashed_password'][:30]}")
+        print(f"demo hash prefix:         {stored[:30]}")
