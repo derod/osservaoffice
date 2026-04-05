@@ -30,8 +30,14 @@ def user_last_seen(user_id):
     """Return DB-persisted last_seen_at for a single user (offline fallback)."""
     with db_conn() as conn:
         row = conn.execute(
-            "SELECT id, full_name, last_seen_at FROM users WHERE id=?", (user_id,)
+            "SELECT id, full_name, last_seen_at, organization_id FROM users WHERE id=?", (user_id,)
         ).fetchone()
     if not row:
         return jsonify({"error": "not found"}), 404
-    return jsonify(dict(row))
+    row = dict(row)
+    # Non-super_admin can only see users in their own org
+    oid = org_id_for(g.user)
+    if oid and row.get("organization_id") != oid:
+        return jsonify({"error": "not found"}), 404
+    row.pop("organization_id", None)
+    return jsonify(row)

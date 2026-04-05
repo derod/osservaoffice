@@ -14,13 +14,21 @@ def seed():
     with db_conn() as conn:
         # Clear all data
         for t in ["activity_logs","documents","schedule_requests","tasks",
-                  "appointments","case_assignments","cases","clients","users"]:
+                  "appointments","case_assignments","cases","clients","users",
+                  "organizations"]:
             conn.execute(f"DELETE FROM {t}")
 
     now = datetime.utcnow()
     today = now.replace(hour=0, minute=0, second=0, microsecond=0)
 
     with db_conn() as conn:
+        # ── ORGANIZATION ──
+        cur_org = conn.execute(
+            "INSERT INTO organizations (name, slug, plan, status, is_active) VALUES (?,?,?,?,?)",
+            ("Rossi Legal Studio", "rossi-legal", "professional", "active", 1)
+        )
+        demo_org_id = cur_org.lastrowid
+
         # ── USERS ──
         users_data = [
             ("Marco Rossi",   "marco@osservaoffice.com",  "owner", "Managing Partner",  "#6366f1"),
@@ -34,9 +42,10 @@ def seed():
         user_ids = {}
         for name, email, role, title, color in users_data:
             cur = conn.execute("""
-                INSERT INTO users (full_name, email, hashed_password, role, job_title, avatar_color, is_active)
-                VALUES (?,?,?,?,?,?,?)
-            """, (name, email, hash_password("password123"), role, title, color, 1 if name != "Paolo Marino" else 0))
+                INSERT INTO users (full_name, email, hashed_password, role, job_title, avatar_color, is_active, organization_id)
+                VALUES (?,?,?,?,?,?,?,?)
+            """, (name, email, hash_password("password123"), role, title, color,
+                  1 if name != "Paolo Marino" else 0, demo_org_id))
             user_ids[email] = cur.lastrowid
 
         marco  = user_ids["marco@osservaoffice.com"]
@@ -57,8 +66,8 @@ def seed():
         cids = {}
         for name, company, email, phone in clients_data:
             cur = conn.execute(
-                "INSERT INTO clients (full_name, company_name, email, phone) VALUES (?,?,?,?)",
-                (name, company, email, phone)
+                "INSERT INTO clients (full_name, company_name, email, phone, organization_id) VALUES (?,?,?,?,?)",
+                (name, company, email, phone, demo_org_id)
             )
             cids[name] = cur.lastrowid
 
@@ -117,12 +126,12 @@ def seed():
             closed = today.strftime("%Y-%m-%d %H:%M:%S") if c["status"] == "closed" else None
             cur = conn.execute("""
                 INSERT INTO cases (title, description, status, priority, client_id,
-                    due_date, overview, current_step, next_action, blockers, closed_at)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?)
+                    due_date, overview, current_step, next_action, blockers, closed_at, organization_id)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
             """, (c["title"], c["desc"], c["status"], c["priority"],
                   cids.get(c["client"]), due_str,
                   c["overview"], c["current_step"], c.get("next_action"),
-                  c.get("blockers"), closed))
+                  c.get("blockers"), closed, demo_org_id))
             cid = cur.lastrowid
             case_ids[c["title"]] = cid
             for uid in c["assignees"]:
@@ -135,11 +144,11 @@ def seed():
             e = today.replace(hour=h_end, minute=m_end)
             conn.execute("""
                 INSERT INTO appointments (title, start_datetime, end_datetime,
-                    assigned_to_user_id, appointment_type, case_id, client_id, created_by_user_id)
-                VALUES (?,?,?,?,?,?,?,?)
+                    assigned_to_user_id, appointment_type, case_id, client_id, created_by_user_id, organization_id)
+                VALUES (?,?,?,?,?,?,?,?,?)
             """, (title, s.strftime("%Y-%m-%d %H:%M:%S"), e.strftime("%Y-%m-%d %H:%M:%S"),
                   uid, atype,
-                  case_ids.get(case_k), cids.get(client_k), elena))
+                  case_ids.get(case_k), cids.get(client_k), elena, demo_org_id))
 
         appt("Team Standup",          9,  0,  9, 30, elena, "meeting")
         appt("Internal Training",    16,  0, 17, 30, elena, "meeting")
@@ -154,9 +163,9 @@ def seed():
         def task(title, case_k, uid, days, priority="medium"):
             due = (today + timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
             conn.execute("""
-                INSERT INTO tasks (title, case_id, assigned_to_user_id, due_date, priority, created_by_user_id)
-                VALUES (?,?,?,?,?,?)
-            """, (title, case_ids.get(case_k), uid, due, priority, elena))
+                INSERT INTO tasks (title, case_id, assigned_to_user_id, due_date, priority, created_by_user_id, organization_id)
+                VALUES (?,?,?,?,?,?,?)
+            """, (title, case_ids.get(case_k), uid, due, priority, elena, demo_org_id))
 
         task("Review Lombardi Will Draft",     "Lombardi Estate Planning",       sofia,  3)
         task("Prepare Injunction Motion",      "Fiat Trademark Dispute",         luca,   0, "high")
@@ -168,26 +177,26 @@ def seed():
         conn.execute("""
             INSERT INTO schedule_requests
                 (requested_employee_id, created_by_user_id, request_type,
-                 requested_start_datetime, requested_end_datetime, reason, priority, status)
-            VALUES (?,?,?,?,?,?,?,?)
+                 requested_start_datetime, requested_end_datetime, reason, priority, status, organization_id)
+            VALUES (?,?,?,?,?,?,?,?,?)
         """, (luca, elena, "new_meeting",
               (today+timedelta(days=2, hours=10)).strftime("%Y-%m-%d %H:%M:%S"),
               (today+timedelta(days=2, hours=11)).strftime("%Y-%m-%d %H:%M:%S"),
-              "Client meeting for Fiat case", "high", "pending"))
+              "Client meeting for Fiat case", "high", "pending", demo_org_id))
         conn.execute("""
             INSERT INTO schedule_requests
                 (requested_employee_id, created_by_user_id, request_type,
-                 requested_start_datetime, requested_end_datetime, reason, priority, status)
-            VALUES (?,?,?,?,?,?,?,?)
+                 requested_start_datetime, requested_end_datetime, reason, priority, status, organization_id)
+            VALUES (?,?,?,?,?,?,?,?,?)
         """, (sofia, marco, "time_off",
               (today+timedelta(days=5, hours=9)).strftime("%Y-%m-%d %H:%M:%S"),
               (today+timedelta(days=5, hours=18)).strftime("%Y-%m-%d %H:%M:%S"),
-              "Personal day request", "low", "pending"))
+              "Personal day request", "low", "pending", demo_org_id))
 
         # Activity logs
         for case_k in ["Fiat Trademark Dispute", "TechStart Series A Funding", "Lombardi Estate Planning"]:
-            conn.execute("INSERT INTO activity_logs (user_id, case_id, action) VALUES (?,?,?)",
-                (elena, case_ids[case_k], "Case created"))
+            conn.execute("INSERT INTO activity_logs (user_id, case_id, action, organization_id) VALUES (?,?,?,?)",
+                (elena, case_ids[case_k], "Case created", demo_org_id))
 
     print("✅ Seed complete!")
     print("\n📋 Login credentials:")

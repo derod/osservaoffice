@@ -66,10 +66,10 @@ def index():
             f"SELECT COUNT(*) FROM documents WHERE 1=1{oc}", op
         ).fetchone()[0]
 
-        # Team — scoped to org (super_admin sees all)
+        # Team — scoped to org (super_admin sees all except other super_admins)
         uc, up = org_filter(g.user)
         staff = conn.execute(
-            f"SELECT * FROM users WHERE is_active=1 AND role!='owner'{uc} ORDER BY full_name",
+            f"SELECT * FROM users WHERE is_active=1 AND role NOT IN ('owner','super_admin'){uc} ORDER BY full_name",
             up
         ).fetchall()
         staff = [dict(s) for s in staff]

@@ -308,6 +308,7 @@ function closeSidebar() {
 // ── Config ──────────────────────────────────────────────────────
 var _presenceHBMs  = 30000;   // heartbeat every 30 s
 var _presenceIdle  = 300000;  // 5 min → away
+var _presenceOrgId = {{ (current_user.organization_id or 'null')|tojson }};
 
 // ── State ───────────────────────────────────────────────────────
 var _presenceMap   = {};      // user_id -> entry
@@ -364,14 +365,17 @@ function _initPresence() {
   _presenceSock = io('/presence', { transports: ['websocket', 'polling'] });
 
   _presenceSock.on('presence_snapshot', function (data) {
-    (data.presence || []).forEach(_presenceSet);
+    var entries = data.presence || [];
+    if (_presenceOrgId) entries = entries.filter(function(e){ return e.org_id == _presenceOrgId; });
+    entries.forEach(_presenceSet);
     _presenceRefresh();
     if (typeof window.Presence.onUpdate === 'function')
-      (data.presence || []).forEach(window.Presence.onUpdate);
+      entries.forEach(window.Presence.onUpdate);
   });
 
   _presenceSock.on('presence_update', function (data) {
     if (!data.user) return;
+    if (_presenceOrgId && data.user.org_id != _presenceOrgId) return;
     _presenceSet(data.user);
     _presenceRefresh();
     if (typeof window.Presence.onUpdate === 'function')

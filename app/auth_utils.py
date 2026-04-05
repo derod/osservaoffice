@@ -147,9 +147,13 @@ def org_filter(user: dict, alias: str = "") -> tuple[str, list]:
 
     super_admin: returns empty clause (sees all orgs).
     All others:  returns ' AND <alias.>organization_id = ?' with the user's org_id.
+                 If the user has no org, returns a clause that matches nothing (0=1).
     """
-    oid = org_id_for(user)
-    if oid is None:
+    if user.get("role") == "super_admin":
         return "", []
+    oid = user.get("organization_id")
+    if not oid:
+        # Non-super_admin with no org — show nothing rather than everything
+        return " AND 0=1", []
     prefix = f"{alias}." if alias else ""
     return f" AND {prefix}organization_id = ?", [oid]

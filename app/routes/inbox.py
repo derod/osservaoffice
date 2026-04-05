@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, g, abort, flash
-from app.auth_utils import login_required
+from app.auth_utils import login_required, org_filter, org_id_for
 from app.database import db_conn
 from app.i18n import translate as _
 from datetime import datetime, timedelta
@@ -131,10 +131,11 @@ def index():
               )
         """, (uid, uid)).fetchone()[0]
 
-        # All users for compose dropdown
+        # All users for compose dropdown — scoped to sender's org, hide super_admin
+        uc, up = org_filter(g.user)
         users = conn.execute(
-            "SELECT id, full_name, avatar_color FROM users WHERE id != ? AND is_active = 1 ORDER BY full_name",
-            (uid,)
+            f"SELECT id, full_name, avatar_color FROM users WHERE id != ? AND is_active = 1 AND role != 'super_admin'{uc} ORDER BY full_name",
+            [uid] + up
         ).fetchall()
 
     return render_template("inbox/index.html",
@@ -210,6 +211,17 @@ def compose():
         return redirect(url_for("inbox.index"))
 
     with db_conn() as conn:
+        # Validate recipient belongs to sender's org (unless super_admin)
+        oid = org_id_for(g.user)
+        if oid:
+            recip = conn.execute(
+                "SELECT organization_id FROM users WHERE id = ? AND is_active = 1",
+                (recipient_id,)
+            ).fetchone()
+            if not recip or recip["organization_id"] != oid:
+                flash(_("Recipient not found."), "error")
+                return redirect(url_for("inbox.index"))
+
         conn.execute("""
             INSERT INTO messages (sender_id, recipient_id, subject, body)
             VALUES (?, ?, ?, ?)

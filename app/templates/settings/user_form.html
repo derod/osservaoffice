@@ -20,6 +20,23 @@
             {% for r in roles %}<option value="{{ r }}" {% if user and user.role==r %}selected{% endif %}>{% if r == 'super_admin' %}Super Admin{% else %}{{ r.title() }}{% endif %}</option>{% endfor %}
           </select></div>
       </div>
+      {% if current_user.role == 'super_admin' and not user %}
+      <div id="org-name-wrap" class="hidden">
+        <label class="block text-xs font-medium mb-1" style="color:hsl(var(--muted-foreground))">Organization Name</label>
+        <input name="organization_name" placeholder="Leave blank for auto-name" class="w-full dk-input rounded-lg px-3 py-2.5 text-sm focus:outline-none">
+        <p class="text-xs mt-1" style="color:hsl(var(--muted-foreground))">A new organization will be created automatically for this owner.</p>
+      </div>
+      <script>
+      (function(){
+        var sel=document.querySelector('select[name="role"]'),
+            wrap=document.getElementById('org-name-wrap');
+        if(!sel||!wrap)return;
+        function toggle(){wrap.classList.toggle('hidden',sel.value!=='owner');}
+        sel.addEventListener('change',toggle);
+        toggle();
+      })();
+      </script>
+      {% endif %}
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <div><label class="block text-xs font-medium mb-1" style="color:hsl(var(--muted-foreground))">Job Title</label>
           <input name="job_title" value="{{ user.job_title if user else '' }}" class="w-full dk-input rounded-lg px-3 py-2.5 text-sm focus:outline-none"></div>

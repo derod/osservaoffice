@@ -49,8 +49,9 @@ def index():
 
     uc, up = org_filter(g.user)
     with db_conn() as conn:
+        hide_roles = "('owner')" if g.user["role"] == "super_admin" else "('owner','super_admin')"
         all_users = [dict(r) for r in conn.execute(
-            f"SELECT * FROM users WHERE is_active=1 AND role!='owner'{uc} ORDER BY full_name", up
+            f"SELECT * FROM users WHERE is_active=1 AND role NOT IN {hide_roles}{uc} ORDER BY full_name", up
         ).fetchall()]
 
         if employee_id:
@@ -684,6 +685,16 @@ def new_user():
                 # super_admin users have no org; all others inherit the creating admin's org
                 if new_role == "super_admin":
                     new_org_id = None
+                elif g.user["role"] == "super_admin" and new_role == "owner":
+                    # Auto-create a new organization for this owner
+                    import re as _re
+                    org_name = f.get("organization_name", "").strip() or (f["full_name"] + "'s Organization")
+                    slug = _re.sub(r"[^a-z0-9]+", "-", org_name.lower()).strip("-")
+                    cur_org = conn.execute(
+                        "INSERT INTO organizations (name, slug, plan, status, is_active) VALUES (?,?,?,?,?)",
+                        (org_name, slug, "trial", "active", 1)
+                    )
+                    new_org_id = cur_org.lastrowid
                 else:
                     new_org_id = org_id_for(g.user)
                 conn.execute("""
