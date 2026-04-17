@@ -4,19 +4,19 @@
 <div class="page-container">
   <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
     <div>
-      <h1 class="text-xl sm:text-2xl font-bold" style="color:hsl(var(--foreground))">Cases Board</h1>
-      <p class="text-sm mt-0.5" style="color:hsl(var(--muted-foreground))">Kanban overview of all office cases</p>
+      <h1 class="text-xl sm:text-2xl font-bold" style="color:hsl(var(--foreground))">{{ _('Cases Board') }}</h1>
+      <p class="text-sm mt-0.5" style="color:hsl(var(--muted-foreground))">{{ _('Kanban overview of all office cases') }}</p>
     </div>
     {% if current_user.role in ('admin','owner','super_admin') %}
     <a href="{{ url_for('cases.new_case') }}" class="inline-flex items-center justify-center gap-2 text-sm font-medium px-4 py-2.5 rounded-xl transition-colors self-start sm:self-auto"
        style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))">
-      <i class="fa-solid fa-plus text-xs"></i> New Case
+      <i class="fa-solid fa-plus text-xs"></i> {{ _('New Case') }}
     </a>
     {% endif %}
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
-    {% for status_val, label in [('open','Open'),('litigation','Litigation'),('closed','Closed')] %}
+    {% for status_val, label in [('open',_('Open')),('litigation',_('Litigation')),('closed',_('Closed'))] %}
     {% set col = cases_by_status.get(status_val, []) %}
     <div>
       <div class="flex items-center justify-between mb-3 px-1">
@@ -41,7 +41,10 @@
           </div>
           <div class="flex items-center justify-between mb-2">
             <div class="text-xs" style="color:hsl(var(--muted-foreground))">{{ case.client_name or '—' }}</div>
-            {% if case.case_number %}<div class="text-xs font-mono" style="color:hsl(var(--muted-foreground))">#{{ case.case_number }}</div>{% endif %}
+            <div class="flex items-center gap-1.5">
+              {% if case.case_type and case.case_type != 'Other' %}<span class="text-[10px] font-medium px-1.5 py-0.5 rounded" style="background:hsl(var(--muted));color:hsl(var(--muted-foreground))">{{ _(case.case_type) }}</span>{% endif %}
+              {% if case.case_number %}<span class="text-xs font-mono" style="color:hsl(var(--muted-foreground))">#{{ case.case_number }}</span>{% endif %}
+            </div>
           </div>
           {% if case.description %}
           <p class="text-xs mb-2 line-clamp-2" style="color:hsl(var(--muted-foreground))">{{ case.description[:100] }}{% if case.description|length > 100 %}…{% endif %}</p>

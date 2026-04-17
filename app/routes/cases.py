@@ -5,11 +5,23 @@ from datetime import datetime
 
 bp = Blueprint("cases", __name__, url_prefix="/cases")
 
-def log_activity(conn, user_id, case_id, action, details=None):
+def log_activity(conn, user_id, case_id, action, details=None, organization_id=None):
     conn.execute(
-        "INSERT INTO activity_logs (user_id, case_id, action, details) VALUES (?,?,?,?)",
-        (user_id, case_id, action, details)
+        "INSERT INTO activity_logs (user_id, case_id, action, details, organization_id) VALUES (?,?,?,?,?)",
+        (user_id, case_id, action, details, organization_id)
     )
+
+
+def _case_in_user_org(conn, case_id, user):
+    """Return the case row dict if it exists AND belongs to user's org (or user is super_admin), else None."""
+    row = conn.execute("SELECT * FROM cases WHERE id=?", (case_id,)).fetchone()
+    if not row:
+        return None
+    if user.get("role") == "super_admin":
+        return dict(row)
+    if row["organization_id"] != user.get("organization_id"):
+        return None
+    return dict(row)
 
 @bp.route("")
 @login_required
@@ -89,7 +101,7 @@ def board():
 @bp.route("/new", methods=["GET", "POST"])
 @login_required
 def new_case():
-    if g.user["role"] not in ("admin",):
+    if g.user["role"] not in ("admin", "owner", "super_admin"):
         return redirect(url_for("cases.board"))
 
     uc, up = org_filter(g.user)
@@ -109,8 +121,8 @@ def new_case():
             cur = conn.execute("""
                 INSERT INTO cases (title, description, client_id, priority, status,
                     due_date, overview, current_step, next_action, blockers,
-                    court_name, case_number, organization_id)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)
+                    court_name, case_number, case_type, organization_id)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
             """, (
                 f["title"], f.get("description", ""),
                 f.get("client_id") or None,
@@ -119,6 +131,7 @@ def new_case():
                 f.get("overview", ""), f.get("current_step", ""),
                 f.get("next_action", ""), f.get("blockers", ""),
                 f.get("court_name", "") or None, f.get("case_number", "") or None,
+                f.get("case_type", "Other") or "Other",
                 oid,
             ))
             case_id = cur.lastrowid
@@ -127,7 +140,7 @@ def new_case():
                     conn.execute("INSERT OR IGNORE INTO case_assignments (case_id, user_id) VALUES (?,?)",
                         (case_id, int(uid)))
                 except: pass
-            log_activity(conn, g.user["id"], case_id, "Case created", f"Status: {f.get('status','open')}")
+            log_activity(conn, g.user["id"], case_id, "Case created", f"Status: {f.get('status','open')}", organization_id=oid)
         return redirect(url_for("cases.detail", case_id=case_id))
 
     return render_template("cases/form.html",
@@ -141,11 +154,12 @@ def new_case():
 @login_required
 def detail(case_id):
     with db_conn() as conn:
-        case = conn.execute("""
+        oc, op = org_filter(g.user, alias="c")
+        case = conn.execute(f"""
             SELECT c.*, cl.full_name as client_name, cl.id as client_id
             FROM cases c LEFT JOIN clients cl ON cl.id=c.client_id
-            WHERE c.id=?
-        """, (case_id,)).fetchone()
+            WHERE c.id=?{oc}
+        """, [case_id] + op).fetchone()
         if not case:
             abort(404)
         case = dict(case)
@@ -214,10 +228,13 @@ def detail(case_id):
 @login_required
 def edit_case(case_id):
     with db_conn() as conn:
-        case = conn.execute("SELECT * FROM case_assignments WHERE case_id=?", (case_id,)).fetchall()
-        assigned_ids = [a["user_id"] for a in case]
+        case_row = _case_in_user_org(conn, case_id, g.user)
+        if not case_row:
+            abort(404)
+        assignments = conn.execute("SELECT * FROM case_assignments WHERE case_id=?", (case_id,)).fetchall()
+        assigned_ids = [a["user_id"] for a in assignments]
 
-    can_edit = g.user["role"] == "admin" or (
+    can_edit = g.user["role"] in ("admin", "owner", "super_admin") or (
         g.user["role"] == "staff" and g.user["id"] in assigned_ids
     )
     if not can_edit:
@@ -231,32 +248,33 @@ def edit_case(case_id):
 
         court_name = f.get("court_name", "") or None
         case_number = f.get("case_number", "") or None
+        case_type = f.get("case_type", "Other") or "Other"
         if closed_at:
             conn.execute("""
                 UPDATE cases SET title=?,description=?,client_id=?,priority=?,status=?,
                     due_date=?,overview=?,current_step=?,next_action=?,blockers=?,
-                    court_name=?,case_number=?,
+                    court_name=?,case_number=?,case_type=?,
                     closed_at=datetime('now'), updated_at=datetime('now') WHERE id=?
             """, (f["title"], f.get("description",""), f.get("client_id") or None,
                   f.get("priority","medium"), new_status,
                   f.get("due_date") or None,
                   f.get("overview",""), f.get("current_step",""),
                   f.get("next_action",""), f.get("blockers",""),
-                  court_name, case_number, case_id))
+                  court_name, case_number, case_type, case_id))
         else:
             conn.execute("""
                 UPDATE cases SET title=?,description=?,client_id=?,priority=?,status=?,
                     due_date=?,overview=?,current_step=?,next_action=?,blockers=?,
-                    court_name=?,case_number=?,
+                    court_name=?,case_number=?,case_type=?,
                     updated_at=datetime('now') WHERE id=?
             """, (f["title"], f.get("description",""), f.get("client_id") or None,
                   f.get("priority","medium"), new_status,
                   f.get("due_date") or None,
                   f.get("overview",""), f.get("current_step",""),
                   f.get("next_action",""), f.get("blockers",""),
-                  court_name, case_number, case_id))
+                  court_name, case_number, case_type, case_id))
 
-        if g.user["role"] == "admin":
+        if g.user["role"] in ("admin", "owner", "super_admin"):
             conn.execute("DELETE FROM case_assignments WHERE case_id=?", (case_id,))
             for uid in request.form.getlist("assigned_users"):
                 try:
@@ -264,10 +282,11 @@ def edit_case(case_id):
                         (case_id, int(uid)))
                 except: pass
 
+        oid = case_row.get("organization_id")
         if old and old["status"] != new_status:
-            log_activity(conn, g.user["id"], case_id, "Status changed", f"{old['status']} → {new_status}")
+            log_activity(conn, g.user["id"], case_id, "Status changed", f"{old['status']} → {new_status}", organization_id=oid)
         else:
-            log_activity(conn, g.user["id"], case_id, "Case updated")
+            log_activity(conn, g.user["id"], case_id, "Case updated", organization_id=oid)
 
     return redirect(url_for("cases.detail", case_id=case_id))
 
@@ -275,9 +294,12 @@ def edit_case(case_id):
 @login_required
 def add_key_date(case_id):
     with db_conn() as conn:
+        case = _case_in_user_org(conn, case_id, g.user)
+        if not case:
+            abort(404)
         assigned_ids = [a["user_id"] for a in conn.execute(
             "SELECT user_id FROM case_assignments WHERE case_id=?", (case_id,)).fetchall()]
-    can_edit = g.user["role"] == "admin" or (g.user["role"] == "staff" and g.user["id"] in assigned_ids)
+    can_edit = g.user["role"] in ("admin", "owner", "super_admin") or (g.user["role"] == "staff" and g.user["id"] in assigned_ids)
     if not can_edit:
         abort(403)
 
@@ -287,21 +309,23 @@ def add_key_date(case_id):
     end_time = f.get("end_time") or "00:00"
     start_dt = f"{date} {start_time}:00" if date else None
     end_dt = f"{date} {end_time}:00" if date else None
+    oid = org_id_for(g.user) or case.get("organization_id")
 
     with db_conn() as conn:
         conn.execute("""
             INSERT INTO appointments
                 (title, start_datetime, end_datetime, case_id, location,
-                 appointment_type, created_by_user_id, description)
-            VALUES (?,?,?,?,?,?,?,?)
+                 appointment_type, created_by_user_id, description, organization_id)
+            VALUES (?,?,?,?,?,?,?,?,?)
         """, (
             f["title"], start_dt, end_dt, case_id,
             f.get("location") or None,
             "case_key_date",
             g.user["id"],
             f.get("kd_type") or None,
+            oid,
         ))
-        log_activity(conn, g.user["id"], case_id, "Key date added", f["title"])
+        log_activity(conn, g.user["id"], case_id, "Key date added", f["title"], organization_id=oid)
     return redirect(url_for("cases.detail", case_id=case_id))
 
 
@@ -309,9 +333,12 @@ def add_key_date(case_id):
 @login_required
 def delete_key_date(case_id, appt_id):
     with db_conn() as conn:
+        case = _case_in_user_org(conn, case_id, g.user)
+        if not case:
+            abort(404)
         assigned_ids = [a["user_id"] for a in conn.execute(
             "SELECT user_id FROM case_assignments WHERE case_id=?", (case_id,)).fetchall()]
-    can_edit = g.user["role"] == "admin" or (g.user["role"] == "staff" and g.user["id"] in assigned_ids)
+    can_edit = g.user["role"] in ("admin", "owner", "super_admin") or (g.user["role"] == "staff" and g.user["id"] in assigned_ids)
     if not can_edit:
         abort(403)
 
@@ -321,29 +348,50 @@ def delete_key_date(case_id, appt_id):
             (appt_id, case_id)).fetchone()
         if appt:
             conn.execute("DELETE FROM appointments WHERE id=?", (appt_id,))
-            log_activity(conn, g.user["id"], case_id, "Key date deleted")
+            log_activity(conn, g.user["id"], case_id, "Key date deleted", organization_id=case.get("organization_id"))
     return redirect(url_for("cases.detail", case_id=case_id))
 
 
 @bp.route("/<int:case_id>/tasks/new", methods=["POST"])
 @login_required
 def add_task(case_id):
+    with db_conn() as conn:
+        case = _case_in_user_org(conn, case_id, g.user)
+        if not case:
+            abort(404)
+        assigned_ids = [a["user_id"] for a in conn.execute(
+            "SELECT user_id FROM case_assignments WHERE case_id=?", (case_id,)).fetchall()]
+    can_edit = g.user["role"] in ("admin", "owner", "super_admin") or (g.user["role"] == "staff" and g.user["id"] in assigned_ids)
+    if not can_edit:
+        abort(403)
+
     f = request.form
     due_date = f.get("due_date") or None
+    oid = org_id_for(g.user) or case.get("organization_id")
     with db_conn() as conn:
         conn.execute("""
             INSERT INTO tasks (title, description, case_id, assigned_to_user_id,
-                due_date, priority, created_by_user_id)
-            VALUES (?,?,?,?,?,?,?)
+                due_date, priority, created_by_user_id, organization_id)
+            VALUES (?,?,?,?,?,?,?,?)
         """, (f["title"], f.get("description",""), case_id,
               f.get("assigned_to") or None, due_date,
-              f.get("priority","medium"), g.user["id"]))
-        log_activity(conn, g.user["id"], case_id, "Task added", f["title"])
+              f.get("priority","medium"), g.user["id"], oid))
+        log_activity(conn, g.user["id"], case_id, "Task added", f["title"], organization_id=oid)
     return redirect(url_for("cases.detail", case_id=case_id))
 
 @bp.route("/<int:case_id>/tasks/<int:task_id>/toggle", methods=["POST"])
 @login_required
 def toggle_task(case_id, task_id):
+    with db_conn() as conn:
+        case = _case_in_user_org(conn, case_id, g.user)
+        if not case:
+            abort(404)
+        assigned_ids = [a["user_id"] for a in conn.execute(
+            "SELECT user_id FROM case_assignments WHERE case_id=?", (case_id,)).fetchall()]
+    can_edit = g.user["role"] in ("admin", "owner", "super_admin") or (g.user["role"] == "staff" and g.user["id"] in assigned_ids)
+    if not can_edit:
+        abort(403)
+
     with db_conn() as conn:
         task = conn.execute("SELECT * FROM tasks WHERE id=? AND case_id=?", (task_id, case_id)).fetchone()
         if task:

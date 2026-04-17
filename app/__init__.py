@@ -67,6 +67,16 @@ def create_app():
         static_folder="static"
     )
 
+    # Browser cache for /static/* (1 day). Bust with ?v=... query string when needed.
+    app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 86400
+
+    # Gzip responses (HTML/JSON/CSS/JS) — opt-in if package is installed.
+    try:
+        from flask_compress import Compress
+        Compress(app)
+    except ImportError:
+        pass
+
     # --- Secret key ---
     secret = os.environ.get("SECRET_KEY")
     env = os.environ.get("FLASK_ENV") or os.environ.get("ENVIRONMENT") or ""

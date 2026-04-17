@@ -19,6 +19,9 @@
                 {% if case.priority=='low' %}badge-success{% elif case.priority=='medium' %}badge-warning{% elif case.priority=='high' %}badge-danger{% else %}badge badge-info{% endif %}">
                 {{ case.priority.title() }}
               </span>
+              {% if case.case_type and case.case_type != 'Other' %}
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700" style="background:hsl(var(--muted));color:hsl(var(--foreground))">{{ _(case.case_type) }}</span>
+              {% endif %}
               {% if case.client_name %}<span class="text-sm text-[hsl(var(--muted-foreground))]">{{ case.client_name }}</span>{% endif %}
             </div>
           </div>
@@ -426,17 +429,23 @@ function requestSummary() {
       <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Title</label>
         <input name="title" value="{{ case.title }}" required class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-800"></div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Status</label>
+        <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">{{ _('Status') }}</label>
           <select name="status" class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm focus:outline-none">
             {% for s,l in [('open','Open'),('litigation','Litigation'),('closed','Closed')] %}
-            <option value="{{ s }}" {% if case.status==s %}selected{% endif %}>{{ l }}</option>{% endfor %}
+            <option value="{{ s }}" {% if case.status==s %}selected{% endif %}>{{ _(l) }}</option>{% endfor %}
           </select></div>
-        <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Priority</label>
+        <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">{{ _('Priority') }}</label>
           <select name="priority" class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm focus:outline-none">
             {% for p in ['low','medium','high','urgent'] %}
-            <option value="{{ p }}" {% if case.priority==p %}selected{% endif %}>{{ p.title() }}</option>{% endfor %}
+            <option value="{{ p }}" {% if case.priority==p %}selected{% endif %}>{{ _(p.title()) }}</option>{% endfor %}
           </select></div>
       </div>
+      <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">{{ _('Case Type') }}</label>
+        <select name="case_type" class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm focus:outline-none">
+          {% for val in ['Civil','Criminal','Family','Labor','Commercial','Administrative','Tax','Immigration','Other'] %}
+          <option value="{{ val }}" {% if case.case_type==val %}selected{% endif %}>{{ _(val) }}</option>
+          {% endfor %}
+        </select></div>
       <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Due Date</label>
         <input type="date" name="due_date" value="{{ dt_date(case.due_date) }}" class="w-full border border-[hsl(var(--border))] rounded-lg px-3 py-2.5 text-sm focus:outline-none"></div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">

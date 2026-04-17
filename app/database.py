@@ -424,6 +424,7 @@ CREATE TABLE IF NOT EXISTS cases (
     closed_at TEXT,
     court_name TEXT,
     case_number TEXT,
+    case_type TEXT DEFAULT 'Other',
     organization_id INTEGER REFERENCES organizations(id),
     created_at TEXT DEFAULT (datetime('now')),
     updated_at TEXT DEFAULT (datetime('now'))
@@ -734,6 +735,7 @@ CREATE TABLE IF NOT EXISTS cases (
     closed_at TEXT,
     court_name TEXT,
     case_number TEXT,
+    case_type TEXT DEFAULT 'Other',
     organization_id INTEGER REFERENCES organizations(id),
     created_at TEXT DEFAULT (TO_CHAR(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS')),
     updated_at TEXT DEFAULT (TO_CHAR(NOW() AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS'))
@@ -1042,6 +1044,8 @@ def _run_pg_migrations(conn):
         ("demo_requests",   "conversion_notes", "TEXT"),
         # Presence tracking
         ("users",           "last_seen_at",     "TEXT"),
+        # Case type for legal classification
+        ("cases",           "case_type",        "TEXT DEFAULT 'Other'"),
     ]
     for table, column, definition in migrations:
         if not _column_exists_pg(conn, table, column):
@@ -1076,12 +1080,41 @@ def _run_sqlite_migrations(conn):
         ("demo_requests",    "conversion_notes","TEXT"),
         # Presence tracking
         ("users",            "last_seen_at",    "TEXT"),
+        # Case type for legal classification
+        ("cases",            "case_type",       "TEXT DEFAULT 'Other'"),
     ]
     for table, column, definition in migrations:
         try:
             conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {definition}")
         except Exception:
             pass  # column already exists
+
+
+_HOT_INDEXES = [
+    # (index_name, table, columns) — created with IF NOT EXISTS, safe on both backends.
+    ("idx_users_org",          "users",         "organization_id"),
+    ("idx_clients_org",        "clients",       "organization_id"),
+    ("idx_cases_org",          "cases",         "organization_id"),
+    ("idx_cases_org_status",   "cases",         "organization_id, status"),
+    ("idx_appts_org",          "appointments",  "organization_id"),
+    ("idx_appts_case",         "appointments",  "case_id"),
+    ("idx_tasks_org",          "tasks",         "organization_id"),
+    ("idx_tasks_case",         "tasks",         "case_id"),
+    ("idx_docs_org",           "documents",     "organization_id"),
+    ("idx_actlog_org",         "activity_logs", "organization_id"),
+    ("idx_actlog_case",        "activity_logs", "case_id"),
+    ("idx_msgs_recipient",     "messages",      "recipient_id, is_read"),
+    ("idx_checkins_org",       "checkins",      "organization_id"),
+]
+
+
+def _create_hot_indexes(conn):
+    """Idempotent. Skips silently if a referenced table/column doesn't exist yet."""
+    for name, table, cols in _HOT_INDEXES:
+        try:
+            conn.execute(f"CREATE INDEX IF NOT EXISTS {name} ON {table} ({cols})")
+        except Exception:
+            pass
 
 
 def init_db():
@@ -1111,6 +1144,7 @@ def init_db():
             # Column migrations for databases that existed before this DDL
             conn2 = _PgConnection(raw)
             _run_pg_migrations(conn2)
+            _create_hot_indexes(conn2)
             raw.commit()
         finally:
             raw.close()
@@ -1118,6 +1152,7 @@ def init_db():
         with db_conn() as conn:
             conn.executescript(_SQLITE_DDL)
             _run_sqlite_migrations(conn)
+            _create_hot_indexes(conn)
     print("Database initialized")
 
 

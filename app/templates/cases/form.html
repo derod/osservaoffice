@@ -4,7 +4,7 @@
 <div class="page-container max-w-2xl">
   <div class="mb-5"><a href="{{ url_for('cases.board') }}" class="text-sm text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]">← Cases</a></div>
   <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-4 sm:p-6">
-    <h1 class="text-xl font-bold mb-6">New Case</h1>
+    <h1 class="text-xl font-bold mb-6">{{ _('New Case') }}</h1>
     <form method="POST" action="{{ url_for('cases.new_case') }}" class="space-y-5">
       <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Case Title *</label>
         <input name="title" required class="w-full dk-input rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-2" placeholder="e.g. Smith Contract Dispute"></div>
@@ -24,14 +24,23 @@
           <input name="case_number" class="w-full dk-input rounded-lg px-3 py-2.5 text-sm focus:outline-none" placeholder="e.g. 1234/2025"></div>
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Status</label>
-          <select name="status" class="w-full dk-input rounded-lg px-3 py-2.5 text-sm focus:outline-none">
-            <option value="open">Open</option><option value="litigation">Litigation</option><option value="closed">Closed</option>
+        <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">{{ _('Case Type') }}</label>
+          <select name="case_type" class="w-full dk-input rounded-lg px-3 py-2.5 text-sm focus:outline-none">
+            {% for val, lbl in [('Civil','Civil'),('Criminal','Criminal'),('Family','Family'),('Labor','Labor'),('Commercial','Commercial'),('Administrative','Administrative'),('Tax','Tax'),('Immigration','Immigration'),('Other','Other')] %}
+            <option value="{{ val }}">{{ _(lbl) }}</option>
+            {% endfor %}
           </select></div>
-        <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Priority</label>
+        <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">{{ _('Priority') }}</label>
           <select name="priority" class="w-full dk-input rounded-lg px-3 py-2.5 text-sm focus:outline-none">
-            <option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option><option value="urgent">Urgent</option>
+            <option value="low">{{ _('Low') }}</option><option value="medium" selected>{{ _('Medium') }}</option><option value="high">{{ _('High') }}</option><option value="urgent">{{ _('Urgent') }}</option>
           </select></div>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">{{ _('Status') }}</label>
+          <select name="status" class="w-full dk-input rounded-lg px-3 py-2.5 text-sm focus:outline-none">
+            <option value="open">{{ _('Open') }}</option><option value="litigation">{{ _('Litigation') }}</option><option value="closed">{{ _('Closed') }}</option>
+          </select></div>
+        <div></div>
       </div>
       <div><label class="block text-xs font-medium text-[hsl(var(--muted-foreground))] mb-1">Assigned Staff (Ctrl/Cmd+click for multiple)</label>
         <select name="assigned_users" multiple class="w-full dk-input rounded-lg px-3 py-2 text-sm focus:outline-none h-28">
