@@ -441,6 +441,19 @@ def summarize_doc(doc_id):
 # ───────── CLIENTS ─────────
 clients_bp = Blueprint("clients", __name__, url_prefix="/clients")
 
+
+def _client_in_user_org(conn, client_id, user):
+    """Return client row dict if it exists AND belongs to user's org (or user is super_admin), else None."""
+    row = conn.execute("SELECT * FROM clients WHERE id=?", (client_id,)).fetchone()
+    if not row:
+        return None
+    if user.get("role") == "super_admin":
+        return dict(row)
+    if row["organization_id"] != user.get("organization_id"):
+        return None
+    return dict(row)
+
+
 @clients_bp.route("")
 @login_required
 def list_clients():
@@ -486,10 +499,9 @@ def new_client():
 @login_required
 def detail(client_id):
     with db_conn() as conn:
-        client = conn.execute("SELECT * FROM clients WHERE id=?", (client_id,)).fetchone()
+        client = _client_in_user_org(conn, client_id, g.user)
         if not client:
             abort(404)
-        client = dict(client)
         cases = [dict(r) for r in conn.execute(
             "SELECT * FROM cases WHERE client_id=? ORDER BY created_at DESC", (client_id,)
         ).fetchall()]
@@ -506,10 +518,14 @@ def detail(client_id):
 @clients_bp.route("/<int:client_id>/edit", methods=["POST"])
 @login_required
 def edit_client(client_id):
-    if not is_admin_like(g.user):
-        return redirect(url_for("clients.detail", client_id=client_id))
-    f = request.form
     with db_conn() as conn:
+        client = _client_in_user_org(conn, client_id, g.user)
+        if not client:
+            abort(404)
+        if not is_admin_like(g.user):
+            flash("You don't have permission to edit this client.", "error")
+            return redirect(url_for("clients.detail", client_id=client_id))
+        f = request.form
         conn.execute("""
             UPDATE clients SET full_name=?,company_name=?,email=?,phone=?,address=?,notes=?
             WHERE id=?
