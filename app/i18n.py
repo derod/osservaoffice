@@ -1948,6 +1948,936 @@ LOGIN_TRANSLATIONS = {
 }
 
 
+# ---------------------------------------------------------------------------
+# Clients & Cases module coverage — labels, forms, empty states, modals
+# (extends _TRANSLATIONS; merged below)
+# ---------------------------------------------------------------------------
+_CASES_CLIENTS_TRANSLATIONS = {
+    # ── Clients list / form / detail ───────────────────────────────────
+    "Company Name": {
+        "es": "Nombre de la empresa",
+        "it": "Nome azienda",
+        "ja": "会社名",
+        "pt": "Nome da empresa",
+    },
+    "Address": {
+        "es": "Dirección",
+        "it": "Indirizzo",
+        "ja": "住所",
+        "pt": "Endereço",
+    },
+    "Notes": {
+        "es": "Notas",
+        "it": "Note",
+        "ja": "メモ",
+        "pt": "Notas",
+    },
+    "Create Client": {
+        "es": "Crear cliente",
+        "it": "Crea cliente",
+        "ja": "クライアントを作成",
+        "pt": "Criar cliente",
+    },
+    "No cases": {
+        "es": "Sin casos",
+        "it": "Nessun caso",
+        "ja": "案件なし",
+        "pt": "Sem casos",
+    },
+    "active": {
+        "es": "activos",
+        "it": "attivi",
+        "ja": "有効",
+        "pt": "ativos",
+    },
+    "total cases": {
+        "es": "casos en total",
+        "it": "casi in totale",
+        "ja": "件の合計",
+        "pt": "casos no total",
+    },
+    "No documents": {
+        "es": "Sin documentos",
+        "it": "Nessun documento",
+        "ja": "書類なし",
+        "pt": "Sem documentos",
+    },
+
+    # ── Cases board / form / detail ────────────────────────────────────
+    "Case Title": {
+        "es": "Título del caso",
+        "it": "Titolo del caso",
+        "ja": "案件タイトル",
+        "pt": "Título do caso",
+    },
+    "Client": {
+        "es": "Cliente",
+        "it": "Cliente",
+        "ja": "クライアント",
+        "pt": "Cliente",
+    },
+    "No client": {
+        "es": "Sin cliente",
+        "it": "Nessun cliente",
+        "ja": "クライアントなし",
+        "pt": "Sem cliente",
+    },
+    "Due Date": {
+        "es": "Fecha de vencimiento",
+        "it": "Data di scadenza",
+        "ja": "期限",
+        "pt": "Data de vencimento",
+    },
+    "Court Name": {
+        "es": "Nombre del tribunal",
+        "it": "Nome del tribunale",
+        "ja": "裁判所名",
+        "pt": "Nome do tribunal",
+    },
+    "Case Number": {
+        "es": "Número de caso",
+        "it": "Numero del caso",
+        "ja": "案件番号",
+        "pt": "Número do caso",
+    },
+    "Description": {
+        "es": "Descripción",
+        "it": "Descrizione",
+        "ja": "説明",
+        "pt": "Descrição",
+    },
+    "Priority": {
+        "es": "Prioridad",
+        "it": "Priorità",
+        "ja": "優先度",
+        "pt": "Prioridade",
+    },
+    "Overview": {
+        "es": "Resumen",
+        "it": "Panoramica",
+        "ja": "概要",
+        "pt": "Visão geral",
+    },
+    "Current Step": {
+        "es": "Paso actual",
+        "it": "Fase attuale",
+        "ja": "現在のステップ",
+        "pt": "Etapa atual",
+    },
+    "Next Action": {
+        "es": "Próxima acción",
+        "it": "Prossima azione",
+        "ja": "次の対応",
+        "pt": "Próxima ação",
+    },
+    "Blockers": {
+        "es": "Bloqueos",
+        "it": "Blocchi",
+        "ja": "障害",
+        "pt": "Bloqueios",
+    },
+    "Create Case": {
+        "es": "Crear caso",
+        "it": "Crea caso",
+        "ja": "案件を作成",
+        "pt": "Criar caso",
+    },
+    "Edit": {
+        "es": "Editar",
+        "it": "Modifica",
+        "ja": "編集",
+        "pt": "Editar",
+    },
+    "Edit Case": {
+        "es": "Editar caso",
+        "it": "Modifica caso",
+        "ja": "案件を編集",
+        "pt": "Editar caso",
+    },
+    "Save Changes": {
+        "es": "Guardar cambios",
+        "it": "Salva modifiche",
+        "ja": "変更を保存",
+        "pt": "Salvar alterações",
+    },
+    "Title": {
+        "es": "Título",
+        "it": "Titolo",
+        "ja": "タイトル",
+        "pt": "Título",
+    },
+    "Type": {
+        "es": "Tipo",
+        "it": "Tipo",
+        "ja": "種類",
+        "pt": "Tipo",
+    },
+    "Date": {
+        "es": "Fecha",
+        "it": "Data",
+        "ja": "日付",
+        "pt": "Data",
+    },
+    "Time": {
+        "es": "Hora",
+        "it": "Ora",
+        "ja": "時刻",
+        "pt": "Hora",
+    },
+    "Start Time": {
+        "es": "Hora de inicio",
+        "it": "Ora di inizio",
+        "ja": "開始時刻",
+        "pt": "Hora de início",
+    },
+    "End Time": {
+        "es": "Hora de fin",
+        "it": "Ora di fine",
+        "ja": "終了時刻",
+        "pt": "Hora de término",
+    },
+    "Location": {
+        "es": "Ubicación",
+        "it": "Luogo",
+        "ja": "場所",
+        "pt": "Local",
+    },
+    "Court": {
+        "es": "Tribunal",
+        "it": "Tribunale",
+        "ja": "裁判所",
+        "pt": "Tribunal",
+    },
+    "Case #": {
+        "es": "N.º de caso",
+        "it": "Caso n.",
+        "ja": "案件番号",
+        "pt": "Caso n.º",
+    },
+    "Due": {
+        "es": "Vence",
+        "it": "Scade",
+        "ja": "期限",
+        "pt": "Vence",
+    },
+
+    # ── Tasks / Key Dates / Activity ───────────────────────────────────
+    "Tasks": {
+        "es": "Tareas",
+        "it": "Attività",
+        "ja": "タスク",
+        "pt": "Tarefas",
+    },
+    "Key Dates": {
+        "es": "Fechas clave",
+        "it": "Date chiave",
+        "ja": "重要な日付",
+        "pt": "Datas-chave",
+    },
+    "Activity": {
+        "es": "Actividad",
+        "it": "Attività",
+        "ja": "アクティビティ",
+        "pt": "Atividade",
+    },
+    "Case Overview": {
+        "es": "Resumen del caso",
+        "it": "Panoramica del caso",
+        "ja": "案件の概要",
+        "pt": "Resumo do caso",
+    },
+    "No tasks yet": {
+        "es": "Aún no hay tareas",
+        "it": "Ancora nessuna attività",
+        "ja": "まだタスクはありません",
+        "pt": "Ainda não há tarefas",
+    },
+    "No key dates yet": {
+        "es": "Aún no hay fechas clave",
+        "it": "Ancora nessuna data chiave",
+        "ja": "まだ重要な日付はありません",
+        "pt": "Ainda não há datas-chave",
+    },
+    "No activity yet": {
+        "es": "Aún no hay actividad",
+        "it": "Ancora nessuna attività",
+        "ja": "まだアクティビティはありません",
+        "pt": "Ainda não há atividade",
+    },
+    "No staff assigned": {
+        "es": "Sin personal asignado",
+        "it": "Nessun personale assegnato",
+        "ja": "担当者なし",
+        "pt": "Sem equipe atribuída",
+    },
+    "Add": {
+        "es": "Añadir",
+        "it": "Aggiungi",
+        "ja": "追加",
+        "pt": "Adicionar",
+    },
+    "Add Task": {
+        "es": "Añadir tarea",
+        "it": "Aggiungi attività",
+        "ja": "タスクを追加",
+        "pt": "Adicionar tarefa",
+    },
+    "Task Title": {
+        "es": "Título de la tarea",
+        "it": "Titolo attività",
+        "ja": "タスクのタイトル",
+        "pt": "Título da tarefa",
+    },
+    "Assigned To": {
+        "es": "Asignado a",
+        "it": "Assegnato a",
+        "ja": "担当者",
+        "pt": "Atribuído a",
+    },
+    "Unassigned": {
+        "es": "Sin asignar",
+        "it": "Non assegnato",
+        "ja": "未割り当て",
+        "pt": "Não atribuído",
+    },
+    "Assigned Staff": {
+        "es": "Personal asignado",
+        "it": "Personale assegnato",
+        "ja": "担当スタッフ",
+        "pt": "Equipe atribuída",
+    },
+    "Assigned Staff (Ctrl/Cmd+click for multiple)": {
+        "es": "Personal asignado (Ctrl/Cmd+clic para varios)",
+        "it": "Personale assegnato (Ctrl/Cmd+clic per multipli)",
+        "ja": "担当スタッフ (複数選択は Ctrl/Cmd+クリック)",
+        "pt": "Equipe atribuída (Ctrl/Cmd+clique para múltiplos)",
+    },
+    "Add Key Date": {
+        "es": "Añadir fecha clave",
+        "it": "Aggiungi data chiave",
+        "ja": "重要な日付を追加",
+        "pt": "Adicionar data-chave",
+    },
+    "Save Key Date": {
+        "es": "Guardar fecha clave",
+        "it": "Salva data chiave",
+        "ja": "重要な日付を保存",
+        "pt": "Salvar data-chave",
+    },
+    "Hearing": {
+        "es": "Audiencia",
+        "it": "Udienza",
+        "ja": "審理",
+        "pt": "Audiência",
+    },
+    "Deadline": {
+        "es": "Plazo",
+        "it": "Scadenza",
+        "ja": "締切",
+        "pt": "Prazo",
+    },
+    "Meeting": {
+        "es": "Reunión",
+        "it": "Riunione",
+        "ja": "会議",
+        "pt": "Reunião",
+    },
+
+    # ── Documents panel ────────────────────────────────────────────────
+    "Exhibit": {
+        "es": "Prueba",
+        "it": "Prova",
+        "ja": "証拠資料",
+        "pt": "Prova documental",
+    },
+    "Filing": {
+        "es": "Escrito presentado",
+        "it": "Atto depositato",
+        "ja": "提出書類",
+        "pt": "Petição",
+    },
+    "Contract": {
+        "es": "Contrato",
+        "it": "Contratto",
+        "ja": "契約書",
+        "pt": "Contrato",
+    },
+    "Evidence": {
+        "es": "Evidencia",
+        "it": "Prova",
+        "ja": "証拠",
+        "pt": "Evidência",
+    },
+    "Internal Memo": {
+        "es": "Memorando interno",
+        "it": "Memo interno",
+        "ja": "社内メモ",
+        "pt": "Memorando interno",
+    },
+    "Upload": {
+        "es": "Subir",
+        "it": "Carica",
+        "ja": "アップロード",
+        "pt": "Enviar",
+    },
+    "Choose file to upload": {
+        "es": "Elegir archivo para subir",
+        "it": "Scegli un file da caricare",
+        "ja": "アップロードするファイルを選択",
+        "pt": "Escolher arquivo para enviar",
+    },
+    "Document": {
+        "es": "Documento",
+        "it": "Documento",
+        "ja": "書類",
+        "pt": "Documento",
+    },
+    "AI Summary": {
+        "es": "Resumen IA",
+        "it": "Riepilogo IA",
+        "ja": "AI要約",
+        "pt": "Resumo IA",
+    },
+    "Summarise": {
+        "es": "Resumir",
+        "it": "Riepiloga",
+        "ja": "要約する",
+        "pt": "Resumir",
+    },
+    "Click Summarise to analyse this PDF with AI.": {
+        "es": "Haz clic en Resumir para analizar este PDF con IA.",
+        "it": "Clicca su Riepiloga per analizzare questo PDF con l'IA.",
+        "ja": "「要約する」をクリックしてこのPDFをAIで分析します。",
+        "pt": "Clique em Resumir para analisar este PDF com IA.",
+    },
+    "Reading document…": {
+        "es": "Leyendo documento…",
+        "it": "Lettura del documento…",
+        "ja": "書類を読み込み中…",
+        "pt": "Lendo documento…",
+    },
+    "Summary": {
+        "es": "Resumen",
+        "it": "Riepilogo",
+        "ja": "要約",
+        "pt": "Resumo",
+    },
+    "Key Points": {
+        "es": "Puntos clave",
+        "it": "Punti chiave",
+        "ja": "重要ポイント",
+        "pt": "Pontos-chave",
+    },
+    "Suggested Next Steps": {
+        "es": "Próximos pasos sugeridos",
+        "it": "Prossimi passi suggeriti",
+        "ja": "推奨される次のステップ",
+        "pt": "Próximos passos sugeridos",
+    },
+
+    # ── Misc helpers ───────────────────────────────────────────────────
+    "Enter task...": {
+        "es": "Introduce una tarea...",
+        "it": "Inserisci un'attività...",
+        "ja": "タスクを入力...",
+        "pt": "Digite a tarefa...",
+    },
+    "System": {
+        "es": "Sistema",
+        "it": "Sistema",
+        "ja": "システム",
+        "pt": "Sistema",
+    },
+    "Back to Dashboard": {
+        "es": "Volver al panel",
+        "it": "Torna al pannello",
+        "ja": "ダッシュボードへ戻る",
+        "pt": "Voltar ao painel",
+    },
+    "e.g. Smith Contract Dispute": {
+        "es": "p. ej. Disputa de contrato Smith",
+        "it": "es. Controversia contrattuale Smith",
+        "ja": "例: スミス契約紛争",
+        "pt": "ex. Disputa contratual Smith",
+    },
+    "e.g. Tribunale di Roma": {
+        "es": "p. ej. Tribunal de Roma",
+        "it": "es. Tribunale di Roma",
+        "ja": "例: ローマ裁判所",
+        "pt": "ex. Tribunal de Roma",
+    },
+    "e.g. 1234/2025": {
+        "es": "p. ej. 1234/2025",
+        "it": "es. 1234/2025",
+        "ja": "例: 1234/2025",
+        "pt": "ex. 1234/2025",
+    },
+    "e.g. Preliminary Hearing": {
+        "es": "p. ej. Audiencia preliminar",
+        "it": "es. Udienza preliminare",
+        "ja": "例: 予備審理",
+        "pt": "ex. Audiência preliminar",
+    },
+    "e.g. Aula 3, Tribunale di Roma": {
+        "es": "p. ej. Sala 3, Tribunal de Roma",
+        "it": "es. Aula 3, Tribunale di Roma",
+        "ja": "例: 第3法廷、ローマ裁判所",
+        "pt": "ex. Sala 3, Tribunal de Roma",
+    },
+}
+
+# Merge into the main translation dict (non-destructive: existing keys win)
+for _k, _v in _CASES_CLIENTS_TRANSLATIONS.items():
+    _TRANSLATIONS.setdefault(_k, _v)
+
+
+# ---------------------------------------------------------------------------
+# Employees / Announcements / Schedule Requests coverage
+# ---------------------------------------------------------------------------
+_EXTRA_TRANSLATIONS = {
+    # ── Employees list ─────────────────────────────────────────────────
+    "Team Directory": {
+        "es": "Directorio del equipo",
+        "it": "Elenco del team",
+        "ja": "チームディレクトリ",
+        "pt": "Diretório da equipe",
+    },
+    "Your organization's team — read-only view": {
+        "es": "El equipo de tu organización — vista de solo lectura",
+        "it": "Il team della tua organizzazione — vista in sola lettura",
+        "ja": "組織のチーム — 閲覧専用",
+        "pt": "Equipe da sua organização — visualização somente leitura",
+    },
+    "All Roles": {
+        "es": "Todos los roles",
+        "it": "Tutti i ruoli",
+        "ja": "すべての役割",
+        "pt": "Todos os papéis",
+    },
+    "Staff": {
+        "es": "Personal",
+        "it": "Personale",
+        "ja": "スタッフ",
+        "pt": "Equipe",
+    },
+    "Owner": {
+        "es": "Propietario",
+        "it": "Proprietario",
+        "ja": "オーナー",
+        "pt": "Proprietário",
+    },
+    "All Status": {
+        "es": "Todos los estados",
+        "it": "Tutti gli stati",
+        "ja": "すべての状態",
+        "pt": "Todos os status",
+    },
+    "Active": {
+        "es": "Activo",
+        "it": "Attivo",
+        "ja": "有効",
+        "pt": "Ativo",
+    },
+    "Inactive": {
+        "es": "Inactivo",
+        "it": "Inattivo",
+        "ja": "無効",
+        "pt": "Inativo",
+    },
+    "Free": {
+        "es": "Libre",
+        "it": "Libero",
+        "ja": "空いています",
+        "pt": "Livre",
+    },
+    "Busy": {
+        "es": "Ocupado",
+        "it": "Occupato",
+        "ja": "多忙",
+        "pt": "Ocupado",
+    },
+    "In Meeting": {
+        "es": "En reunión",
+        "it": "In riunione",
+        "ja": "会議中",
+        "pt": "Em reunião",
+    },
+    "appointment(s) today": {
+        "es": "cita(s) hoy",
+        "it": "appuntamento/i oggi",
+        "ja": "件の予約 (本日)",
+        "pt": "compromisso(s) hoje",
+    },
+    "My Agenda": {
+        "es": "Mi agenda",
+        "it": "La mia agenda",
+        "ja": "マイアジェンダ",
+        "pt": "Minha agenda",
+    },
+    "View agenda": {
+        "es": "Ver agenda",
+        "it": "Vedi agenda",
+        "ja": "アジェンダを表示",
+        "pt": "Ver agenda",
+    },
+
+    # ── Announcements ──────────────────────────────────────────────────
+    "Internal notices for the team": {
+        "es": "Avisos internos para el equipo",
+        "it": "Comunicazioni interne per il team",
+        "ja": "チーム向けの社内通知",
+        "pt": "Avisos internos para a equipe",
+    },
+    "New Announcement": {
+        "es": "Nuevo anuncio",
+        "it": "Nuovo annuncio",
+        "ja": "新規お知らせ",
+        "pt": "Novo aviso",
+    },
+    "Pinned": {
+        "es": "Fijado",
+        "it": "Fissato",
+        "ja": "ピン留め",
+        "pt": "Fixado",
+    },
+    "Pin": {
+        "es": "Fijar",
+        "it": "Fissa",
+        "ja": "ピン留め",
+        "pt": "Fixar",
+    },
+    "Unpin": {
+        "es": "Desfijar",
+        "it": "Togli fissaggio",
+        "ja": "ピン留め解除",
+        "pt": "Desafixar",
+    },
+    "Delete": {
+        "es": "Eliminar",
+        "it": "Elimina",
+        "ja": "削除",
+        "pt": "Excluir",
+    },
+    "Delete this announcement?": {
+        "es": "¿Eliminar este anuncio?",
+        "it": "Eliminare questo annuncio?",
+        "ja": "このお知らせを削除しますか？",
+        "pt": "Excluir este aviso?",
+    },
+    "Unknown": {
+        "es": "Desconocido",
+        "it": "Sconosciuto",
+        "ja": "不明",
+        "pt": "Desconhecido",
+    },
+    "No announcements yet": {
+        "es": "Aún no hay anuncios",
+        "it": "Ancora nessun annuncio",
+        "ja": "まだお知らせはありません",
+        "pt": "Ainda não há avisos",
+    },
+    "Post the first one for your team.": {
+        "es": "Publica el primero para tu equipo.",
+        "it": "Pubblica il primo per il tuo team.",
+        "ja": "チームに最初のお知らせを投稿しましょう。",
+        "pt": "Publique o primeiro para sua equipe.",
+    },
+    "Message": {
+        "es": "Mensaje",
+        "it": "Messaggio",
+        "ja": "メッセージ",
+        "pt": "Mensagem",
+    },
+    "e.g. Office closed on Friday": {
+        "es": "p. ej. Oficina cerrada el viernes",
+        "it": "es. Ufficio chiuso venerdì",
+        "ja": "例: 金曜日は閉所",
+        "pt": "ex. Escritório fechado na sexta",
+    },
+    "Write your announcement here…": {
+        "es": "Escribe tu anuncio aquí…",
+        "it": "Scrivi qui il tuo annuncio…",
+        "ja": "ここにお知らせを入力…",
+        "pt": "Escreva seu aviso aqui…",
+    },
+    "Post Announcement": {
+        "es": "Publicar anuncio",
+        "it": "Pubblica annuncio",
+        "ja": "お知らせを投稿",
+        "pt": "Publicar aviso",
+    },
+
+    # ── Schedule Requests ──────────────────────────────────────────────
+    "New Schedule Request": {
+        "es": "Nueva solicitud",
+        "it": "Nuova richiesta",
+        "ja": "新規スケジュール申請",
+        "pt": "Nova solicitação",
+    },
+    "New Request": {
+        "es": "Nueva solicitud",
+        "it": "Nuova richiesta",
+        "ja": "新規申請",
+        "pt": "Nova solicitação",
+    },
+    "Requests": {
+        "es": "Solicitudes",
+        "it": "Richieste",
+        "ja": "申請",
+        "pt": "Solicitações",
+    },
+    "For Employee": {
+        "es": "Para empleado",
+        "it": "Per dipendente",
+        "ja": "対象従業員",
+        "pt": "Para funcionário",
+    },
+    "Request Type": {
+        "es": "Tipo de solicitud",
+        "it": "Tipo di richiesta",
+        "ja": "申請種別",
+        "pt": "Tipo de solicitação",
+    },
+    "New Meeting": {
+        "es": "Nueva reunión",
+        "it": "Nuova riunione",
+        "ja": "新規会議",
+        "pt": "Nova reunião",
+    },
+    "Reschedule": {
+        "es": "Reprogramar",
+        "it": "Riprogramma",
+        "ja": "日程変更",
+        "pt": "Reagendar",
+    },
+    "Block Time": {
+        "es": "Bloquear horario",
+        "it": "Blocca orario",
+        "ja": "時間枠をブロック",
+        "pt": "Bloquear horário",
+    },
+    "Time Off": {
+        "es": "Ausencia",
+        "it": "Assenza",
+        "ja": "休暇",
+        "pt": "Folga",
+    },
+    "Start Date": {
+        "es": "Fecha de inicio",
+        "it": "Data di inizio",
+        "ja": "開始日",
+        "pt": "Data de início",
+    },
+    "End Date": {
+        "es": "Fecha de fin",
+        "it": "Data di fine",
+        "ja": "終了日",
+        "pt": "Data de término",
+    },
+    "Reason": {
+        "es": "Motivo",
+        "it": "Motivo",
+        "ja": "理由",
+        "pt": "Motivo",
+    },
+    "Submit Request": {
+        "es": "Enviar solicitud",
+        "it": "Invia richiesta",
+        "ja": "申請を送信",
+        "pt": "Enviar solicitação",
+    },
+    "Approve": {
+        "es": "Aprobar",
+        "it": "Approva",
+        "ja": "承認",
+        "pt": "Aprovar",
+    },
+    "Deny": {
+        "es": "Rechazar",
+        "it": "Rifiuta",
+        "ja": "却下",
+        "pt": "Negar",
+    },
+    "Pending": {
+        "es": "Pendiente",
+        "it": "In attesa",
+        "ja": "保留中",
+        "pt": "Pendente",
+    },
+    "Approved": {
+        "es": "Aprobado",
+        "it": "Approvato",
+        "ja": "承認済み",
+        "pt": "Aprovado",
+    },
+    "Denied": {
+        "es": "Rechazado",
+        "it": "Rifiutato",
+        "ja": "却下済み",
+        "pt": "Negado",
+    },
+    "No requests": {
+        "es": "Sin solicitudes",
+        "it": "Nessuna richiesta",
+        "ja": "申請はありません",
+        "pt": "Sem solicitações",
+    },
+}
+
+for _k, _v in _EXTRA_TRANSLATIONS.items():
+    _TRANSLATIONS.setdefault(_k, _v)
+
+
+# ---------------------------------------------------------------------------
+# Extra translations (calendar / availability / logins / finances coverage)
+# ---------------------------------------------------------------------------
+_EXTRA2_TRANSLATIONS = {
+    # Calendar
+    "Calendar": {"es": "Calendario", "it": "Calendario", "ja": "カレンダー", "pt": "Calendário"},
+    "Week of": {"es": "Semana del", "it": "Settimana del", "ja": "〜の週", "pt": "Semana de"},
+    "Next 30 days": {"es": "Próximos 30 días", "it": "Prossimi 30 giorni", "ja": "今後30日間", "pt": "Próximos 30 dias"},
+    "New Appointment": {"es": "Nueva cita", "it": "Nuovo appuntamento", "ja": "新規予約", "pt": "Novo agendamento"},
+    "Edit Appointment": {"es": "Editar cita", "it": "Modifica appuntamento", "ja": "予約を編集", "pt": "Editar agendamento"},
+    "Edit": {"es": "Editar", "it": "Modifica", "ja": "編集", "pt": "Editar"},
+    "New": {"es": "Nuevo", "it": "Nuovo", "ja": "新規", "pt": "Novo"},
+    "Appointment": {"es": "Cita", "it": "Appuntamento", "ja": "予約", "pt": "Agendamento"},
+    "Day": {"es": "Día", "it": "Giorno", "ja": "日", "pt": "Dia"},
+    "Week": {"es": "Semana", "it": "Settimana", "ja": "週", "pt": "Semana"},
+    "List": {"es": "Lista", "it": "Elenco", "ja": "リスト", "pt": "Lista"},
+    "Today": {"es": "Hoy", "it": "Oggi", "ja": "今日", "pt": "Hoje"},
+    "All Employees": {"es": "Todos los empleados", "it": "Tutti i dipendenti", "ja": "全従業員", "pt": "Todos os funcionários"},
+    "All Types": {"es": "Todos los tipos", "it": "Tutti i tipi", "ja": "すべての種類", "pt": "Todos os tipos"},
+    "Meeting": {"es": "Reunión", "it": "Riunione", "ja": "会議", "pt": "Reunião"},
+    "Deadline": {"es": "Fecha límite", "it": "Scadenza", "ja": "期限", "pt": "Prazo"},
+    "Block": {"es": "Bloque", "it": "Blocco", "ja": "ブロック", "pt": "Bloco"},
+    "No appointments": {"es": "Sin citas", "it": "Nessun appuntamento", "ja": "予約なし", "pt": "Sem agendamentos"},
+    "Assigned To": {"es": "Asignado a", "it": "Assegnato a", "ja": "担当者", "pt": "Atribuído a"},
+    "Unassigned": {"es": "Sin asignar", "it": "Non assegnato", "ja": "未割り当て", "pt": "Não atribuído"},
+    "Type": {"es": "Tipo", "it": "Tipo", "ja": "種類", "pt": "Tipo"},
+    "Linked Case": {"es": "Caso vinculado", "it": "Caso collegato", "ja": "関連ケース", "pt": "Caso vinculado"},
+    "No case": {"es": "Sin caso", "it": "Nessun caso", "ja": "ケースなし", "pt": "Sem caso"},
+    "Linked Client": {"es": "Cliente vinculado", "it": "Cliente collegato", "ja": "関連クライアント", "pt": "Cliente vinculado"},
+    "No client": {"es": "Sin cliente", "it": "Nessun cliente", "ja": "クライアントなし", "pt": "Sem cliente"},
+    "Location": {"es": "Ubicación", "it": "Posizione", "ja": "場所", "pt": "Local"},
+    "Notes": {"es": "Notas", "it": "Note", "ja": "メモ", "pt": "Notas"},
+    "Save": {"es": "Guardar", "it": "Salva", "ja": "保存", "pt": "Salvar"},
+    "Create": {"es": "Crear", "it": "Crea", "ja": "作成", "pt": "Criar"},
+    "Delete this appointment?": {"es": "¿Eliminar esta cita?", "it": "Eliminare questo appuntamento?", "ja": "この予約を削除しますか？", "pt": "Excluir este agendamento?"},
+    "Delete Appointment": {"es": "Eliminar cita", "it": "Elimina appuntamento", "ja": "予約を削除", "pt": "Excluir agendamento"},
+
+    # Availability
+    "Team Availability": {"es": "Disponibilidad del equipo", "it": "Disponibilità del team", "ja": "チームの空き状況", "pt": "Disponibilidade da equipe"},
+    "Only Available Now": {"es": "Solo disponibles ahora", "it": "Solo disponibili ora", "ja": "現在空いている人のみ", "pt": "Apenas disponíveis agora"},
+    "All staff": {"es": "Todo el personal", "it": "Tutto il personale", "ja": "全スタッフ", "pt": "Toda a equipe"},
+    "Legend": {"es": "Leyenda", "it": "Legenda", "ja": "凡例", "pt": "Legenda"},
+    "Focus": {"es": "Concentración", "it": "Concentrazione", "ja": "集中", "pt": "Foco"},
+    "Out of Office": {"es": "Fuera de la oficina", "it": "Fuori ufficio", "ja": "外出中", "pt": "Fora do escritório"},
+    "Available Now": {"es": "Disponible ahora", "it": "Disponibile ora", "ja": "現在空いています", "pt": "Disponível agora"},
+    "Busy Now": {"es": "Ocupado ahora", "it": "Occupato ora", "ja": "現在多忙", "pt": "Ocupado agora"},
+    "Next free": {"es": "Próximo libre", "it": "Prossimo libero", "ja": "次の空き", "pt": "Próximo livre"},
+    "No free slots today": {"es": "Sin huecos libres hoy", "it": "Nessuno slot libero oggi", "ja": "本日空きなし", "pt": "Sem horários livres hoje"},
+    "No staff to display.": {"es": "No hay personal para mostrar.", "it": "Nessun personale da mostrare.", "ja": "表示するスタッフがいません。", "pt": "Nenhum funcionário para exibir."},
+
+    # Logins dashboard
+    "Log In Dashboard": {"es": "Panel de registros", "it": "Dashboard accessi", "ja": "ログインダッシュボード", "pt": "Painel de acessos"},
+    "employees": {"es": "empleados", "it": "dipendenti", "ja": "従業員", "pt": "funcionários"},
+    "Check-in data blends real entries with illustrative mock data.": {
+        "es": "Los datos de entrada combinan registros reales con datos de ejemplo.",
+        "it": "I dati di check-in combinano voci reali con dati illustrativi.",
+        "ja": "チェックインデータは実際の記録と例示用のモックデータを組み合わせています。",
+        "pt": "Os dados de check-in combinam entradas reais com dados ilustrativos.",
+    },
+    "At Risk": {"es": "En riesgo", "it": "A rischio", "ja": "リスクあり", "pt": "Em risco"},
+    "This Week": {"es": "Esta semana", "it": "Questa settimana", "ja": "今週", "pt": "Esta semana"},
+    "On-Time": {"es": "A tiempo", "it": "In orario", "ja": "定時", "pt": "Pontual"},
+    "Late": {"es": "Tarde", "it": "In ritardo", "ja": "遅刻", "pt": "Atrasado"},
+    "Hours": {"es": "Horas", "it": "Ore", "ja": "時間", "pt": "Horas"},
+    "max": {"es": "máx.", "it": "max", "ja": "最大", "pt": "máx."},
+    "Last check-in": {"es": "Último registro", "it": "Ultimo check-in", "ja": "最終チェックイン", "pt": "Último check-in"},
+    "Rate $/h": {"es": "Tarifa $/h", "it": "Tariffa $/h", "ja": "時給$", "pt": "Taxa $/h"},
+    "Set": {"es": "Fijar", "it": "Imposta", "ja": "設定", "pt": "Definir"},
+    "Add Check-In Entry": {"es": "Añadir registro", "it": "Aggiungi check-in", "ja": "チェックイン追加", "pt": "Adicionar check-in"},
+    "On Time": {"es": "A tiempo", "it": "In orario", "ja": "定時", "pt": "Pontual"},
+    "Exception": {"es": "Excepción", "it": "Eccezione", "ja": "例外", "pt": "Exceção"},
+    "Note (optional)": {"es": "Nota (opcional)", "it": "Nota (opzionale)", "ja": "メモ（任意）", "pt": "Nota (opcional)"},
+    "Record Entry": {"es": "Registrar entrada", "it": "Registra voce", "ja": "記録する", "pt": "Registrar entrada"},
+    "Hours Comparison — This Week": {"es": "Comparación de horas — esta semana", "it": "Confronto ore — questa settimana", "ja": "時間比較 — 今週", "pt": "Comparação de horas — esta semana"},
+    "Overloaded (>44h)": {"es": "Sobrecargado (>44h)", "it": "Sovraccarico (>44h)", "ja": "過負荷（>44h）", "pt": "Sobrecarregado (>44h)"},
+    "Heavy (38-44h)": {"es": "Alto (38-44h)", "it": "Elevato (38-44h)", "ja": "多め（38-44h）", "pt": "Alto (38-44h)"},
+    "Normal": {"es": "Normal", "it": "Normale", "ja": "通常", "pt": "Normal"},
+    "Recent Check-In Timeline": {"es": "Línea de tiempo reciente", "it": "Cronologia recente", "ja": "最近のチェックイン履歴", "pt": "Linha do tempo recente"},
+    "Delete this check-in?": {"es": "¿Eliminar este registro?", "it": "Eliminare questo check-in?", "ja": "このチェックインを削除しますか？", "pt": "Excluir este check-in?"},
+    "No entries yet": {"es": "Sin entradas aún", "it": "Nessuna voce ancora", "ja": "まだ記録がありません", "pt": "Sem entradas ainda"},
+    "Weekly Cost by Employee": {"es": "Costo semanal por empleado", "it": "Costo settimanale per dipendente", "ja": "従業員別週間コスト", "pt": "Custo semanal por funcionário"},
+    "AI Office Rhythm Summary": {"es": "Resumen de ritmo de oficina IA", "it": "Riepilogo ritmo ufficio IA", "ja": "オフィスリズムAIサマリー", "pt": "Resumo de ritmo do escritório IA"},
+    "Generated from check-in patterns, hours, and caseload using your stored OpenAI API key.": {
+        "es": "Generado a partir de patrones de entrada, horas y carga de casos usando tu clave API de OpenAI.",
+        "it": "Generato dai pattern di check-in, ore e carico di lavoro usando la tua chiave API OpenAI.",
+        "ja": "保存済みのOpenAI APIキーを使用してチェックインパターン、時間、ケース数から生成されました。",
+        "pt": "Gerado a partir de padrões de check-in, horas e carga de casos usando sua chave API OpenAI.",
+    },
+    "AI summary unavailable.": {"es": "Resumen de IA no disponible.", "it": "Riepilogo IA non disponibile.", "ja": "AIサマリーを利用できません。", "pt": "Resumo de IA indisponível."},
+    "Login Dashboard — check-in data blends real DB records with illustrative mock data.": {
+        "es": "Panel de accesos — los datos combinan registros reales con datos de ejemplo.",
+        "it": "Dashboard accessi — i dati combinano record reali con dati illustrativi.",
+        "ja": "ログインダッシュボード — 実データと例示用データを組み合わせています。",
+        "pt": "Painel de acessos — os dados combinam registros reais com dados ilustrativos.",
+    },
+
+    # Finances
+    "Finances": {"es": "Finanzas", "it": "Finanze", "ja": "財務", "pt": "Finanças"},
+    "Firm-wide financial overview & matter billing": {
+        "es": "Panorama financiero del despacho y facturación de asuntos",
+        "it": "Panoramica finanziaria dello studio e fatturazione pratiche",
+        "ja": "事務所全体の財務概要と案件請求",
+        "pt": "Visão financeira do escritório e faturamento de casos",
+    },
+    "All Statuses": {"es": "Todos los estados", "it": "Tutti gli stati", "ja": "すべての状態", "pt": "Todos os status"},
+    "All Priorities": {"es": "Todas las prioridades", "it": "Tutte le priorità", "ja": "すべての優先度", "pt": "Todas as prioridades"},
+    "High": {"es": "Alta", "it": "Alta", "ja": "高", "pt": "Alta"},
+    "Medium": {"es": "Media", "it": "Media", "ja": "中", "pt": "Média"},
+    "Low": {"es": "Baja", "it": "Bassa", "ja": "低", "pt": "Baixa"},
+    "Mock data · FY 2026": {"es": "Datos de prueba · Ej. 2026", "it": "Dati di prova · FY 2026", "ja": "モックデータ · FY 2026", "pt": "Dados fictícios · FY 2026"},
+    "Total Billed": {"es": "Total facturado", "it": "Totale fatturato", "ja": "請求合計", "pt": "Total faturado"},
+    "active": {"es": "activos", "it": "attivi", "ja": "有効", "pt": "ativos"},
+    "closed matters": {"es": "asuntos cerrados", "it": "pratiche chiuse", "ja": "終了した案件", "pt": "casos fechados"},
+    "Collected": {"es": "Cobrado", "it": "Incassato", "ja": "回収済み", "pt": "Recebido"},
+    "outstanding": {"es": "pendiente", "it": "in sospeso", "ja": "未回収", "pt": "em aberto"},
+    "Retainer Balance": {"es": "Saldo de anticipo", "it": "Saldo acconto", "ja": "着手金残高", "pt": "Saldo de retentor"},
+    "Across all active matters": {"es": "En todos los asuntos activos", "it": "In tutte le pratiche attive", "ja": "全ての有効な案件", "pt": "Em todos os casos ativos"},
+    "Win Rate": {"es": "Tasa de éxito", "it": "Tasso di successo", "ja": "勝率", "pt": "Taxa de sucesso"},
+    "Closed matters only": {"es": "Solo asuntos cerrados", "it": "Solo pratiche chiuse", "ja": "終了した案件のみ", "pt": "Apenas casos fechados"},
+    "Monthly Billing — FY 2026": {"es": "Facturación mensual — Ej. 2026", "it": "Fatturazione mensile — FY 2026", "ja": "月次請求 — FY 2026", "pt": "Faturamento mensal — FY 2026"},
+    "All matters combined": {"es": "Todos los asuntos combinados", "it": "Tutte le pratiche combinate", "ja": "全案件合計", "pt": "Todos os casos combinados"},
+    "Hours by Staff Member": {"es": "Horas por miembro del equipo", "it": "Ore per membro del team", "ja": "スタッフ別時間", "pt": "Horas por membro da equipe"},
+    "Total logged": {"es": "Total registrado", "it": "Totale registrato", "ja": "記録合計", "pt": "Total registrado"},
+    "Matter Billing Detail": {"es": "Detalle de facturación por asunto", "it": "Dettaglio fatturazione pratiche", "ja": "案件請求詳細", "pt": "Detalhe de faturamento por caso"},
+    "at-risk": {"es": "en riesgo", "it": "a rischio", "ja": "リスクあり", "pt": "em risco"},
+    "Matter": {"es": "Asunto", "it": "Pratica", "ja": "案件", "pt": "Caso"},
+    "Billed": {"es": "Facturado", "it": "Fatturato", "ja": "請求済み", "pt": "Faturado"},
+    "Retainer Left": {"es": "Anticipo restante", "it": "Acconto rimanente", "ja": "着手金残", "pt": "Retentor restante"},
+    "Next Billing": {"es": "Próxima facturación", "it": "Prossima fatturazione", "ja": "次回請求", "pt": "Próximo faturamento"},
+    "Health": {"es": "Salud", "it": "Salute", "ja": "健全性", "pt": "Saúde"},
+    "Healthy": {"es": "Saludable", "it": "In salute", "ja": "健全", "pt": "Saudável"},
+    "No matters match the selected filters.": {"es": "Ningún asunto coincide con los filtros.", "it": "Nessuna pratica corrisponde ai filtri.", "ja": "選択したフィルターに一致する案件はありません。", "pt": "Nenhum caso corresponde aos filtros selecionados."},
+    "Retainer": {"es": "Anticipo", "it": "Acconto", "ja": "着手金", "pt": "Retentor"},
+    "Worklog — Hours by Matter": {"es": "Registro — Horas por asunto", "it": "Registro — Ore per pratica", "ja": "作業記録 — 案件別時間", "pt": "Registro — Horas por caso"},
+    "total": {"es": "total", "it": "totale", "ja": "合計", "pt": "total"},
+    "Action Required — At-Risk Matters": {"es": "Acción requerida — asuntos en riesgo", "it": "Azione richiesta — pratiche a rischio", "ja": "要対応 — リスクのある案件", "pt": "Ação necessária — casos em risco"},
+    "retainer balance": {"es": "saldo de anticipo", "it": "saldo acconto", "ja": "着手金残高", "pt": "saldo do retentor"},
+    "consider requesting replenishment.": {"es": "considera solicitar reposición.", "it": "valuta di richiedere un reintegro.", "ja": "補充を依頼することを検討してください。", "pt": "considere solicitar reposição."},
+    "Financial data shown is illustrative mock data for demonstration purposes.": {
+        "es": "Los datos financieros mostrados son ilustrativos y con fines de demostración.",
+        "it": "I dati finanziari mostrati sono illustrativi a scopo dimostrativo.",
+        "ja": "表示されている財務データはデモ用の例示データです。",
+        "pt": "Os dados financeiros exibidos são ilustrativos para fins de demonstração.",
+    },
+}
+
+for _k, _v in _EXTRA2_TRANSLATIONS.items():
+    _TRANSLATIONS.setdefault(_k, _v)
+
+
 def login_t(key: str, lang: str) -> str:
     """Translate a login page string to the given language code.
 

@@ -1,13 +1,13 @@
 {% extends "base.html" %}{% set active_nav="employees" %}
-{% block title %}Employees — OSSERVA OFFICE{% endblock %}
+{% block title %}{{ _('Employees') }} — OSSERVA OFFICE{% endblock %}
 {% block content %}
 <div class="w-full max-w-6xl">
 
   <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5 sm:mb-6">
     <div>
-      <h1 class="text-xl sm:text-2xl font-bold" style="color:hsl(var(--foreground))">Team Directory</h1>
+      <h1 class="text-xl sm:text-2xl font-bold" style="color:hsl(var(--foreground))">{{ _('Team Directory') }}</h1>
       {% if not is_admin %}
-      <p class="text-xs mt-1" style="color:hsl(var(--muted-foreground))">Your organization's team — read-only view</p>
+      <p class="text-xs mt-1" style="color:hsl(var(--muted-foreground))">{{ _("Your organization's team — read-only view") }}</p>
       {% endif %}
     </div>
 
@@ -16,16 +16,16 @@
     <form method="GET" class="flex flex-wrap items-center gap-2">
       <select name="role" onchange="this.form.submit()"
               class="dk-input text-xs rounded-lg px-3 py-2 focus:outline-none">
-        <option value="all" {% if selected_role=='all' %}selected{% endif %}>All Roles</option>
-        <option value="staff"  {% if selected_role=='staff'  %}selected{% endif %}>Staff</option>
-        <option value="admin"  {% if selected_role=='admin'  %}selected{% endif %}>Admin</option>
-        <option value="owner"  {% if selected_role=='owner'  %}selected{% endif %}>Owner</option>
+        <option value="all" {% if selected_role=='all' %}selected{% endif %}>{{ _('All Roles') }}</option>
+        <option value="staff"  {% if selected_role=='staff'  %}selected{% endif %}>{{ _('Staff') }}</option>
+        <option value="admin"  {% if selected_role=='admin'  %}selected{% endif %}>{{ _('Admin') }}</option>
+        <option value="owner"  {% if selected_role=='owner'  %}selected{% endif %}>{{ _('Owner') }}</option>
       </select>
       <select name="status" onchange="this.form.submit()"
               class="dk-input text-xs rounded-lg px-3 py-2 focus:outline-none">
-        <option value="all"      {% if selected_status=='all'      %}selected{% endif %}>All Status</option>
-        <option value="active"   {% if selected_status=='active'   %}selected{% endif %}>Active</option>
-        <option value="inactive" {% if selected_status=='inactive' %}selected{% endif %}>Inactive</option>
+        <option value="all"      {% if selected_status=='all'      %}selected{% endif %}>{{ _('All Status') }}</option>
+        <option value="active"   {% if selected_status=='active'   %}selected{% endif %}>{{ _('Active') }}</option>
+        <option value="inactive" {% if selected_status=='inactive' %}selected{% endif %}>{{ _('Inactive') }}</option>
       </select>
     </form>
     {% endif %}
@@ -48,13 +48,13 @@
           <div class="min-w-0">
             <div class="font-semibold text-sm truncate" style="color:hsl(var(--foreground))">{{ emp.full_name }}</div>
             <div class="text-xs truncate" style="color:hsl(var(--muted-foreground))">
-              {{ emp.job_title or emp.role.title() }}
+              {{ emp.job_title or _(emp.role.title()) }}
             </div>
             {# Role badge — only shown to admins #}
             {% if is_admin %}
             <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium mt-1
               {% if emp.role in ('owner','admin') %}badge-info{% else %}bg-slate-100 text-[hsl(var(--muted-foreground))]{% endif %}">
-              {{ emp.role.title() }}
+              {{ _(emp.role.title()) }}
             </span>
             {% endif %}
             {# Last seen — shown only when offline, filled by JS #}
@@ -64,7 +64,7 @@
         </div>
         <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ml-2
           {% if status=='free' %}badge-success{% elif status=='busy' %}badge-warning{% else %}badge-danger{% endif %}">
-          {{ status.replace('_',' ').title() }}
+          {{ _({'free':'Free','busy':'Busy','in_meeting':'In Meeting'}.get(status, status.replace('_',' ').title())) }}
         </span>
       </div>
 
@@ -72,11 +72,11 @@
       <div class="text-xs mb-3 space-y-0.5" style="color:hsl(var(--muted-foreground))">
         <div class="truncate">{{ emp.email }}</div>
         {% if is_admin %}
-        <div>{{ item.today_appointments|length }} appointment(s) today</div>
+        <div>{{ item.today_appointments|length }} {{ _('appointment(s) today') }}</div>
         <div>
           <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px]
             {% if emp.is_active %}badge-success{% else %}bg-slate-100 text-[hsl(var(--muted-foreground))]{% endif %}">
-            {% if emp.is_active %}Active{% else %}Inactive{% endif %}
+            {% if emp.is_active %}{{ _('Active') }}{% else %}{{ _('Inactive') }}{% endif %}
           </span>
         </div>
         {% endif %}
@@ -87,7 +87,7 @@
       <a href="{{ url_for('employees.agenda', user_id=emp.id) }}"
          class="inline-flex items-center justify-center w-full text-sm font-medium py-2.5 rounded-lg border border-[hsl(var(--border))] dk-card-hover transition-colors"
          style="color:hsl(var(--card-foreground))">
-        {% if emp.id == current_user.id %}My Agenda →{% else %}View agenda →{% endif %}
+        {% if emp.id == current_user.id %}{{ _('My Agenda') }} →{% else %}{{ _('View agenda') }} →{% endif %}
       </a>
       {% endif %}
     </div>

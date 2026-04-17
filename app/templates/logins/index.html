@@ -1,5 +1,5 @@
 {% extends "base.html" %}{% set active_nav="logins" %}
-{% block title %}Log In Dashboard — OSSERVA OFFICE{% endblock %}
+{% block title %}{{ _('Log In Dashboard') }} — OSSERVA OFFICE{% endblock %}
 
 {% macro status_badge(s) %}
   <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
@@ -7,9 +7,9 @@
     {% elif s == 'late' %}badge-warning
     {% elif s == 'exception' %}badge-danger
     {% else %}bg-slate-100 text-[hsl(var(--muted-foreground))]{% endif %}">
-    {% if s == 'on_time' %}On Time
-    {% elif s == 'late' %}Late
-    {% elif s == 'exception' %}Exception
+    {% if s == 'on_time' %}{{ _('On Time') }}
+    {% elif s == 'late' %}{{ _('Late') }}
+    {% elif s == 'exception' %}{{ _('Exception') }}
     {% else %}—{% endif %}
   </span>
 {% endmacro %}
@@ -20,12 +20,12 @@
   <!-- ── Header ── -->
   <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
     <div>
-      <h1 class="text-2xl font-bold tracking-tight">Log In Dashboard</h1>
+      <h1 class="text-2xl font-bold tracking-tight">{{ _('Log In Dashboard') }}</h1>
       <p class="text-sm text-[hsl(var(--muted-foreground))] mt-0.5">
-        Week of {{ week_start.strftime('%b %d, %Y') }} &nbsp;·&nbsp; {{ employee_data|length }} employees
+        {{ _('Week of') }} {{ week_start.strftime('%b %d, %Y') }} &nbsp;·&nbsp; {{ employee_data|length }} {{ _('employees') }}
       </p>
     </div>
-    <span class="text-xs text-[hsl(var(--muted-foreground))]">Check-in data blends real entries with illustrative mock data.</span>
+    <span class="text-xs text-[hsl(var(--muted-foreground))]">{{ _('Check-in data blends real entries with illustrative mock data.') }}</span>
   </div>
 
   <!-- ── Employee Summary Cards ── -->
@@ -35,7 +35,7 @@
     <div class="dk-card rounded-xl border {% if emp.at_risk %}border-rose-200{% else %}border-[hsl(var(--border))]{% endif %} shadow-sm p-5 relative">
       {% if emp.at_risk %}
       <span class="absolute top-3 right-3 inline-flex items-center gap-1 text-xs font-medium text-rose-600">
-        <i class="fa-solid fa-triangle-exclamation text-[10px]"></i> At Risk
+        <i class="fa-solid fa-triangle-exclamation text-[10px]"></i> {{ _('At Risk') }}
       </span>
       {% endif %}
 
@@ -46,7 +46,7 @@
         </div>
         <div class="min-w-0">
           <div class="font-semibold text-sm truncate">{{ u.full_name }}</div>
-          <div class="text-xs text-[hsl(var(--muted-foreground))]">{{ u.job_title or u.role }}</div>
+          <div class="text-xs text-[hsl(var(--muted-foreground))]">{{ u.job_title or _(u.role.title()) }}</div>
         </div>
       </div>
 
@@ -54,15 +54,15 @@
       <div class="grid grid-cols-3 gap-2 mb-4">
         <div class="text-center">
           <div class="text-lg font-bold text-[hsl(var(--foreground))]">{{ emp.week_hours }}h</div>
-          <div class="text-[10px] text-[hsl(var(--muted-foreground))] uppercase tracking-wide">This Week</div>
+          <div class="text-[10px] text-[hsl(var(--muted-foreground))] uppercase tracking-wide">{{ _('This Week') }}</div>
         </div>
         <div class="text-center border-x border-[hsl(var(--border))]">
           <div class="text-lg font-bold text-[hsl(var(--foreground))]">{{ emp.on_time }}/{{ emp.total_checkins }}</div>
-          <div class="text-[10px] text-[hsl(var(--muted-foreground))] uppercase tracking-wide">On-Time</div>
+          <div class="text-[10px] text-[hsl(var(--muted-foreground))] uppercase tracking-wide">{{ _('On-Time') }}</div>
         </div>
         <div class="text-center">
           <div class="text-lg font-bold {% if emp.late >= 2 %}text-amber-600{% else %}text-[hsl(var(--foreground))]{% endif %}">{{ emp.late }}</div>
-          <div class="text-[10px] text-[hsl(var(--muted-foreground))] uppercase tracking-wide">Late</div>
+          <div class="text-[10px] text-[hsl(var(--muted-foreground))] uppercase tracking-wide">{{ _('Late') }}</div>
         </div>
       </div>
 
@@ -71,7 +71,7 @@
       {% set bar_pct = (emp.week_hours / max_h * 100) | round | int %}
       <div class="mb-3">
         <div class="flex justify-between text-[10px] text-[hsl(var(--muted-foreground))] mb-1">
-          <span>Hours</span><span>{{ emp.week_hours }}h / {{ max_h }}h max</span>
+          <span>{{ _('Hours') }}</span><span>{{ emp.week_hours }}h / {{ max_h }}h {{ _('max') }}</span>
         </div>
         <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
           <div class="h-full rounded-full transition-all
@@ -84,7 +84,7 @@
 
       <!-- Last check-in -->
       <div class="flex items-center justify-between text-xs text-[hsl(var(--muted-foreground))] mb-3">
-        <span>Last check-in</span>
+        <span>{{ _('Last check-in') }}</span>
         <span class="font-medium">
           {% if emp.last_checkin %}
             {{ format_dt(emp.last_checkin) }} {{ format_time(emp.last_checkin) }}
@@ -105,11 +105,11 @@
       <!-- Set rate inline -->
       <form method="POST" action="{{ url_for('logins.set_rate', user_id=u.id) }}"
             class="flex gap-2 items-center mb-3">
-        <input type="number" name="hourly_rate" min="0" step="1" placeholder="Rate $/h"
+        <input type="number" name="hourly_rate" min="0" step="1" placeholder="{{ _('Rate $/h') }}"
           class="flex-1 text-xs border border-[hsl(var(--border))] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-200">
         <button type="submit"
           class="text-xs bg-slate-700 hover:bg-slate-800 text-white px-2 py-1.5 rounded-lg transition-colors">
-          Set
+          {{ _('Set') }}
         </button>
       </form>
       {% endif %}
@@ -123,24 +123,24 @@
       <div class="border-t border-[hsl(var(--border))] pt-3">
         <button type="button" onclick="this.nextElementSibling.classList.toggle('hidden')"
           class="text-[10px] font-medium text-indigo-500 hover:text-indigo-700 flex items-center gap-1">
-          <i class="fa-solid fa-plus text-[8px]"></i> Add Check-In Entry
+          <i class="fa-solid fa-plus text-[8px]"></i> {{ _('Add Check-In Entry') }}
         </button>
         <form method="POST" action="{{ url_for('logins.add_checkin', user_id=u.id) }}"
               class="hidden mt-2 space-y-2">
           <div class="flex gap-2">
             <select name="status" class="text-[11px] border border-[hsl(var(--border))] rounded px-2 py-1 dk-card flex-1">
-              <option value="on_time">On Time</option>
-              <option value="late">Late</option>
-              <option value="exception">Exception</option>
+              <option value="on_time">{{ _('On Time') }}</option>
+              <option value="late">{{ _('Late') }}</option>
+              <option value="exception">{{ _('Exception') }}</option>
             </select>
             <input type="datetime-local" name="checked_in_at"
               class="text-[11px] border border-[hsl(var(--border))] rounded px-2 py-1 flex-1">
           </div>
-          <input type="text" name="notes" placeholder="Note (optional)"
+          <input type="text" name="notes" placeholder="{{ _('Note (optional)') }}"
             class="w-full text-[11px] border border-[hsl(var(--border))] rounded px-2 py-1">
           <button type="submit"
             class="w-full text-[11px] bg-indigo-600 hover:bg-indigo-700 text-white rounded px-2 py-1.5 font-medium transition-colors">
-            <i class="fa-solid fa-plus text-[9px] mr-1"></i> Record Entry
+            <i class="fa-solid fa-plus text-[9px] mr-1"></i> {{ _('Record Entry') }}
           </button>
         </form>
       </div>
@@ -151,7 +151,7 @@
   <!-- ── Hours Comparison Chart ── -->
   <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-5">
     <h3 class="font-semibold text-sm mb-4 flex items-center gap-2">
-      <i class="fa-solid fa-chart-bar text-indigo-500"></i> Hours Comparison — This Week
+      <i class="fa-solid fa-chart-bar text-indigo-500"></i> {{ _('Hours Comparison — This Week') }}
     </h3>
     <div class="flex items-end gap-2 sm:gap-3 h-40 px-1 sm:px-2 overflow-x-auto">
       {% for emp in employee_data %}
@@ -178,16 +178,16 @@
     </div>
     <!-- Legend -->
     <div class="flex flex-wrap gap-3 sm:gap-4 mt-4 text-[10px] text-[hsl(var(--muted-foreground))]">
-      <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-rose-400 inline-block"></span>Overloaded (&gt;44h)</span>
-      <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-amber-400 inline-block"></span>Heavy (38-44h)</span>
-      <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-indigo-400 inline-block"></span>Normal</span>
+      <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-rose-400 inline-block"></span>{{ _('Overloaded (>44h)') }}</span>
+      <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-amber-400 inline-block"></span>{{ _('Heavy (38-44h)') }}</span>
+      <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-sm bg-indigo-400 inline-block"></span>{{ _('Normal') }}</span>
     </div>
   </div>
 
   <!-- ── Check-In Timeline (per employee) ── -->
   <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-5">
     <h3 class="font-semibold text-sm mb-5 flex items-center gap-2">
-      <i class="fa-solid fa-timeline text-teal-500"></i> Recent Check-In Timeline
+      <i class="fa-solid fa-timeline text-teal-500"></i> {{ _('Recent Check-In Timeline') }}
     </h3>
     <div class="space-y-6">
       {% for emp in employee_data %}
@@ -198,7 +198,7 @@
           </div>
           <span class="text-xs font-semibold text-[hsl(var(--card-foreground))]">{{ emp.user.full_name }}</span>
           {% if emp.at_risk %}
-          <span class="text-[10px] text-rose-500 font-medium"><i class="fa-solid fa-triangle-exclamation text-[8px]"></i> At Risk</span>
+          <span class="text-[10px] text-rose-500 font-medium"><i class="fa-solid fa-triangle-exclamation text-[8px]"></i> {{ _('At Risk') }}</span>
           {% endif %}
         </div>
         <div class="flex gap-1 flex-wrap">
@@ -215,7 +215,7 @@
             {% if ci.get('id') %}
             <form method="POST" action="{{ url_for('logins.delete_checkin', checkin_id=ci.id) }}"
                   class="absolute -top-1 -right-1 hidden group-hover:block"
-                  onsubmit="return confirm('Delete this check-in?')">
+                  onsubmit="return confirm('{{ _('Delete this check-in?') }}')">
               <button type="submit" class="w-4 h-4 rounded-full bg-rose-500 text-white flex items-center justify-center shadow-sm" title="Delete">
                 <i class="fa-solid fa-xmark text-[7px]"></i>
               </button>
@@ -226,7 +226,7 @@
             {% endif %}
           </div>
           {% else %}
-          <span class="text-xs text-[hsl(var(--muted-foreground))]">No entries yet</span>
+          <span class="text-xs text-[hsl(var(--muted-foreground))]">{{ _('No entries yet') }}</span>
           {% endfor %}
         </div>
       </div>
@@ -239,7 +239,7 @@
   {% if rated_emps %}
   <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-5">
     <h3 class="font-semibold text-sm mb-4 flex items-center gap-2">
-      <i class="fa-solid fa-dollar-sign text-emerald-500"></i> Weekly Cost by Employee
+      <i class="fa-solid fa-dollar-sign text-emerald-500"></i> {{ _('Weekly Cost by Employee') }}
     </h3>
     <div class="space-y-3">
       {% set max_cost = (rated_emps | map(attribute='week_cost') | max) or 1 %}
@@ -262,10 +262,10 @@
   <!-- ── AI Summary ── -->
   <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-5">
     <h3 class="font-semibold text-sm mb-1 flex items-center gap-2">
-      <i class="fa-solid fa-robot text-indigo-500"></i> AI Office Rhythm Summary
+      <i class="fa-solid fa-robot text-indigo-500"></i> {{ _('AI Office Rhythm Summary') }}
     </h3>
     <p class="text-xs text-[hsl(var(--muted-foreground))] mb-4">
-      Generated from check-in patterns, hours, and caseload using your stored OpenAI API key.
+      {{ _('Generated from check-in patterns, hours, and caseload using your stored OpenAI API key.') }}
     </p>
 
     {% if ai_summary %}
@@ -281,7 +281,7 @@
     <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
       <i class="fa-solid fa-circle-exclamation text-amber-500 mt-0.5 flex-shrink-0"></i>
       <div class="text-xs text-amber-800">
-        <span class="font-semibold">AI summary unavailable.</span>
+        <span class="font-semibold">{{ _('AI summary unavailable.') }}</span>
         {{ ai_error }}
       </div>
     </div>
@@ -289,7 +289,7 @@
   </div>
 
   <p class="text-xs text-slate-300 text-center pb-2">
-    Login Dashboard — check-in data blends real DB records with illustrative mock data.
+    {{ _('Login Dashboard — check-in data blends real DB records with illustrative mock data.') }}
   </p>
 </div>
 {% endblock %}

@@ -3,7 +3,7 @@
 {% block content %}
 <div class="w-full max-w-5xl">
   <div class="mb-5">
-    <a href="{{ url_for('clients.list_clients') }}" class="text-sm text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]">← Clients</a>
+    <a href="{{ url_for('clients.list_clients') }}" class="text-sm text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]">← {{ _('Clients') }}</a>
   </div>
 
   <!-- Client info -->
@@ -11,16 +11,16 @@
     <h1 class="text-2xl font-bold mb-4">{{ client.full_name }}</h1>
     {% if client.company_name %}<div class="text-[hsl(var(--muted-foreground))] mb-4">{{ client.company_name }}</div>{% endif %}
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
-      {% if client.email %}<div><span style="color:hsl(var(--muted-foreground))">Email:</span> <span class="break-all">{{ client.email }}</span></div>{% endif %}
-      {% if client.phone %}<div><span style="color:hsl(var(--muted-foreground))">Phone:</span> {{ client.phone }}</div>{% endif %}
-      {% if client.address %}<div class="sm:col-span-2"><span style="color:hsl(var(--muted-foreground))">Address:</span> {{ client.address }}</div>{% endif %}
+      {% if client.email %}<div><span style="color:hsl(var(--muted-foreground))">{{ _('Email') }}:</span> <span class="break-all">{{ client.email }}</span></div>{% endif %}
+      {% if client.phone %}<div><span style="color:hsl(var(--muted-foreground))">{{ _('Phone') }}:</span> {{ client.phone }}</div>{% endif %}
+      {% if client.address %}<div class="sm:col-span-2"><span style="color:hsl(var(--muted-foreground))">{{ _('Address') }}:</span> {{ client.address }}</div>{% endif %}
     </div>
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     <!-- Cases -->
     <div>
-      <h3 class="font-semibold mb-4">Cases</h3>
+      <h3 class="font-semibold mb-4">{{ _('Cases') }}</h3>
       <div class="space-y-3">
         {% for case in cases %}
         <a href="{{ url_for('cases.detail', case_id=case.id) }}"
@@ -29,14 +29,14 @@
           <div class="text-xs text-[hsl(var(--muted-foreground))] mt-1">{{ case.status.replace('_',' ').title() }} · {{ format_dt(case.created_at) }}</div>
         </a>
         {% else %}
-        <p class="text-sm text-[hsl(var(--muted-foreground))] text-center py-6">No cases</p>
+        <p class="text-sm text-[hsl(var(--muted-foreground))] text-center py-6">{{ _('No cases') }}</p>
         {% endfor %}
       </div>
     </div>
 
     <!-- Documents -->
     <div>
-      <h3 class="font-semibold mb-4">Documents</h3>
+      <h3 class="font-semibold mb-4">{{ _('Documents') }}</h3>
       <div class="space-y-3">
         {% for doc in documents %}
         <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-4 flex items-center gap-3">
@@ -61,7 +61,7 @@
           </div>
         </div>
         {% else %}
-        <p class="text-sm text-[hsl(var(--muted-foreground))] text-center py-6">No documents</p>
+        <p class="text-sm text-[hsl(var(--muted-foreground))] text-center py-6">{{ _('No documents') }}</p>
         {% endfor %}
       </div>
     </div>
@@ -74,7 +74,7 @@
     <div class="flex items-center justify-between px-5 py-4 border-b border-[hsl(var(--border))] flex-shrink-0">
       <div class="flex items-center gap-2 min-w-0">
         <i class="fa-solid fa-file-pdf text-rose-500"></i>
-        <span class="text-sm font-semibold truncate" id="viewerDocName">Document</span>
+        <span class="text-sm font-semibold truncate" id="viewerDocName">{{ _('Document') }}</span>
       </div>
       <button onclick="closeDocViewer()" class="text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--card-foreground))] p-1 flex-shrink-0">
         <i class="fa-solid fa-xmark text-lg"></i>
@@ -87,35 +87,35 @@
       <div class="w-full lg:w-80 flex flex-col flex-shrink-0 overflow-y-auto">
         <div class="p-4 border-b border-[hsl(var(--border))] flex items-center justify-between">
           <span class="text-xs font-semibold text-[hsl(var(--card-foreground))] flex items-center gap-1.5">
-            <i class="fa-solid fa-robot text-indigo-500"></i> AI Summary
+            <i class="fa-solid fa-robot text-indigo-500"></i> {{ _('AI Summary') }}
           </span>
           <button id="summariseBtn" onclick="requestSummary()"
             class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors">
-            <i class="fa-solid fa-wand-magic-sparkles"></i> Summarise
+            <i class="fa-solid fa-wand-magic-sparkles"></i> {{ _('Summarise') }}
           </button>
         </div>
         <div class="p-4 flex-1">
           <div id="summaryIdle" class="text-xs text-[hsl(var(--muted-foreground))] text-center py-6">
-            Click <strong>Summarise</strong> to analyse this PDF with AI.
+            {{ _('Click Summarise to analyse this PDF with AI.') }}
           </div>
           <div id="summaryLoading" class="hidden text-center py-8">
             <i class="fa-solid fa-circle-notch fa-spin text-indigo-500 text-xl mb-2"></i>
-            <div class="text-xs text-[hsl(var(--muted-foreground))]">Reading document…</div>
+            <div class="text-xs text-[hsl(var(--muted-foreground))]">{{ _('Reading document…') }}</div>
           </div>
           <div id="summaryError" class="hidden">
             <div class="bg-rose-50 border border-rose-200 rounded-lg p-3 text-xs text-rose-700" id="summaryErrorMsg"></div>
           </div>
           <div id="summaryResult" class="hidden space-y-4">
             <div>
-              <div class="text-[10px] font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wide mb-1">Summary</div>
+              <div class="text-[10px] font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wide mb-1">{{ _('Summary') }}</div>
               <p class="text-xs text-[hsl(var(--card-foreground))] leading-relaxed" id="summaryText"></p>
             </div>
             <div>
-              <div class="text-[10px] font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wide mb-1">Key Points</div>
+              <div class="text-[10px] font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wide mb-1">{{ _('Key Points') }}</div>
               <ul class="space-y-1" id="summaryPoints"></ul>
             </div>
             <div>
-              <div class="text-[10px] font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wide mb-1">Suggested Next Steps</div>
+              <div class="text-[10px] font-semibold text-[hsl(var(--muted-foreground))] uppercase tracking-wide mb-1">{{ _('Suggested Next Steps') }}</div>
               <ul class="space-y-1" id="summarySteps"></ul>
             </div>
           </div>

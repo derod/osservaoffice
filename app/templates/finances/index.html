@@ -1,5 +1,5 @@
 {% extends "base.html" %}{% set active_nav="finances" %}
-{% block title %}Finances — OSSERVA OFFICE{% endblock %}
+{% block title %}{{ _('Finances') }} — OSSERVA OFFICE{% endblock %}
 
 {% macro fmt_money(v) %}${{ "{:,.0f}".format(v) }}{% endmacro %}
 
@@ -9,8 +9,8 @@
   <!-- ── Header ── -->
   <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
     <div>
-      <h1 class="text-2xl font-bold tracking-tight">Finances</h1>
-      <p class="text-sm text-[hsl(var(--muted-foreground))] mt-0.5">Firm-wide financial overview &amp; matter billing</p>
+      <h1 class="text-2xl font-bold tracking-tight">{{ _('Finances') }}</h1>
+      <p class="text-sm text-[hsl(var(--muted-foreground))] mt-0.5">{{ _('Firm-wide financial overview & matter billing') }}</p>
     </div>
     <div class="flex items-center gap-2 flex-wrap w-full sm:w-auto">
       <!-- Status filter -->
@@ -18,20 +18,20 @@
         <input type="hidden" name="priority" value="{{ priority_filter }}">
         <select name="status" onchange="this.form.submit()"
           class="text-sm dk-input rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-2 dk-card">
-          <option value="all"    {% if status_filter=='all'    %}selected{% endif %}>All Statuses</option>
-          <option value="active" {% if status_filter=='active' %}selected{% endif %}>Active</option>
-          <option value="closed" {% if status_filter=='closed' %}selected{% endif %}>Closed</option>
+          <option value="all"    {% if status_filter=='all'    %}selected{% endif %}>{{ _('All Statuses') }}</option>
+          <option value="active" {% if status_filter=='active' %}selected{% endif %}>{{ _('Active') }}</option>
+          <option value="closed" {% if status_filter=='closed' %}selected{% endif %}>{{ _('Closed') }}</option>
         </select>
         <input type="hidden" name="status" value="{{ status_filter }}">
         <select name="priority" onchange="this.form.submit()"
           class="text-sm dk-input rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-2 dk-card">
-          <option value="all"    {% if priority_filter=='all'    %}selected{% endif %}>All Priorities</option>
-          <option value="high"   {% if priority_filter=='high'   %}selected{% endif %}>High</option>
-          <option value="medium" {% if priority_filter=='medium' %}selected{% endif %}>Medium</option>
-          <option value="low"    {% if priority_filter=='low'    %}selected{% endif %}>Low</option>
+          <option value="all"    {% if priority_filter=='all'    %}selected{% endif %}>{{ _('All Priorities') }}</option>
+          <option value="high"   {% if priority_filter=='high'   %}selected{% endif %}>{{ _('High') }}</option>
+          <option value="medium" {% if priority_filter=='medium' %}selected{% endif %}>{{ _('Medium') }}</option>
+          <option value="low"    {% if priority_filter=='low'    %}selected{% endif %}>{{ _('Low') }}</option>
         </select>
       </form>
-      <span class="text-xs text-[hsl(var(--muted-foreground))] hidden sm:inline">Mock data · FY 2026</span>
+      <span class="text-xs text-[hsl(var(--muted-foreground))] hidden sm:inline">{{ _('Mock data · FY 2026') }}</span>
     </div>
   </div>
 
@@ -40,49 +40,49 @@
     <!-- Total Billed -->
     <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-5">
       <div class="flex items-center justify-between mb-3">
-        <span class="text-xs font-medium text-[hsl(var(--muted-foreground))] uppercase tracking-wide">Total Billed</span>
+        <span class="text-xs font-medium text-[hsl(var(--muted-foreground))] uppercase tracking-wide">{{ _('Total Billed') }}</span>
         <div class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
           <i class="fa-solid fa-file-invoice-dollar text-indigo-600 text-sm"></i>
         </div>
       </div>
       <div class="text-2xl font-bold text-[hsl(var(--foreground))]">{{ fmt_money(total_billed) }}</div>
-      <div class="text-xs text-[hsl(var(--muted-foreground))] mt-1">{{ active_count }} active · {{ closed_count }} closed matters</div>
+      <div class="text-xs text-[hsl(var(--muted-foreground))] mt-1">{{ active_count }} {{ _('active') }} · {{ closed_count }} {{ _('closed matters') }}</div>
     </div>
 
     <!-- Collected / Outstanding -->
     <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-5">
       <div class="flex items-center justify-between mb-3">
-        <span class="text-xs font-medium text-[hsl(var(--muted-foreground))] uppercase tracking-wide">Collected</span>
+        <span class="text-xs font-medium text-[hsl(var(--muted-foreground))] uppercase tracking-wide">{{ _('Collected') }}</span>
         <div class="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
           <i class="fa-solid fa-circle-check text-emerald-600 text-sm"></i>
         </div>
       </div>
       <div class="text-2xl font-bold text-[hsl(var(--foreground))]">{{ fmt_money(total_collected) }}</div>
-      <div class="text-xs text-rose-500 mt-1 font-medium">{{ fmt_money(total_outstanding) }} outstanding</div>
+      <div class="text-xs text-rose-500 mt-1 font-medium">{{ fmt_money(total_outstanding) }} {{ _('outstanding') }}</div>
     </div>
 
     <!-- Retainer Balance -->
     <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-5">
       <div class="flex items-center justify-between mb-3">
-        <span class="text-xs font-medium text-[hsl(var(--muted-foreground))] uppercase tracking-wide">Retainer Balance</span>
+        <span class="text-xs font-medium text-[hsl(var(--muted-foreground))] uppercase tracking-wide">{{ _('Retainer Balance') }}</span>
         <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
           <i class="fa-solid fa-wallet text-amber-600 text-sm"></i>
         </div>
       </div>
       <div class="text-2xl font-bold text-[hsl(var(--foreground))]">{{ fmt_money(total_retainer) }}</div>
-      <div class="text-xs text-[hsl(var(--muted-foreground))] mt-1">Across all active matters</div>
+      <div class="text-xs text-[hsl(var(--muted-foreground))] mt-1">{{ _('Across all active matters') }}</div>
     </div>
 
     <!-- Win Rate -->
     <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-5">
       <div class="flex items-center justify-between mb-3">
-        <span class="text-xs font-medium text-[hsl(var(--muted-foreground))] uppercase tracking-wide">Win Rate</span>
+        <span class="text-xs font-medium text-[hsl(var(--muted-foreground))] uppercase tracking-wide">{{ _('Win Rate') }}</span>
         <div class="w-8 h-8 bg-violet-100 rounded-lg flex items-center justify-center">
           <i class="fa-solid fa-trophy text-violet-600 text-sm"></i>
         </div>
       </div>
       <div class="text-2xl font-bold text-[hsl(var(--foreground))]">{{ win_rate }}%</div>
-      <div class="text-xs text-[hsl(var(--muted-foreground))] mt-1">Closed matters only</div>
+      <div class="text-xs text-[hsl(var(--muted-foreground))] mt-1">{{ _('Closed matters only') }}</div>
     </div>
   </div>
 
@@ -92,8 +92,8 @@
     <!-- Monthly Billing Bar Chart -->
     <div class="lg:col-span-2 dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-5">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="font-semibold text-sm">Monthly Billing — FY 2026</h3>
-        <span class="text-xs text-[hsl(var(--muted-foreground))]">All matters combined</span>
+        <h3 class="font-semibold text-sm">{{ _('Monthly Billing — FY 2026') }}</h3>
+        <span class="text-xs text-[hsl(var(--muted-foreground))]">{{ _('All matters combined') }}</span>
       </div>
       {% set max_val = monthly_totals | max %}
       <div class="flex items-end gap-1 h-36">
@@ -122,7 +122,7 @@
 
     <!-- Staff Hours Donut-style list -->
     <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-5">
-      <h3 class="font-semibold text-sm mb-4">Hours by Staff Member</h3>
+      <h3 class="font-semibold text-sm mb-4">{{ _('Hours by Staff Member') }}</h3>
       {% set total_hours = staff_hours | sum(attribute=1) %}
       <div class="space-y-3">
         {% set bar_colors = ['bg-indigo-500','bg-emerald-500','bg-amber-500','bg-violet-500','bg-rose-500'] %}
@@ -141,7 +141,7 @@
         {% endfor %}
       </div>
       <div class="mt-4 pt-3 border-t border-slate-50 flex justify-between text-xs text-[hsl(var(--muted-foreground))]">
-        <span>Total logged</span>
+        <span>{{ _('Total logged') }}</span>
         <span class="font-semibold text-[hsl(var(--card-foreground))]">{{ total_hours | round(1) }} h</span>
       </div>
     </div>
@@ -151,12 +151,12 @@
   <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm">
     <div class="px-4 sm:px-5 py-4 border-b border-[hsl(var(--border))] flex items-center justify-between">
       <h3 class="font-semibold text-sm flex items-center gap-2">
-        <i class="fa-solid fa-table-list text-indigo-500"></i> Matter Billing Detail
+        <i class="fa-solid fa-table-list text-indigo-500"></i> {{ _('Matter Billing Detail') }}
       </h3>
       {% if at_risk_count > 0 %}
       <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium badge-danger">
         <i class="fa-solid fa-triangle-exclamation text-[10px]"></i>
-        {{ at_risk_count }} at-risk
+        {{ at_risk_count }} {{ _('at-risk') }}
       </span>
       {% endif %}
     </div>
@@ -166,15 +166,15 @@
       <table class="w-full text-sm">
         <thead class="border-b border-[hsl(var(--border))]" style="background:hsla(var(--muted),0.5)">
           <tr class="text-left text-xs uppercase tracking-wide" style="color:hsl(var(--muted-foreground))">
-            <th class="py-3 px-4">Matter</th>
-            <th class="py-3 px-4">Priority</th>
-            <th class="py-3 px-4">Billed</th>
-            <th class="py-3 px-4">Collected</th>
-            <th class="py-3 px-4">Retainer Left</th>
-            <th class="py-3 px-4">Hours</th>
-            <th class="py-3 px-4">Next Billing</th>
-            <th class="py-3 px-4">Status</th>
-            <th class="py-3 px-4">Health</th>
+            <th class="py-3 px-4">{{ _('Matter') }}</th>
+            <th class="py-3 px-4">{{ _('Priority') }}</th>
+            <th class="py-3 px-4">{{ _('Billed') }}</th>
+            <th class="py-3 px-4">{{ _('Collected') }}</th>
+            <th class="py-3 px-4">{{ _('Retainer Left') }}</th>
+            <th class="py-3 px-4">{{ _('Hours') }}</th>
+            <th class="py-3 px-4">{{ _('Next Billing') }}</th>
+            <th class="py-3 px-4">{{ _('Status') }}</th>
+            <th class="py-3 px-4">{{ _('Health') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -190,7 +190,7 @@
             <td class="py-3 px-4">
               <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium
                 {% if case.priority=='high' %}badge-danger{% elif case.priority=='medium' %}badge-warning{% else %}bg-slate-100 text-[hsl(var(--muted-foreground))]{% endif %}">
-                {{ case.priority.title() }}
+                {{ _(case.priority.title()) }}
               </span>
             </td>
             <td class="py-3 px-4 font-medium" style="color:hsl(var(--card-foreground))">{{ fmt_money(case.billed_total) }}</td>
@@ -217,13 +217,13 @@
               {% if case.next_billing_date %}{{ format_dt(case.next_billing_date ~ ' 00:00:00') }}{% else %}<span class="text-slate-300">—</span>{% endif %}
             </td>
             <td class="py-3 px-4">
-              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {% if case.status=='active' %}badge-success{% else %}bg-slate-100 text-[hsl(var(--muted-foreground))]{% endif %}">{{ case.status.title() }}</span>
-              {% if case.outcome %}<span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium mt-0.5 {% if case.outcome=='won' %}bg-indigo-100 text-indigo-700{% else %}bg-rose-100 text-rose-600{% endif %}">{{ case.outcome.title() }}</span>{% endif %}
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {% if case.status=='active' %}badge-success{% else %}bg-slate-100 text-[hsl(var(--muted-foreground))]{% endif %}">{{ _(case.status.title()) }}</span>
+              {% if case.outcome %}<span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium mt-0.5 {% if case.outcome=='won' %}bg-indigo-100 text-indigo-700{% else %}bg-rose-100 text-rose-600{% endif %}">{{ _(case.outcome.title()) }}</span>{% endif %}
             </td>
             <td class="py-3 px-4">
-              {% if case.status == 'closed' %}<span class="inline-flex items-center gap-1 text-xs" style="color:hsl(var(--muted-foreground))"><i class="fa-solid fa-lock text-[9px]"></i> Closed</span>
-              {% elif case.at_risk %}<span class="inline-flex items-center gap-1 text-xs font-medium text-rose-600"><i class="fa-solid fa-circle text-[8px]"></i> At Risk</span>
-              {% else %}<span class="inline-flex items-center gap-1 text-xs font-medium text-emerald-600"><i class="fa-solid fa-circle text-[8px]"></i> Healthy</span>{% endif %}
+              {% if case.status == 'closed' %}<span class="inline-flex items-center gap-1 text-xs" style="color:hsl(var(--muted-foreground))"><i class="fa-solid fa-lock text-[9px]"></i> {{ _('Closed') }}</span>
+              {% elif case.at_risk %}<span class="inline-flex items-center gap-1 text-xs font-medium text-rose-600"><i class="fa-solid fa-circle text-[8px]"></i> {{ _('At Risk') }}</span>
+              {% else %}<span class="inline-flex items-center gap-1 text-xs font-medium text-emerald-600"><i class="fa-solid fa-circle text-[8px]"></i> {{ _('Healthy') }}</span>{% endif %}
             </td>
           </tr>
           <tr class="border-b" style="border-color:hsl(var(--border));background:hsla(var(--muted),0.3)">
@@ -236,7 +236,7 @@
             </td>
           </tr>
           {% else %}
-          <tr><td colspan="9" class="text-center py-10 text-sm" style="color:hsl(var(--muted-foreground))">No matters match the selected filters.</td></tr>
+          <tr><td colspan="9" class="text-center py-10 text-sm" style="color:hsl(var(--muted-foreground))">{{ _('No matters match the selected filters.') }}</td></tr>
           {% endfor %}
         </tbody>
       </table>
@@ -255,24 +255,24 @@
             <div class="text-xs mt-0.5" style="color:hsl(var(--muted-foreground))">{{ case.client }} · {{ case.matter_type }}</div>
           </div>
           <div class="flex items-center gap-1.5 flex-shrink-0">
-            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {% if case.priority=='high' %}badge-danger{% elif case.priority=='medium' %}badge-warning{% else %}bg-slate-100 text-[hsl(var(--muted-foreground))]{% endif %}">{{ case.priority.title() }}</span>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {% if case.priority=='high' %}badge-danger{% elif case.priority=='medium' %}badge-warning{% else %}bg-slate-100 text-[hsl(var(--muted-foreground))]{% endif %}">{{ _(case.priority.title()) }}</span>
           </div>
         </div>
         <div class="grid grid-cols-2 gap-2 text-xs mb-2">
-          <div><span style="color:hsl(var(--muted-foreground))">Billed:</span> <span class="font-medium" style="color:hsl(var(--card-foreground))">{{ fmt_money(case.billed_total) }}</span></div>
-          <div><span style="color:hsl(var(--muted-foreground))">Collected:</span> <span class="{% if case.collected < case.billed_total %}text-rose-600 font-medium{% else %}text-emerald-600{% endif %}">{{ fmt_money(case.collected) }}</span></div>
-          <div><span style="color:hsl(var(--muted-foreground))">Retainer:</span> <span class="{% if case.retainer_remaining < 5000 and case.status=='active' %}text-rose-600 font-medium{% else %}{% endif %}">{{ fmt_money(case.retainer_remaining) }}</span></div>
-          <div><span style="color:hsl(var(--muted-foreground))">Hours:</span> {{ case.hours_logged }}h</div>
+          <div><span style="color:hsl(var(--muted-foreground))">{{ _('Billed') }}:</span> <span class="font-medium" style="color:hsl(var(--card-foreground))">{{ fmt_money(case.billed_total) }}</span></div>
+          <div><span style="color:hsl(var(--muted-foreground))">{{ _('Collected') }}:</span> <span class="{% if case.collected < case.billed_total %}text-rose-600 font-medium{% else %}text-emerald-600{% endif %}">{{ fmt_money(case.collected) }}</span></div>
+          <div><span style="color:hsl(var(--muted-foreground))">{{ _('Retainer') }}:</span> <span class="{% if case.retainer_remaining < 5000 and case.status=='active' %}text-rose-600 font-medium{% else %}{% endif %}">{{ fmt_money(case.retainer_remaining) }}</span></div>
+          <div><span style="color:hsl(var(--muted-foreground))">{{ _('Hours') }}:</span> {{ case.hours_logged }}h</div>
         </div>
         <div class="flex items-center gap-2 flex-wrap">
-          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {% if case.status=='active' %}badge-success{% else %}bg-slate-100 text-[hsl(var(--muted-foreground))]{% endif %}">{{ case.status.title() }}</span>
-          {% if case.status == 'closed' %}<span class="text-xs" style="color:hsl(var(--muted-foreground))"><i class="fa-solid fa-lock text-[9px] mr-0.5"></i>Closed</span>
-          {% elif case.at_risk %}<span class="text-xs font-medium text-rose-600"><i class="fa-solid fa-circle text-[8px] mr-0.5"></i>At Risk</span>
-          {% else %}<span class="text-xs font-medium text-emerald-600"><i class="fa-solid fa-circle text-[8px] mr-0.5"></i>Healthy</span>{% endif %}
+          <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {% if case.status=='active' %}badge-success{% else %}bg-slate-100 text-[hsl(var(--muted-foreground))]{% endif %}">{{ _(case.status.title()) }}</span>
+          {% if case.status == 'closed' %}<span class="text-xs" style="color:hsl(var(--muted-foreground))"><i class="fa-solid fa-lock text-[9px] mr-0.5"></i>{{ _('Closed') }}</span>
+          {% elif case.at_risk %}<span class="text-xs font-medium text-rose-600"><i class="fa-solid fa-circle text-[8px] mr-0.5"></i>{{ _('At Risk') }}</span>
+          {% else %}<span class="text-xs font-medium text-emerald-600"><i class="fa-solid fa-circle text-[8px] mr-0.5"></i>{{ _('Healthy') }}</span>{% endif %}
         </div>
       </div>
       {% else %}
-      <div class="text-center py-10 text-sm" style="color:hsl(var(--muted-foreground))">No matters match the selected filters.</div>
+      <div class="text-center py-10 text-sm" style="color:hsl(var(--muted-foreground))">{{ _('No matters match the selected filters.') }}</div>
       {% endfor %}
     </div>
   </div>
@@ -280,7 +280,7 @@
   <!-- ── Worklog section ── -->
   <div class="dk-card rounded-xl border border-[hsl(var(--border))] shadow-sm p-5">
     <h3 class="font-semibold text-sm mb-4 flex items-center gap-2">
-      <i class="fa-solid fa-hourglass-half text-amber-500"></i> Worklog — Hours by Matter
+      <i class="fa-solid fa-hourglass-half text-amber-500"></i> {{ _('Worklog — Hours by Matter') }}
     </h3>
     <div class="space-y-4">
       {% for case in all_cases %}
@@ -291,7 +291,7 @@
             <span class="text-xs font-semibold text-[hsl(var(--card-foreground))]">{{ case.title }}</span>
             <span class="text-[10px] text-[hsl(var(--muted-foreground))]">{{ case.matter_type }}</span>
           </div>
-          <span class="text-xs font-medium text-[hsl(var(--muted-foreground))]">{{ case_total }}h total</span>
+          <span class="text-xs font-medium text-[hsl(var(--muted-foreground))]">{{ case_total }}h {{ _('total') }}</span>
         </div>
         <div class="flex h-5 rounded-lg overflow-hidden gap-px">
           {% set wl_colors = ['bg-indigo-500','bg-emerald-500','bg-amber-400','bg-violet-500','bg-rose-400'] %}
@@ -326,12 +326,12 @@
     <div class="flex items-start gap-3">
       <i class="fa-solid fa-triangle-exclamation text-rose-500 mt-0.5 flex-shrink-0"></i>
       <div>
-        <div class="text-sm font-semibold text-rose-800 mb-1">Action Required — At-Risk Matters</div>
+        <div class="text-sm font-semibold text-rose-800 mb-1">{{ _('Action Required — At-Risk Matters') }}</div>
         <div class="space-y-1">
           {% for case in at_risk_cases %}
           <div class="text-xs text-rose-700">
             <span class="font-medium">{{ case.title }}</span> —
-            retainer balance {{ fmt_money(case.retainer_remaining) }}, consider requesting replenishment.
+            {{ _('retainer balance') }} {{ fmt_money(case.retainer_remaining) }}, {{ _('consider requesting replenishment.') }}
           </div>
           {% endfor %}
         </div>
@@ -340,6 +340,6 @@
   </div>
   {% endif %}
 
-  <p class="text-xs text-slate-300 text-center pb-2">Financial data shown is illustrative mock data for demonstration purposes.</p>
+  <p class="text-xs text-slate-300 text-center pb-2">{{ _('Financial data shown is illustrative mock data for demonstration purposes.') }}</p>
 </div>
 {% endblock %}

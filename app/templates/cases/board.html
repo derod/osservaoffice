@@ -1,5 +1,5 @@
 {% extends "base.html" %}{% set active_nav="cases" %}
-{% block title %}Cases Board — OSSERVA OFFICE{% endblock %}
+{% block title %}{{ _('Cases Board') }} — OSSERVA OFFICE{% endblock %}
 {% block content %}
 <div class="page-container">
   <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
@@ -37,7 +37,7 @@
               {% if case.priority=='low' %}prio-low
               {% elif case.priority=='medium' %}prio-medium
               {% elif case.priority=='high' %}prio-high
-              {% else %}badge-neutral{% endif %}">{{ case.priority.title() }}</span>
+              {% else %}badge-neutral{% endif %}">{{ _(case.priority.title()) }}</span>
           </div>
           <div class="flex items-center justify-between mb-2">
             <div class="text-xs" style="color:hsl(var(--muted-foreground))">{{ case.client_name or '—' }}</div>
@@ -50,7 +50,7 @@
           <p class="text-xs mb-2 line-clamp-2" style="color:hsl(var(--muted-foreground))">{{ case.description[:100] }}{% if case.description|length > 100 %}…{% endif %}</p>
           {% endif %}
           {% if case.next_action %}
-          <div class="text-xs mb-3" style="color:hsl(var(--muted-foreground))"><span class="font-medium" style="color:hsl(var(--foreground))">Next:</span> {{ case.next_action[:60] }}{% if case.next_action|length > 60 %}…{% endif %}</div>
+          <div class="text-xs mb-3" style="color:hsl(var(--muted-foreground))"><span class="font-medium" style="color:hsl(var(--foreground))">{{ _('Next:') }}</span> {{ case.next_action[:60] }}{% if case.next_action|length > 60 %}…{% endif %}</div>
           {% endif %}
           <div class="flex items-center justify-between pt-2" style="border-top:1px solid hsl(var(--border))">
             <div class="flex items-center gap-1">
@@ -63,13 +63,13 @@
             </div>
             <div class="text-xs {% if case.due_date and is_overdue(case.due_date) and case.status != 'closed' %}font-medium{% endif %}"
                  style="color:{% if case.due_date and is_overdue(case.due_date) and case.status != 'closed' %}hsl(0,60%,58%){% else %}hsl(var(--muted-foreground)){% endif %}">
-              {% if case.due_date %}Due {{ format_dt(case.due_date, '%Y-%m-%d') }}{% endif %}
+              {% if case.due_date %}{{ _('Due') }} {{ format_dt(case.due_date, '%Y-%m-%d') }}{% endif %}
             </div>
           </div>
         </a>
         {% else %}
         <div class="rounded-xl p-6 text-center text-sm" style="border:1.5px dashed hsl(var(--border));color:hsl(var(--muted-foreground))">
-          No cases
+          {{ _('No cases') }}
         </div>
         {% endfor %}
       </div>
