@@ -144,6 +144,7 @@ def create_app():
     from app.routes.organizations import bp as organizations_bp
     from app.routes.presence import bp as presence_bp
     from app.routes.presence_socket import register_presence_events
+    from app.routes.notariado import bp as notariado_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -166,6 +167,7 @@ def create_app():
     app.register_blueprint(public_bp)
     app.register_blueprint(organizations_bp)
     app.register_blueprint(presence_bp)
+    app.register_blueprint(notariado_bp)
 
     # ── SocketIO ───────────────────────────────────────────────
     # gevent is required under GeventWebSocketWorker (Railway/Gunicorn).

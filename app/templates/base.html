@@ -102,6 +102,7 @@
       ('documents.list_docs',      'fa-file-lines',        'Documents',         'documents'),
       ('legal_consultant.index',   'fa-scale-balanced',    'Legal Consultant',  'legal_consultant'),
       ('live_room.index',          'fa-tower-broadcast',   'Live Room',         'live_room'),
+      ('notariado.index',          'fa-stamp',             'Notariado',         'notariado'),
     ] %}
     {% for endpoint, icon, label, key in work_items %}
     <a href="{{ url_for(endpoint) }}" onclick="closeSidebar()"
