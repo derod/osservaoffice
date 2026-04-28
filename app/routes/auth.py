@@ -42,8 +42,12 @@ def login():
         elif not verify_password(password, user["hashed_password"]):
             error = "Invalid email or password"
         else:
+            # Clear then reassign to get a new session ID (session fixation prevention)
+            lang = session.get("lang", "en")
+            session.clear()
             token = create_token(user["id"])
             session["auth_token"] = token
+            session["lang"] = lang
             session.permanent = True
             return redirect(url_for("dashboard.index"))
 

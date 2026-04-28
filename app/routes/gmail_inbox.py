@@ -99,6 +99,8 @@ def index():
 @login_required
 def detail(local_id):
     """Detail view for a single imported Gmail message."""
+    if not is_admin_like(g.user):
+        abort(403)
     with db_conn() as conn:
         msg = conn.execute("SELECT * FROM gmail_messages WHERE id = ?", (local_id,)).fetchone()
         if not msg:

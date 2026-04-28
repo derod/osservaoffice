@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, g, abort
-from app.auth_utils import login_required, org_filter, org_id_for
+from app.auth_utils import login_required, is_admin_like, org_filter, org_id_for
 from app.database import db_conn
 from datetime import datetime, timedelta
 
@@ -136,9 +136,12 @@ def new_appointment():
 @bp.route("/<int:appt_id>/edit", methods=["GET","POST"])
 @login_required
 def edit_appointment(appt_id):
+    oc, op = org_filter(g.user)
     uc, up = org_filter(g.user)
     with db_conn() as conn:
-        appt = conn.execute("SELECT * FROM appointments WHERE id=?", (appt_id,)).fetchone()
+        appt = conn.execute(
+            f"SELECT * FROM appointments WHERE id=?{oc}", [appt_id] + op
+        ).fetchone()
         if not appt:
             return redirect(url_for("calendar.index"))
         appt = dict(appt)
@@ -178,7 +181,10 @@ def edit_appointment(appt_id):
 @bp.route("/<int:appt_id>/delete", methods=["POST"])
 @login_required
 def delete_appointment(appt_id):
-    if g.user["role"] == "admin":
+    if is_admin_like(g.user):
+        oc, op = org_filter(g.user)
         with db_conn() as conn:
-            conn.execute("DELETE FROM appointments WHERE id=?", (appt_id,))
+            conn.execute(
+                f"DELETE FROM appointments WHERE id=?{oc}", [appt_id] + op
+            )
     return redirect(url_for("calendar.index"))

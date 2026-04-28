@@ -86,21 +86,44 @@ def index():
         ).fetchall()
         pending_reqs = [dict(r) for r in pending_reqs]
 
-        # Employee cards
+        # Employee cards — batch all appointment lookups in one query to avoid N+1
         employee_cards = []
-        for emp in staff:
-            status = get_employee_status(emp["id"], conn)
-            next_appt = conn.execute(
-                """SELECT * FROM appointments
-                WHERE assigned_to_user_id=? AND start_datetime>=?
-                ORDER BY start_datetime LIMIT 1""",
-                [emp["id"], now_str]
-            ).fetchone()
-            employee_cards.append({
-                "user": emp,
-                "status": status,
-                "next_appointment": dict(next_appt) if next_appt else None
-            })
+        if staff:
+            staff_ids = [emp["id"] for emp in staff]
+            placeholders = ",".join("?" * len(staff_ids))
+            batch_appts = conn.execute(f"""
+                SELECT * FROM appointments
+                WHERE assigned_to_user_id IN ({placeholders})
+                  AND end_datetime >= ?
+                ORDER BY start_datetime
+            """, staff_ids + [now_str]).fetchall()
+            batch_appts = [dict(a) for a in batch_appts]
+
+            appts_by_user: dict = {}
+            for a in batch_appts:
+                appts_by_user.setdefault(a["assigned_to_user_id"], []).append(a)
+
+            today_end_check = today_str + " 23:59:59"
+            for emp in staff:
+                emp_appts = appts_by_user.get(emp["id"], [])
+                status = "free"
+                for a in emp_appts:
+                    if a["start_datetime"] <= now_str and a["end_datetime"] >= now_str:
+                        status = "in_meeting"
+                        break
+                if status == "free":
+                    for a in emp_appts:
+                        if now_str <= a["start_datetime"] <= today_end_check:
+                            status = "busy"
+                            break
+                next_appt = next(
+                    (a for a in emp_appts if a["start_datetime"] >= now_str), None
+                )
+                employee_cards.append({
+                    "user": emp,
+                    "status": status,
+                    "next_appointment": next_appt,
+                })
 
         free_count = sum(1 for e in employee_cards if e["status"] == "free")
 

@@ -18,12 +18,15 @@ Org scoping:
 
 from __future__ import annotations
 
+import logging
 import threading
 from datetime import datetime, timezone
 from flask import request
 from flask_socketio import emit, join_room, leave_room
 from app.auth_utils import get_current_user
 from app.database import db_conn
+
+log = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # In-memory registry
@@ -88,7 +91,7 @@ def _persist_last_seen(user_id: int):
                 (now, user_id),
             )
     except Exception:
-        pass  # never crash the socket handler
+        log.exception("Failed to persist last_seen_at for user %s", user_id)
 
 
 # ---------------------------------------------------------------------------

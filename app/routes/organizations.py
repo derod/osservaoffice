@@ -158,16 +158,16 @@ def platform_dashboard():
 @super_admin_required
 def list_orgs():
     with db_conn() as conn:
-        orgs = [dict(r) for r in conn.execute(
-            "SELECT * FROM organizations ORDER BY name"
-        ).fetchall()]
-        for org in orgs:
-            org["user_count"] = conn.execute(
-                "SELECT COUNT(*) FROM users WHERE organization_id=?", (org["id"],)
-            ).fetchone()[0]
-            org["case_count"] = conn.execute(
-                "SELECT COUNT(*) FROM cases WHERE organization_id=?", (org["id"],)
-            ).fetchone()[0]
+        orgs = [dict(r) for r in conn.execute("""
+            SELECT o.*,
+                COUNT(DISTINCT u.id) AS user_count,
+                COUNT(DISTINCT c.id) AS case_count
+            FROM organizations o
+            LEFT JOIN users u ON u.organization_id = o.id
+            LEFT JOIN cases c ON c.organization_id = o.id
+            GROUP BY o.id
+            ORDER BY o.name
+        """).fetchall()]
     return render_template("admin/organizations.html",
         current_user=g.user, organizations=orgs)
 

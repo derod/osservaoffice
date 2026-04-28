@@ -135,11 +135,26 @@ def new_case():
                 oid,
             ))
             case_id = cur.lastrowid
-            for uid in request.form.getlist("assigned_users"):
+            raw_ids = request.form.getlist("assigned_users")
+            parsed_ids = []
+            for uid_str in raw_ids:
                 try:
-                    conn.execute("INSERT OR IGNORE INTO case_assignments (case_id, user_id) VALUES (?,?)",
-                        (case_id, int(uid)))
-                except: pass
+                    parsed_ids.append(int(uid_str))
+                except (ValueError, TypeError):
+                    pass
+            if parsed_ids:
+                ph = ",".join("?" * len(parsed_ids))
+                oc, op = org_filter(g.user)
+                valid_rows = conn.execute(
+                    f"SELECT id FROM users WHERE id IN ({ph}){oc}", parsed_ids + op
+                ).fetchall()
+                valid_ids = {r["id"] for r in valid_rows}
+                for uid in parsed_ids:
+                    if uid in valid_ids:
+                        conn.execute(
+                            "INSERT OR IGNORE INTO case_assignments (case_id, user_id) VALUES (?,?)",
+                            (case_id, uid)
+                        )
             log_activity(conn, g.user["id"], case_id, "Case created", f"Status: {f.get('status','open')}", organization_id=oid)
         return redirect(url_for("cases.detail", case_id=case_id))
 
@@ -276,11 +291,26 @@ def edit_case(case_id):
 
         if g.user["role"] in ("admin", "owner", "super_admin"):
             conn.execute("DELETE FROM case_assignments WHERE case_id=?", (case_id,))
-            for uid in request.form.getlist("assigned_users"):
+            raw_ids = request.form.getlist("assigned_users")
+            parsed_ids = []
+            for uid_str in raw_ids:
                 try:
-                    conn.execute("INSERT OR IGNORE INTO case_assignments (case_id,user_id) VALUES (?,?)",
-                        (case_id, int(uid)))
-                except: pass
+                    parsed_ids.append(int(uid_str))
+                except (ValueError, TypeError):
+                    pass
+            if parsed_ids:
+                ph = ",".join("?" * len(parsed_ids))
+                oc, op = org_filter(g.user)
+                valid_rows = conn.execute(
+                    f"SELECT id FROM users WHERE id IN ({ph}){oc}", parsed_ids + op
+                ).fetchall()
+                valid_ids = {r["id"] for r in valid_rows}
+                for uid in parsed_ids:
+                    if uid in valid_ids:
+                        conn.execute(
+                            "INSERT OR IGNORE INTO case_assignments (case_id,user_id) VALUES (?,?)",
+                            (case_id, uid)
+                        )
 
         oid = case_row.get("organization_id")
         if old and old["status"] != new_status:

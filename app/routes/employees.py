@@ -292,11 +292,12 @@ def delete_checkin(user_id, checkin_id):
             ci = dict(ci)
             conn.execute("DELETE FROM checkins WHERE id=?", (checkin_id,))
             conn.execute("""
-                INSERT INTO activity_logs (user_id, action, details, created_at)
-                VALUES (?, ?, ?, datetime('now'))
+                INSERT INTO activity_logs (user_id, action, details, created_at, organization_id)
+                VALUES (?, ?, ?, datetime('now'), ?)
             """, (g.user["id"], "checkin_deleted",
                   f"Deleted check-in #{checkin_id} for user {user_id}: "
-                  f"status={ci['status']}, at={ci['checked_in_at']}, notes={ci.get('notes') or ''}"))
+                  f"status={ci['status']}, at={ci['checked_in_at']}, notes={ci.get('notes') or ''}",
+                  org_id_for(g.user)))
             flash("Check-in entry deleted.", "success")
         else:
             flash("Check-in entry not found.", "error")
@@ -340,9 +341,9 @@ def checkout(user_id):
         detail = (f"{'Admin' if source == 'admin' else 'Self'} clock-out for user {user_id}: "
                   f"status={checkout_status}, notes={checkout_notes or ''}")
         conn.execute("""
-            INSERT INTO activity_logs (user_id, action, details, created_at)
-            VALUES (?, ?, ?, datetime('now'))
-        """, (g.user["id"], action, detail))
+            INSERT INTO activity_logs (user_id, action, details, created_at, organization_id)
+            VALUES (?, ?, ?, datetime('now'), ?)
+        """, (g.user["id"], action, detail, org_id_for(g.user)))
         flash("Clock-out recorded.", "success")
     return redirect(url_for("employees.agenda", user_id=user_id))
 
@@ -376,8 +377,8 @@ def checkin(user_id):
         detail = (f"{'Admin' if source == 'admin' else 'Self'} check-in for user {user_id}: "
                   f"status={status}, notes={notes or ''}")
         conn.execute("""
-            INSERT INTO activity_logs (user_id, action, details, created_at)
-            VALUES (?, ?, ?, datetime('now'))
-        """, (g.user["id"], action, detail))
+            INSERT INTO activity_logs (user_id, action, details, created_at, organization_id)
+            VALUES (?, ?, ?, datetime('now'), ?)
+        """, (g.user["id"], action, detail, oid))
         flash("Check-in recorded.", "success")
     return redirect(url_for("employees.agenda", user_id=user_id))

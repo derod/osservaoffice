@@ -156,8 +156,11 @@ def new_request():
 def approve(req_id):
     if not is_admin_like(g.user):
         return redirect(url_for("schedule_requests.list_requests"))
+    oc, op = org_filter(g.user)
     with db_conn() as conn:
-        sr = conn.execute("SELECT * FROM schedule_requests WHERE id=?", (req_id,)).fetchone()
+        sr = conn.execute(
+            f"SELECT * FROM schedule_requests WHERE id=?{oc}", [req_id] + op
+        ).fetchone()
         if sr:
             sr = dict(sr)
             emp = conn.execute("SELECT full_name FROM users WHERE id=?", (sr["requested_employee_id"],)).fetchone()
@@ -280,8 +283,11 @@ def upload():
 @docs_bp.route("/<int:doc_id>/download")
 @login_required
 def download(doc_id):
+    oc, op = org_filter(g.user)
     with db_conn() as conn:
-        doc = conn.execute("SELECT * FROM documents WHERE id=?", (doc_id,)).fetchone()
+        doc = conn.execute(
+            f"SELECT * FROM documents WHERE id=?{oc}", [doc_id] + op
+        ).fetchone()
     if not doc or not os.path.exists(doc["file_path"]):
         abort(404)
     return send_file(doc["file_path"], as_attachment=True, download_name=doc["original_filename"])
@@ -302,8 +308,11 @@ def delete_doc(doc_id):
 @login_required
 def view_doc(doc_id):
     """Stream a PDF inline so it can be embedded in an iframe."""
+    oc, op = org_filter(g.user)
     with db_conn() as conn:
-        doc = conn.execute("SELECT * FROM documents WHERE id=?", (doc_id,)).fetchone()
+        doc = conn.execute(
+            f"SELECT * FROM documents WHERE id=?{oc}", [doc_id] + op
+        ).fetchone()
     if not doc:
         abort(404)
     doc = dict(doc)
@@ -673,7 +682,9 @@ def test_gmail_connection():
         email = profile.get("emailAddress", "unknown")
         flash(f"Gmail connection OK. Connected as: {email}", "success")
     except Exception as e:
-        flash(f"Gmail connection failed: {e}", "error")
+        import logging
+        logging.getLogger(__name__).error("Gmail connection test failed: %s", e)
+        flash("Gmail connection failed. Check your credentials in the settings.", "error")
 
     return redirect(url_for("settings.index") + "#gmail-section")
 

@@ -280,7 +280,9 @@ def studies():
 @bp.route("/studies/<int:study_id>/validate", methods=["POST"])
 @login_required
 def validate_study(study_id: int):
-    """Peer-validate a case study. Any authenticated user can validate."""
+    """Peer-validate a case study. Requires admin or owner role."""
+    if not is_admin_like(g.user):
+        abort(403)
     validate_case_study(study_id, g.user["id"])
     flash("Case study validated.", "success")
     return redirect(url_for("legal_consultant.studies"))
