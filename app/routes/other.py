@@ -552,8 +552,6 @@ from app.auth_utils import hash_password
 @settings_bp.route("")
 @login_required
 def index():
-    if g.user["role"] == "staff":
-        return redirect(url_for("dashboard.index"))
     # Mask stored API key for display
     raw_key = get_integration_setting("openai_api_key") or ""
     masked_key = ("*" * (len(raw_key) - 4) + raw_key[-4:]) if len(raw_key) > 4 else ("*" * len(raw_key))

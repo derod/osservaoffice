@@ -59,7 +59,8 @@
         </div>
 
         <button type="submit"
-          class="inline-flex items-center gap-2 style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))" text-sm font-medium px-4 py-2 rounded-lg">
+          class="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg"
+          style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))">
           {{ _('Save Profile') }}
         </button>
       </form>
@@ -132,7 +133,7 @@
       <div class="text-xs text-[hsl(var(--muted-foreground))] mb-4 space-y-1">
         <div class="flex items-center gap-2">
           <span class="font-medium w-28">{{ _('Credentials') }}:</span>
-          <code class="text-[11px] style="background:hsl(var(--muted))" px-1.5 py-0.5 rounded font-mono">{{ gmail_creds_path }}</code>
+          <code class="text-[11px] px-1.5 py-0.5 rounded font-mono" style="background:hsl(var(--muted))">{{ gmail_creds_path }}</code>
           {% if gmail_configured %}
           <i class="fa-solid fa-check text-emerald-500 text-[10px]"></i>
           {% else %}
@@ -141,7 +142,7 @@
         </div>
         <div class="flex items-center gap-2">
           <span class="font-medium w-28">{{ _('Token') }}:</span>
-          <code class="text-[11px] style="background:hsl(var(--muted))" px-1.5 py-0.5 rounded font-mono">{{ gmail_token_path }}</code>
+          <code class="text-[11px] px-1.5 py-0.5 rounded font-mono" style="background:hsl(var(--muted))">{{ gmail_token_path }}</code>
           {% if gmail_has_token %}
           <i class="fa-solid fa-check text-emerald-500 text-[10px]"></i>
           {% else %}
@@ -164,7 +165,8 @@
             class="w-full text-sm text-[hsl(var(--muted-foreground))] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-slate-100 file:text-[hsl(var(--card-foreground))] hover:file:bg-slate-200">
         </div>
         <button type="submit"
-          class="inline-flex items-center gap-2 style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))" text-sm font-medium px-4 py-2 rounded-lg">
+          class="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg"
+          style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))">
           <i class="fa-solid fa-upload text-xs"></i> {{ _('Upload Files') }}
         </button>
       </form>
@@ -192,7 +194,8 @@
           </label>
         </div>
         <button type="submit"
-          class="inline-flex items-center gap-2 style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))" text-sm font-medium px-4 py-2 rounded-lg">
+          class="inline-flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-lg"
+          style="background:hsl(var(--primary));color:hsl(var(--primary-foreground))">
           <i class="fa-solid fa-save text-xs"></i> {{ _('Save Gmail Settings') }}
         </button>
       </form>
